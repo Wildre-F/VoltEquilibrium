@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VoltEquilibrium | Login</title>
+<!-- Material Symbols Link -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-on-surface": "#eef1f0",
+              "primary": "#005147",
+              "secondary-fixed": "#d6e3ff",
+              "on-secondary-fixed-variant": "#00468c",
+              "on-tertiary-container": "#b5eb3e",
+              "on-surface": "#181c1c",
+              "error": "#ba1a1a",
+              "tertiary-fixed": "#bdf447",
+              "on-background": "#181c1c",
+              "surface-variant": "#e0e3e2",
+              "surface-container": "#ebeeed",
+              "tertiary-container": "#4b6800",
+              "primary-fixed-dim": "#83d5c5",
+              "surface-bright": "#f7faf9",
+              "inverse-primary": "#83d5c5",
+              "surface-dim": "#d7dbda",
+              "on-primary-fixed": "#00201b",
+              "error-container": "#ffdad6",
+              "on-error": "#ffffff",
+              "on-primary": "#ffffff",
+              "tertiary": "#374e00",
+              "on-surface-variant": "#3e4946",
+              "background": "#f7faf9",
+              "surface": "#f7faf9",
+              "on-tertiary-fixed-variant": "#374e00",
+              "primary-fixed": "#9ff2e1",
+              "surface-container-low": "#f1f4f3",
+              "on-secondary-fixed": "#001b3d",
+              "on-tertiary": "#ffffff",
+              "on-error-container": "#93000a",
+              "on-primary-fixed-variant": "#005046",
+              "secondary-fixed-dim": "#a9c7ff",
+              "on-secondary": "#ffffff",
+              "primary-container": "#006b5e",
+              "on-primary-container": "#95e8d8",
+              "surface-container-high": "#e6e9e8",
+              "secondary-container": "#63a1ff",
+              "on-tertiary-fixed": "#141f00",
+              "surface-tint": "#006b5e",
+              "surface-container-lowest": "#ffffff",
+              "outline-variant": "#bec9c5",
+              "outline": "#6e7976",
+              "surface-container-highest": "#e0e3e2",
+              "inverse-surface": "#2d3131",
+              "secondary": "#005db6",
+              "tertiary-fixed-dim": "#a2d729",
+              "on-secondary-container": "#00376f"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Plus Jakarta Sans"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+      }
+      .kinetic-gradient {
+        background: linear-gradient(135deg, #005147 0%, #006b5e 100%);
+      }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface antialiased min-h-screen flex items-center justify-center p-4 md:p-8">
+<!-- Auth Container: Intentional Asymmetry Layout -->
+<main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-2xl shadow-xl bg-surface-container-lowest">
+<!-- Left Column: Branding & Visual Anchor -->
+<section class="lg:col-span-5 relative hidden lg:flex flex-col justify-between p-12 text-on-primary overflow-hidden">
+<!-- Background Image -->
+<div class="absolute inset-0 z-0">
+<img alt="Sustainable wind turbines in field" class="w-full h-full object-cover" data-alt="Modern wind turbines in a lush green valley at dawn" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB1fiLUax3Qg0t_24-bpIz1nrtylyIBkWdwj1EghkxFOldgBpc7wYetuXnDUdm_OnRCw7wpqtIUfrWYERPc75pQWe0awIB_vEyUWjY9wfUVVuo7QtdrIa6a--yufdE8z57HRobywp947cRznHnXCkXw0KL6cFDD8zEc3tH_nbKI8ss37TRbvImNSqpxbJ6U7QN8mP1SaczF0Mvvc7prZfGlvO1RX4PSFgLuGXsjhZ5KgJmuQnYOV6fpaLwSJ2r1QeKEHm27ADa-ZD0"/>
+<div class="absolute inset-0 kinetic-gradient opacity-80 mix-blend-multiply"></div>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-12">
+<span class="material-symbols-outlined text-4xl text-primary-fixed" data-icon="electric_bolt">electric_bolt</span>
+<h1 class="font-headline font-extrabold text-2xl tracking-tighter text-white">VoltEquilibrium</h1>
+</div>
+<div class="space-y-6">
+<h2 class="font-headline text-5xl font-bold leading-tight text-white">Powering the <br/><span class="text-primary-fixed">Kinetic Equilibrium</span></h2>
+<p class="text-lg text-primary-fixed-dim/90 max-w-md font-medium">
+                        Manage your community grid assets with precision-engineered data and sustainable intelligence.
+                    </p>
+</div>
+</div>
+<div class="relative z-10 pt-20">
+<div class="p-6 rounded-xl bg-white/10 backdrop-blur-md border border-white/10">
+<p class="text-sm font-label uppercase tracking-widest text-primary-fixed-dim mb-4">Current Network Health</p>
+<div class="flex items-end justify-between">
+<div>
+<span class="text-4xl font-headline font-bold text-white">98.4%</span>
+<span class="ml-2 text-tertiary-fixed text-sm font-bold">+2.1%</span>
+</div>
+<span class="material-symbols-outlined text-3xl text-primary-fixed" data-icon="monitoring">monitoring</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Right Column: Form Canvas -->
+<section class="lg:col-span-7 p-8 md:p-16 lg:p-24 flex flex-col justify-center bg-surface-container-lowest">
+<div class="max-w-md mx-auto w-full">
+<!-- Mobile Branding -->
+<div class="lg:hidden flex items-center gap-2 mb-8">
+<span class="material-symbols-outlined text-3xl text-primary" data-icon="electric_bolt">electric_bolt</span>
+<span class="font-headline font-extrabold text-xl tracking-tighter text-primary">VoltEquilibrium</span>
+</div>
+<header class="mb-10">
+<h3 class="font-headline text-3xl font-bold text-on-surface mb-2">Welcome Back</h3>
+<p class="text-on-surface-variant font-medium">Enter your credentials to access the Renewable Hub.</p>
+</header>
+<!-- Social Logins -->
+<div class="grid grid-cols-2 gap-4 mb-8">
+<button class="flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-outline-variant hover:bg-surface-container-low transition-all duration-200">
+<img alt="Google Logo" class="w-5 h-5" data-alt="Google company logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBFMXFHpLY392ZkkCgqGRLeYwbq41SRaFDuSqdaOXThER-WuggBGUCtRuNAwurPsbggFi5hn8ZtsKzFApnJHYrxq7-QXWnYbeFsz4cWlEFmxKggc7bKrpJeCiPbmPvzUpxT1giI_C5hiditR5kcKo-uPfeL36KOwegh7P4G82ll04xmQvFweIs2oqs87itvqRULBGtL7SxYP-qt5ZwrfzkpUDgkHIpDj6aQHnb3VC9Jz6DAytquhp7fyTxqGejJe-ljgdbOJlrbxr8"/>
+<span class="font-label text-sm font-semibold text-on-surface">Google</span>
+</button>
+<button class="flex items-center justify-center gap-3 py-3 px-4 rounded-xl border border-outline-variant hover:bg-surface-container-low transition-all duration-200">
+<img alt="Microsoft Logo" class="w-5 h-5" data-alt="Microsoft company logo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBplB7swaNNGIjztZDwFDrCpoRRfyxTxNbst-xULMSAkqJwy0Go4gocvZaDJ3DxxaqaE7cZdzU2C6yxLAASsZzryUP-_8AtCtNVlaA-AyY3MzwZfdnb87jY92lSGdjHMsRV5jaW7z0wlDpU5JkK7NcETCCcUqykmPOPB3oSbwiRGv4hvJCmeF7cPi3ZzRmr3SNvPqONWUJy5bcXB_D8lLAlELwtUNVIq5Vk7xz8lntlTn9jxY0IsbszzfHIdrgsX4zdY8e7WL_zTb8"/>
+<span class="font-label text-sm font-semibold text-on-surface">Microsoft</span>
+</button>
+</div>
+<div class="relative flex items-center justify-center mb-8">
+<div class="flex-grow border-t border-outline-variant/30"></div>
+<span class="flex-shrink mx-4 font-label text-xs uppercase tracking-widest text-outline">Or continue with email</span>
+<div class="flex-grow border-t border-outline-variant/30"></div>
+</div>
+<!-- Form -->
+<form action="#" class="space-y-6">
+<div class="space-y-2">
+<label class="font-label text-xs font-bold uppercase tracking-wider text-on-surface-variant ml-1" for="email">Work Email</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" data-icon="mail">mail</span>
+<input class="w-full pl-12 pr-4 py-4 rounded-xl bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-on-surface font-body placeholder:text-outline/60" id="email" placeholder="name@organization.com" type="email"/>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex justify-between items-center ml-1">
+<label class="font-label text-xs font-bold uppercase tracking-wider text-on-surface-variant" for="password">Password</label>
+<a class="text-xs font-bold text-secondary hover:text-primary transition-colors" href="#">Forgot Password?</a>
+</div>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors" data-icon="lock">lock</span>
+<input class="w-full pl-12 pr-4 py-4 rounded-xl bg-surface-container-low border-none focus:ring-2 focus:ring-primary/20 focus:bg-white transition-all text-on-surface font-body placeholder:text-outline/60" id="password" placeholder="••••••••" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface transition-colors" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<div class="flex items-center gap-3 ml-1 mb-8">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" id="remember" type="checkbox"/>
+<label class="text-sm font-medium text-on-surface-variant" for="remember">Keep me logged in for 30 days</label>
+</div>
+<button class="w-full py-4 kinetic-gradient text-white rounded-full font-label font-bold uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200" type="submit">
+                        Sign In to Hub
+                    </button>
+</form>
+<footer class="mt-12 text-center">
+<p class="text-on-surface-variant font-medium">
+                        New to the network? 
+                        <a class="text-primary font-bold hover:underline ml-1" href="#">Request Access</a>
+</p>
+</footer>
+</div>
+<!-- Footer Compliance -->
+<div class="mt-auto pt-12 flex flex-wrap justify-center gap-6 text-[10px] font-label uppercase tracking-[0.2em] text-outline">
+<a class="hover:text-primary transition-colors" href="#">Privacy Protocol</a>
+<a class="hover:text-primary transition-colors" href="#">Service Terms</a>
+<a class="hover:text-primary transition-colors" href="#">System Status</a>
+</div>
+</section>
+</main>
+<!-- Decorative Element -->
+<div class="fixed bottom-0 right-0 p-8 opacity-20 pointer-events-none hidden lg:block">
+<span class="material-symbols-outlined text-[200px] text-primary select-none" data-icon="hub">hub</span>
+</div>
+</body></html>

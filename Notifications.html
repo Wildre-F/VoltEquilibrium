@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VoltEquilibrium | Energy Alerts</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "inverse-on-surface": "#eef1f0",
+                        "primary": "#005147",
+                        "secondary-fixed": "#d6e3ff",
+                        "on-secondary-fixed-variant": "#00468c",
+                        "on-tertiary-container": "#b5eb3e",
+                        "on-surface": "#181c1c",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#bdf447",
+                        "on-background": "#181c1c",
+                        "surface-variant": "#e0e3e2",
+                        "surface-container": "#ebeeed",
+                        "tertiary-container": "#4b6800",
+                        "primary-fixed-dim": "#83d5c5",
+                        "surface-bright": "#f7faf9",
+                        "inverse-primary": "#83d5c5",
+                        "surface-dim": "#d7dbda",
+                        "on-primary-fixed": "#00201b",
+                        "error-container": "#ffdad6",
+                        "on-error": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "tertiary": "#374e00",
+                        "on-surface-variant": "#3e4946",
+                        "background": "#f7faf9",
+                        "surface": "#f7faf9",
+                        "on-tertiary-fixed-variant": "#374e00",
+                        "primary-fixed": "#9ff2e1",
+                        "surface-container-low": "#f1f4f3",
+                        "on-secondary-fixed": "#001b3d",
+                        "on-tertiary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#005046",
+                        "secondary-fixed-dim": "#a9c7ff",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#006b5e",
+                        "on-primary-container": "#95e8d8",
+                        "surface-container-high": "#e6e9e8",
+                        "secondary-container": "#63a1ff",
+                        "on-tertiary-fixed": "#141f00",
+                        "surface-tint": "#006b5e",
+                        "surface-container-lowest": "#ffffff",
+                        "outline-variant": "#bec9c5",
+                        "outline": "#6e7976",
+                        "surface-container-highest": "#e0e3e2",
+                        "inverse-surface": "#2d3131",
+                        "secondary": "#005db6",
+                        "tertiary-fixed-dim": "#a2d729",
+                        "on-secondary-container": "#00376f"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f7faf9;
+        }
+    </style>
+</head>
+<body class="text-on-surface">
+<!-- TopNavBar -->
+<header class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl shadow-sm">
+<div class="flex justify-between items-center h-16 px-8 w-full max-w-[1920px] mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-extrabold tracking-tighter text-emerald-900 font-headline">VoltEquilibrium</span>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="font-headline font-bold tracking-tight text-emerald-600/70 hover:text-emerald-900 transition-colors" href="#">Dashboard</a>
+<a class="font-headline font-bold tracking-tight text-emerald-700 border-b-2 border-emerald-700 pb-1" href="#">Notifications</a>
+<a class="font-headline font-bold tracking-tight text-emerald-600/70 hover:text-emerald-900 transition-colors" href="#">Grid Hub</a>
+</nav>
+</div>
+<div class="flex items-center gap-4">
+<div class="relative hidden sm:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-emerald-50 border-none rounded-full text-sm focus:ring-2 focus:ring-primary w-64" placeholder="Search insights..." type="text"/>
+</div>
+<button class="p-2 hover:bg-emerald-50/50 rounded-full transition-all duration-300">
+<span class="material-symbols-outlined text-emerald-900" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 hover:bg-emerald-50/50 rounded-full transition-all duration-300">
+<span class="material-symbols-outlined text-emerald-900" data-icon="settings">settings</span>
+</button>
+<img alt="User profile avatar" class="w-8 h-8 rounded-full border border-outline-variant" data-alt="Close up of a professional man smiling" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCfZx1LmQwYqEv3FddWhZa64TZjxp-mdNi3UhDHY_x8PpyXcjp66WDLMmY4Ev9v-3qBvHUMtXkEUnC76ICWE-5j-pP-TGJmzVtgs3PD4C0N_4eP1B8Xmz2BJA1l9tJGLX9zywiTOCN0tbAj1RStb-Yc0AKxTPpQTBGqnCBOPlrhVu09Ts39_LRabT-h861u2AfliINxlHDgj0KGrceF4AnECYgpmyhczH746ucflEBIan3UkC5GcuwL2Kr21XM05RkRPSbLA-mDIrU"/>
+</div>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-emerald-50 flex flex-col p-6 gap-y-2 hidden lg:flex">
+<div class="mb-8 px-2">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-white" data-icon="electric_bolt" style="font-variation-settings: 'FILL' 1;">electric_bolt</span>
+</div>
+<div>
+<h2 class="text-lg font-bold text-emerald-900 font-headline">Renewable Hub</h2>
+<p class="text-xs text-emerald-700/60 font-label">Community Grid</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 hover:bg-emerald-100 rounded-xl transition-transform duration-200 hover:translate-x-1 font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-white text-emerald-900 rounded-xl shadow-sm font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="notifications" style="font-variation-settings: 'FILL' 1;">notifications</span>
+                Notifications
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 hover:bg-emerald-100 rounded-xl transition-transform duration-200 hover:translate-x-1 font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="electric_bolt">electric_bolt</span>
+                Energy Requests
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 hover:bg-emerald-100 rounded-xl transition-transform duration-200 hover:translate-x-1 font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="auto_awesome">auto_awesome</span>
+                Recommendations
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 hover:bg-emerald-100 rounded-xl transition-transform duration-200 hover:translate-x-1 font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+                Community Sharing
+            </a>
+</nav>
+<div class="mt-auto pt-6 border-t border-emerald-100/50 space-y-1">
+<button class="w-full bg-gradient-to-br from-primary to-primary-container text-white py-3 rounded-full font-label text-sm font-bold uppercase tracking-wider mb-4 hover:opacity-90 transition-opacity">
+                New Request
+            </button>
+<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 hover:bg-emerald-100 rounded-xl transition-transform duration-200 hover:translate-x-1 font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                Support
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 hover:bg-emerald-100 rounded-xl transition-transform duration-200 hover:translate-x-1 font-semibold text-sm" href="#">
+<span class="material-symbols-outlined" data-icon="logout">logout</span>
+                Sign Out
+            </a>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="lg:ml-64 pt-24 px-8 pb-12 min-h-screen">
+<div class="max-w-5xl mx-auto">
+<!-- Header Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
+<div>
+<h1 class="text-4xl font-extrabold font-headline tracking-tight text-on-surface">Energy Alerts</h1>
+<p class="text-on-surface-variant mt-2 max-w-lg">Real-time monitoring of your grid performance and community sustainability metrics.</p>
+</div>
+<div class="flex items-center gap-3 bg-surface-container-low p-1.5 rounded-full">
+<button class="px-6 py-2 bg-white rounded-full text-sm font-bold shadow-sm">All Alerts</button>
+<button class="px-6 py-2 text-on-surface-variant hover:text-on-surface text-sm font-semibold transition-colors">Critical Only</button>
+</div>
+</div>
+<!-- Notifications Bento/List Grid -->
+<div class="space-y-4">
+<!-- Notification Card: Critical -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 transition-all duration-300 group hover:bg-surface-bright flex flex-col md:flex-row gap-6 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-error"></div>
+<div class="flex-shrink-0">
+<div class="w-14 h-14 rounded-2xl bg-error-container flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-3xl" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+<div class="flex-grow space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="bg-error-container text-on-error-container text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest font-label">Critical</span>
+<span class="text-xs text-outline font-label">2 hours ago</span>
+</div>
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div>
+<h3 class="text-xl font-bold font-headline text-on-surface">Low wind energy predicted tomorrow</h3>
+<p class="text-on-surface-variant mt-1">Local turbines expected to drop below 15% efficiency due to static air pressure. Adjust high-consumption tasks to tonight.</p>
+</div>
+<div class="flex flex-wrap gap-3 pt-2">
+<button class="bg-primary text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-primary-container transition-colors">Adjust usage</button>
+<button class="bg-surface-container-highest text-on-surface px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-surface-container-high transition-colors">View details</button>
+</div>
+</div>
+</div>
+<!-- Notification Card: Informational -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 transition-all duration-300 group hover:bg-surface-bright flex flex-col md:flex-row gap-6 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-secondary"></div>
+<div class="flex-shrink-0">
+<div class="w-14 h-14 rounded-2xl bg-secondary-fixed flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-3xl" data-icon="info" style="font-variation-settings: 'FILL' 1;">info</span>
+</div>
+</div>
+<div class="flex-grow space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="bg-secondary-fixed text-on-secondary-fixed-variant text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest font-label">Informational</span>
+<span class="text-xs text-outline font-label">5 hours ago</span>
+</div>
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div>
+<h3 class="text-xl font-bold font-headline text-on-surface">High community demand</h3>
+<p class="text-on-surface-variant mt-1">The Sector 4 grid is currently at peak capacity. You have 12kWh of surplus stored. Would you like to share with the neighborhood?</p>
+</div>
+<div class="flex flex-wrap gap-3 pt-2">
+<button class="bg-gradient-to-br from-primary to-primary-container text-white px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest hover:opacity-90 transition-opacity">Share energy</button>
+<button class="text-secondary px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest hover:bg-secondary-fixed transition-colors">Dismiss</button>
+</div>
+</div>
+</div>
+<!-- Section: Summary Insights (Asymmetric Layout) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+<div class="md:col-span-2 bg-primary rounded-2xl p-8 text-white relative overflow-hidden">
+<div class="absolute -right-12 -top-12 w-48 h-48 bg-primary-container rounded-full opacity-50 blur-3xl"></div>
+<div class="relative z-10 flex flex-col h-full justify-between gap-8">
+<div>
+<h4 class="text-primary-fixed font-label text-xs font-bold uppercase tracking-widest mb-2">Efficiency Insight</h4>
+<h3 class="text-3xl font-headline font-extrabold leading-tight">Your storage is 92% full and ready for the predicted outage.</h3>
+</div>
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-4xl text-tertiary-fixed" data-icon="bolt">bolt</span>
+<div class="h-1 w-full bg-primary-container rounded-full overflow-hidden">
+<div class="h-full bg-tertiary-fixed w-[92%]"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-tertiary-container rounded-2xl p-8 text-on-tertiary-container flex flex-col justify-between">
+<span class="material-symbols-outlined text-4xl" data-icon="eco">eco</span>
+<div>
+<p class="text-4xl font-headline font-extrabold">+12%</p>
+<p class="text-sm font-semibold opacity-80 mt-1">Sustainability Score this week</p>
+</div>
+</div>
+</div>
+<!-- Notification Card: Low Priority -->
+<div class="bg-surface-container-lowest rounded-2xl p-6 transition-all duration-300 group hover:bg-surface-bright flex flex-col md:flex-row gap-6 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-tertiary"></div>
+<div class="flex-shrink-0">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-high flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-3xl" data-icon="check_circle">check_circle</span>
+</div>
+</div>
+<div class="flex-grow space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<span class="bg-surface-container-high text-on-surface-variant text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-widest font-label">Maintenance</span>
+<span class="text-xs text-outline font-label">Yesterday</span>
+</div>
+<button class="text-outline hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="more_vert">more_vert</span>
+</button>
+</div>
+<div>
+<h3 class="text-xl font-bold font-headline text-on-surface">Monthly Solar Scrub Complete</h3>
+<p class="text-on-surface-variant mt-1">Automated panel cleaning has finished for Array B. Efficiency has increased by 4.2%.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Empty State / Footer -->
+<div class="mt-12 text-center py-12 border-t border-outline-variant/20">
+<p class="text-on-surface-variant text-sm font-semibold mb-4">No more alerts at this time.</p>
+<button class="flex items-center gap-2 mx-auto text-primary font-bold text-sm uppercase tracking-widest hover:gap-3 transition-all">
+                    View Alert History
+                    <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</div>
+</main>
+<!-- Bottom Nav for Mobile -->
+<nav class="md:hidden fixed bottom-0 w-full bg-white/90 backdrop-blur-xl border-t-0 py-3 px-6 flex justify-around items-center z-50">
+<button class="flex flex-col items-center gap-1 text-emerald-600/70">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="text-[10px] font-bold uppercase">Home</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-emerald-900">
+<span class="material-symbols-outlined" data-icon="notifications" style="font-variation-settings: 'FILL' 1;">notifications</span>
+<span class="text-[10px] font-bold uppercase">Alerts</span>
+</button>
+<div class="-mt-8">
+<button class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white shadow-lg">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+</button>
+</div>
+<button class="flex flex-col items-center gap-1 text-emerald-600/70">
+<span class="material-symbols-outlined" data-icon="bolt">bolt</span>
+<span class="text-[10px] font-bold uppercase">Usage</span>
+</button>
+<button class="flex flex-col items-center gap-1 text-emerald-600/70">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="text-[10px] font-bold uppercase">Profile</span>
+</button>
+</nav>
+</body></html>
+
