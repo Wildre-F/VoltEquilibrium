@@ -1,0 +1,132 @@
+    .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+      }
+      .kinetic-gradient {
+        background: linear-gradient(135deg, #005147 0%, #006b5e 100%);
+      }
+      /* Shake animation for errors */
+      @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+      }
+      .shake {
+        animation: shake 0.3s ease-in-out;
+      }
+      /* Loading spinner */
+      .spinner {
+        border: 2px solid rgba(255,255,255,0.3);
+        border-radius: 50%;
+        border-top: 2px solid white;
+        width: 20px;
+        height: 20px;
+        animation: spin 1s linear infinite;
+        display: inline-block;
+        margin-right: 8px;
+        vertical-align: middle;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      /* Toast notification */
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        padding: 16px 24px;
+        border-radius: 12px;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        z-index: 1000;
+        transform: translateX(400px);
+        transition: transform 0.3s ease-out;
+        max-width: 350px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+      }
+      .toast.show {
+        transform: translateX(0);
+      }
+      .toast-success {
+        background: #005147;
+        color: white;
+      }
+      .toast-error {
+        background: #ba1a1a;
+        color: white;
+      }
+      .toast-info {
+        background: #005db6;
+        color: white;
+      }
+      /* Input error state */
+      .input-error {
+        ring: 2px solid #ba1a1a !important;
+        background-color: #ffdad6 !important;
+      }
+      /* Smooth transitions */
+      .transition-all {
+        transition-property: all;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 200ms;
+      }
+      /* 3D Flip Card Styles - FIXED */
+      .flip-container {
+        perspective: 2000px;
+        width: 100%;
+        max-width: 28rem;
+        margin: 0 auto;
+        position: relative;
+      }
+      .flipper {
+        position: relative;
+        width: 100%;
+        transform-style: preserve-3d;
+        transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: stretch;
+      }
+      .flipper.flipped {
+        transform: rotateY(180deg);
+      }
+      .flip-front, .flip-back {
+        width: 100%;
+        flex-shrink: 0;
+        backface-visibility: hidden;
+        -webkit-backface-visibility: hidden;
+        background: inherit;
+      }
+      .flip-back {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        transform: rotateY(180deg);
+        overflow-y: auto;
+        max-height: 70vh;
+      }
+      .flip-front {
+        position: relative;
+      }
+      /* Custom scrollbar for register form */
+      .flip-back::-webkit-scrollbar {
+        width: 6px;
+      }
+      .flip-back::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .flip-back::-webkit-scrollbar-thumb {
+        background-color: rgba(0, 81, 71, 0.3);
+        border-radius: 20px;
+      }
+      /* Section padding adjustments for scroll */
+      .form-section {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
