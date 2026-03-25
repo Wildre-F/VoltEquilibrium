@@ -311,7 +311,7 @@
                 localStorage.removeItem('voltequilibrium-email');
             }
             
-            setTimeout(() => window.location.href = '/dashboard', 1500);
+            setTimeout(() => window.location.href = '../frontend/dashboard.html', 1500);
         } catch (err) {
             showToast(err.message, 'error');
             shakeElement(document.getElementById('login-form'));
