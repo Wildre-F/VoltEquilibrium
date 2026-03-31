@@ -3,21 +3,21 @@
  * Handles authentication, validation, theme switching, and 3D flip animation
  */
 
-(function() {
+(function () {
     'use strict';
 
     // ==========================================
     // CONFIGURATION & STATE
     // ==========================================
-    
+
     const CONFIG = {
         minPasswordLength: 8,
         networkHealthUpdateInterval: 5000,
         apiEndpoints: {
-            login: '/api/auth/login',
-            register: '/api/auth/register',
-            google: '/api/auth/google',
-            microsoft: '/api/auth/microsoft',
+            login: 'http://localhost:3000/api/login',
+            register: 'http://localhost:3000/api/register',
+            google: 'http://localhost:3000/api/auth/google',
+            microsoft: 'http://localhost:3000/api/auth/microsoft',
             forgotPassword: '/api/auth/forgot-password'
         }
     };
@@ -45,7 +45,7 @@
                 <span>${message}</span>
             </div>
         `;
-        
+
         document.body.appendChild(toast);
         requestAnimationFrame(() => toast.classList.add('show'));
 
@@ -61,7 +61,7 @@
 
     function debounce(func, wait) {
         let timeout;
-        return function(...args) {
+        return function (...args) {
             clearTimeout(timeout);
             timeout = setTimeout(() => func.apply(this, args), wait);
         };
@@ -81,7 +81,7 @@
         flipper.classList.add('flipped');
         state.isFlipped = true;
         clearAllErrors();
-        
+
         // Adjust container height for register form
         const backSide = document.querySelector('.flip-back');
         if (backSide) {
@@ -94,7 +94,7 @@
         flipper.classList.remove('flipped');
         state.isFlipped = false;
         clearAllErrors();
-        
+
         // Reset scroll position
         const backSide = document.querySelector('.flip-back');
         if (backSide) {
@@ -109,7 +109,7 @@
     function initTheme() {
         const savedTheme = localStorage.getItem('voltequilibrium-theme');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
+
         if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
             enableDarkMode();
         } else {
@@ -145,9 +145,9 @@
     function setupPasswordToggle(inputId, iconId) {
         const input = document.getElementById(inputId);
         const icon = document.getElementById(iconId);
-        
+
         if (!input || !icon) return;
-        
+
         icon.parentElement.addEventListener('click', () => {
             if (input.type === 'password') {
                 input.type = 'text';
@@ -228,7 +228,6 @@
         const firstname = document.getElementById('reg-firstname').value.trim();
         const lastname = document.getElementById('reg-lastname').value.trim();
         const email = document.getElementById('reg-email').value.trim();
-        const org = document.getElementById('reg-organization').value.trim();
         const password = document.getElementById('reg-password').value;
         const confirm = document.getElementById('reg-confirm').value;
         const terms = document.getElementById('reg-terms').checked;
@@ -243,10 +242,6 @@
         }
         if (!email || !isValidEmail(email)) {
             showError('reg-email', 'reg-email-error', !email ? 'Email required' : 'Invalid email');
-            valid = false;
-        }
-        if (!org) {
-            showError('reg-organization', 'reg-organization-error', 'Organization required');
             valid = false;
         }
         if (!password || password.length < CONFIG.minPasswordLength) {
@@ -265,7 +260,7 @@
             valid = false;
         }
 
-        return valid ? { firstname, lastname, email, organization: org, password } : null;
+        return valid ? { firstname, lastname, email, password } : null;
     }
 
     // ==========================================
@@ -275,7 +270,7 @@
     function setLoading(btnId, textId, isLoading, defaultText) {
         const btn = document.getElementById(btnId);
         const text = document.getElementById(textId);
-        
+
         if (isLoading) {
             btn.disabled = true;
             text.innerHTML = '<span class="spinner"></span>Processing...';
@@ -297,12 +292,19 @@
             return;
         }
 
+        state.isLoading = true;
         setLoading('login-submit-btn', 'login-btn-text', true, 'Sign In to Hub');
 
         try {
-            await simulateAPI('login', data);
+            const result = await callAPI(CONFIG.apiEndpoints.login, {
+                email: data.email,
+                password: data.password
+            });
+
+            localStorage.setItem('authToken', result.token);
+
             showToast('Welcome back! Redirecting...', 'success');
-            
+
             if (data.remember) {
                 localStorage.setItem('voltequilibrium-remember', 'true');
                 localStorage.setItem('voltequilibrium-email', data.email);
@@ -310,12 +312,15 @@
                 localStorage.removeItem('voltequilibrium-remember');
                 localStorage.removeItem('voltequilibrium-email');
             }
-            
-            setTimeout(() => window.location.href = '../frontend/dashboard.html', 1500);
+
+            setTimeout(() => {
+                window.location.href = '../frontend/dashboard.html';
+            }, 1500);
         } catch (err) {
             showToast(err.message, 'error');
             shakeElement(document.getElementById('login-form'));
         } finally {
+            state.isLoading = false;
             setLoading('login-submit-btn', 'login-btn-text', false, 'Sign In to Hub');
         }
     }
@@ -329,41 +334,47 @@
             showToast('Please fix the errors', 'error');
             return;
         }
-
+        state.isLoading = true;
         setLoading('register-submit-btn', 'register-btn-text', true, 'Request Access');
 
         try {
-            await simulateAPI('register', data);
-            showToast('Access request submitted! Check your email.', 'success');
-            
+            await callAPI(CONFIG.apiEndpoints.register, {
+                username: `${data.firstname} ${data.lastname}`,
+                email: data.email,
+                password: data.password
+            });
+
+            showToast('Registration successful! You can now sign in.', 'success');
+
             setTimeout(() => {
                 flipToLogin();
                 document.getElementById('login-email').value = data.email;
                 document.getElementById('login-password').focus();
-            }, 2000);
+            }, 1500);
         } catch (err) {
             showToast(err.message, 'error');
         } finally {
+            state.isLoading = false;
             setLoading('register-submit-btn', 'register-btn-text', false, 'Request Access');
         }
     }
 
-    function simulateAPI(endpoint, data) {
-        return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                if (endpoint === 'login') {
-                    if (data.email === 'demo@voltequilibrium.com' && data.password === 'password123') {
-                        resolve({ token: 'demo-token' });
-                    } else if (data.email.includes('@') && data.password.length >= 6) {
-                        resolve({ token: 'auto-token' });
-                    } else {
-                        reject(new Error('Invalid credentials. Try demo@voltequilibrium.com / password123'));
-                    }
-                } else {
-                    resolve({ success: true });
-                }
-            }, 1500);
+    async function callAPI(url, data) {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.message || 'Request failed');
+        }
+
+        return result;
     }
 
     // ==========================================
@@ -384,7 +395,7 @@
         const fluctuation = (Math.random() - 0.5) * 0.4;
         state.networkHealth = Math.min(99.9, Math.max(95, state.networkHealth + fluctuation));
         el.textContent = state.networkHealth.toFixed(1) + '%';
-        
+
         if (state.networkHealth > 98) el.className = 'text-4xl font-headline font-bold text-white';
         else if (state.networkHealth > 95) el.className = 'text-4xl font-headline font-bold text-tertiary-fixed';
         else el.className = 'text-4xl font-headline font-bold text-error';
@@ -412,13 +423,13 @@
     function setupRealTimeValidation(inputId, errorId, validator) {
         const input = document.getElementById(inputId);
         if (!input) return;
-        
+
         const debounced = debounce(() => {
             if (input.value && validator(input.value)) {
                 clearError(inputId, errorId);
             }
         }, 500);
-        
+
         input.addEventListener('input', debounced);
         input.addEventListener('focus', () => clearError(inputId, errorId));
     }
@@ -458,41 +469,41 @@
     function init() {
         initTheme();
         checkRememberedUser();
-        
+
         // Flip controls
         document.getElementById('show-register').addEventListener('click', flipToRegister);
         document.getElementById('show-login').addEventListener('click', flipToLogin);
-        
+
         // Theme
         document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
-        
+
         // Password toggles
         setupPasswordToggle('login-password', 'login-password-icon');
         setupPasswordToggle('reg-password', 'reg-password-icon');
-        
+
         // Forms
         document.getElementById('login-form').addEventListener('submit', handleLogin);
         document.getElementById('register-form').addEventListener('submit', handleRegister);
-        
+
         // Social
         document.getElementById('google-login').addEventListener('click', () => handleSocial('Google', 'Login'));
         document.getElementById('microsoft-login').addEventListener('click', () => handleSocial('Microsoft', 'Login'));
         document.getElementById('google-register').addEventListener('click', () => handleSocial('Google', 'Sign Up'));
         document.getElementById('microsoft-register').addEventListener('click', () => handleSocial('Microsoft', 'Sign Up'));
-        
+
         // Forgot password
         document.getElementById('forgot-password').addEventListener('click', handleForgotPassword);
-        
+
         // Real-time validation
         setupRealTimeValidation('login-email', 'login-email-error', isValidEmail);
         setupRealTimeValidation('reg-email', 'reg-email-error', isValidEmail);
-        
+
         // Keyboard shortcuts
         setupKeyboardShortcuts();
-        
+
         // Network health
         setInterval(updateNetworkHealth, CONFIG.networkHealthUpdateInterval);
-        
+
         // Welcome
         console.log('%c⚡ VoltEquilibrium', 'color: #005147; font-size: 24px; font-weight: bold;');
         setTimeout(() => showToast('Welcome to VoltEquilibrium', 'info', 2000), 500);
