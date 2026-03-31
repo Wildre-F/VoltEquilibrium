@@ -74,27 +74,209 @@
         },
       }
     </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-        .asset-pulse {
-            animation: pulse-scale 4s infinite ease-in-out;
-        }
-        @keyframes pulse-scale {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.02); }
-        }
-        body {
-            background-color: #f7faf9;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #181c1c;
-        }
-    </style>
+<link rel="stylesheet" href="../CSS/dashboard.css">
+<base target="_blank">
 </head>
 <body class="bg-background text-on-surface antialiased">
+
+<!-- Detail Panel (Slide-out) -->
+<div id="detail-panel" class="fixed inset-y-0 right-0 w-full md:w-[480px] bg-surface-container-lowest shadow-2xl transform translate-x-full transition-transform duration-300 z-50 overflow-y-auto">
+    <div class="sticky top-0 bg-surface-container-lowest/95 backdrop-blur-sm border-b border-outline-variant/20 p-6 flex justify-between items-center">
+        <div>
+            <h3 class="text-xl font-bold text-primary font-headline">Generation Breakdown</h3>
+            <p class="text-xs text-on-surface-variant/60 mt-1">Real-time telemetry • Updates every 2s</p>
+        </div>
+        <button id="close-detail" class="p-2 hover:bg-surface-container-low rounded-full transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant">close</span>
+        </button>
+    </div>
+
+    <div class="p-6 space-y-6">
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-surface-container-low rounded-xl p-4">
+                <div class="text-xs uppercase text-on-surface-variant/60 font-bold mb-1">Total Output</div>
+                <div class="text-2xl font-bold text-primary" id="detail-total">12.4 MW</div>
+                <div class="text-xs text-tertiary mt-1 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">trending_up</span>
+                    +3.2% vs last hour
+                </div>
+            </div>
+            <div class="bg-surface-container-low rounded-xl p-4">
+                <div class="text-xs uppercase text-on-surface-variant/60 font-bold mb-1">Uptime</div>
+                <div class="text-2xl font-bold text-primary">99.8%</div>
+                <div class="text-xs text-on-surface-variant/60 mt-1">Last 30 days</div>
+            </div>
+        </div>
+
+        <!-- Solar Arrays -->
+        <div>
+            <h4 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant/60 mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary text-base">solar_power</span>
+                Solar Arrays
+            </h4>
+            <div class="space-y-3" id="solar-arrays">
+                <div class="bg-surface-container-low rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                            <span class="text-sm font-semibold">Solar Array A (North)</span>
+                        </div>
+                        <span class="text-sm font-bold text-secondary" id="solar-a">4.1 MW</span>
+                    </div>
+                    <div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+                        <div class="bg-secondary h-full rounded-full detail-bar" style="width: 85%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-on-surface-variant/60 mt-2">
+                        <span>Panel temp: <span id="temp-a">34°C</span></span>
+                        <span>Irradiance: <span id="irr-a">892 W/m²</span></span>
+                        <span>Eff: <span id="eff-a">21.4%</span></span>
+                    </div>
+                </div>
+
+                <div class="bg-surface-container-low rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                            <span class="text-sm font-semibold">Solar Array B (South)</span>
+                        </div>
+                        <span class="text-sm font-bold text-secondary" id="solar-b">4.1 MW</span>
+                    </div>
+                    <div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+                        <div class="bg-secondary h-full rounded-full detail-bar" style="width: 78%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-on-surface-variant/60 mt-2">
+                        <span>Panel temp: <span id="temp-b">36°C</span></span>
+                        <span>Irradiance: <span id="irr-b">856 W/m²</span></span>
+                        <span>Eff: <span id="eff-b">20.8%</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wind Turbines -->
+        <div>
+            <h4 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant/60 mb-3 flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary text-base">air</span>
+                Wind Turbines
+            </h4>
+            <div class="space-y-3" id="wind-turbines">
+                <div class="bg-surface-container-low rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                            <span class="text-sm font-semibold">Turbine WT-01</span>
+                        </div>
+                        <span class="text-sm font-bold text-secondary" id="wind-1">2.8 MW</span>
+                    </div>
+                    <div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+                        <div class="bg-secondary h-full rounded-full detail-bar" style="width: 72%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-on-surface-variant/60 mt-2">
+                        <span>Wind: <span id="wind-speed-1">14 m/s</span></span>
+                        <span>Rotor: <span id="rotor-1">18 RPM</span></span>
+                        <span>Pitch: <span id="pitch-1">12°</span></span>
+                    </div>
+                </div>
+
+                <div class="bg-surface-container-low rounded-xl p-4">
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span>
+                            <span class="text-sm font-semibold">Turbine WT-02</span>
+                        </div>
+                        <span class="text-sm font-bold text-secondary" id="wind-2">1.4 MW</span>
+                    </div>
+                    <div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+                        <div class="bg-secondary h-full rounded-full detail-bar" style="width: 45%"></div>
+                    </div>
+                    <div class="flex justify-between text-xs text-on-surface-variant/60 mt-2">
+                        <span>Wind: <span id="wind-speed-2">9 m/s</span></span>
+                        <span>Rotor: <span id="rotor-2">12 RPM</span></span>
+                        <span>Pitch: <span id="pitch-2">8°</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid Health -->
+        <div class="bg-surface-container-high rounded-xl p-4 border border-outline-variant/20">
+            <h4 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant/60 mb-3">Grid Parameters</h4>
+            <div class="grid grid-cols-3 gap-4">
+                <div class="text-center">
+                    <div class="text-xs text-on-surface-variant/60 mb-1">Frequency</div>
+                    <div class="text-lg font-bold text-primary" id="grid-freq">50.02 Hz</div>
+                </div>
+                <div class="text-center border-x border-outline-variant/20">
+                    <div class="text-xs text-on-surface-variant/60 mb-1">Voltage</div>
+                    <div class="text-lg font-bold text-primary" id="grid-voltage">11.2 kV</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-xs text-on-surface-variant/60 mb-1">Power Factor</div>
+                    <div class="text-lg font-bold text-primary" id="grid-pf">0.94</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Predictive Chart -->
+        <div>
+            <h4 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant/60 mb-3">Predicted Output (Next 4 Hours)</h4>
+            <div class="bg-surface-container-low rounded-xl p-4">
+                <div class="flex items-end gap-2 h-32 mb-2" id="predictive-bars">
+                    <div class="flex-1 bg-primary-fixed/40 rounded-t-lg relative group cursor-pointer" style="height: 65%">
+                        <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-high px-2 py-1 rounded">8.2 MW</div>
+                    </div>
+                    <div class="flex-1 bg-primary-fixed/50 rounded-t-lg relative group cursor-pointer" style="height: 72%">
+                        <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-high px-2 py-1 rounded">9.1 MW</div>
+                    </div>
+                    <div class="flex-1 bg-primary-fixed/60 rounded-t-lg relative group cursor-pointer" style="height: 85%">
+                        <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-high px-2 py-1 rounded">10.8 MW</div>
+                    </div>
+                    <div class="flex-1 bg-primary-fixed/40 rounded-t-lg relative group cursor-pointer" style="height: 78%">
+                        <div class="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity bg-surface-container-high px-2 py-1 rounded">9.9 MW</div>
+                    </div>
+                </div>
+                <div class="flex justify-between text-xs text-on-surface-variant/40">
+                    <span>+1h</span>
+                    <span>+2h</span>
+                    <span>+3h</span>
+                    <span>+4h</span>
+                </div>
+                <div class="mt-3 text-xs text-on-surface-variant/60 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-xs">info</span>
+                    Based on weather forecast and historical patterns
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Alerts -->
+        <div>
+            <h4 class="text-sm font-bold uppercase tracking-wider text-on-surface-variant/60 mb-3">Active Alerts</h4>
+            <div id="alerts-list" class="space-y-2">
+                <div class="bg-tertiary-fixed/20 border border-tertiary/20 rounded-xl p-3 flex items-start gap-3">
+                    <span class="material-symbols-outlined text-tertiary text-sm mt-0.5">info</span>
+                    <div>
+                        <div class="text-sm font-semibold">Inverter 3 at 98% capacity</div>
+                        <div class="text-xs text-on-surface-variant/60">Consider load balancing</div>
+                    </div>
+                </div>
+                <div class="bg-secondary-fixed/20 border border-secondary/20 rounded-xl p-3 flex items-start gap-3">
+                    <span class="material-symbols-outlined text-secondary text-sm mt-0.5">schedule</span>
+                    <div>
+                        <div class="text-sm font-semibold">Maintenance scheduled</div>
+                        <div class="text-xs text-on-surface-variant/60">Turbine WT-02 • Tomorrow 02:00</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay -->
+<div id="detail-overlay" class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
 <!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto border-none">
+<nav class="fixed top-0 w-full z-30 bg-white/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto border-none">
 <div class="flex items-center gap-8">
 <span class="text-2xl font-extrabold tracking-tighter text-primary font-headline">VoltEquilibrium</span>
 <div class="hidden md:flex items-center gap-6">
@@ -116,7 +298,7 @@
 </div>
 </nav>
 <!-- SideNavBar -->
-<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-surface-container-low flex flex-col p-6 gap-y-2 border-none hidden md:flex">
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-surface-container-low flex flex-col p-6 gap-y-2 border-none hidden md:flex z-20">
 <div class="mb-8">
 <h3 class="text-lg font-bold text-primary font-headline">Renewable Hub</h3>
 <p class="text-xs font-semibold text-on-surface-variant/60 font-body">Community Grid</p>
@@ -182,52 +364,52 @@
 <div class="flex justify-between items-start">
 <div>
 <span class="text-xs font-bold font-label text-on-surface-variant/60 uppercase tracking-widest">Live Generation</span>
-<h2 class="text-6xl font-extrabold font-headline text-primary mt-2">12.4 <span class="text-2xl text-on-surface-variant/40">MW</span></h2>
+<h2 class="text-6xl font-extrabold font-headline text-primary mt-2" id="live-generation">12.4 <span class="text-2xl text-on-surface-variant/40">MW</span></h2>
 </div>
 <div class="flex gap-2">
 <div class="bg-surface-container-high p-3 rounded-xl flex items-center gap-3">
 <span class="material-symbols-outlined text-secondary" data-icon="solar_power">solar_power</span>
 <div class="flex flex-col">
 <span class="text-[10px] font-bold text-on-surface-variant/50 uppercase">Solar</span>
-<span class="text-sm font-bold">8.2 MW</span>
+<span class="text-sm font-bold" id="solar-value">8.2 MW</span>
 </div>
 </div>
 <div class="bg-surface-container-high p-3 rounded-xl flex items-center gap-3">
 <span class="material-symbols-outlined text-secondary" data-icon="air">air</span>
 <div class="flex flex-col">
 <span class="text-[10px] font-bold text-on-surface-variant/50 uppercase">Wind</span>
-<span class="text-sm font-bold">4.2 MW</span>
+<span class="text-sm font-bold" id="wind-value">4.2 MW</span>
 </div>
 </div>
 </div>
 </div>
 <!-- Abstract Chart Visualization -->
-<div class="mt-8 flex items-end gap-1 h-32 w-full">
-<div class="flex-1 bg-primary-fixed/20 rounded-t-lg" style="height: 40%"></div>
-<div class="flex-1 bg-primary-fixed/30 rounded-t-lg" style="height: 55%"></div>
-<div class="flex-1 bg-primary-fixed/40 rounded-t-lg" style="height: 45%"></div>
-<div class="flex-1 bg-primary-fixed/50 rounded-t-lg" style="height: 70%"></div>
-<div class="flex-1 bg-primary-fixed/60 rounded-t-lg" style="height: 85%"></div>
-<div class="flex-1 bg-primary-fixed/40 rounded-t-lg" style="height: 60%"></div>
-<div class="flex-1 bg-primary-fixed/30 rounded-t-lg" style="height: 50%"></div>
-<div class="flex-1 bg-primary-fixed/50 rounded-t-lg" style="height: 75%"></div>
-<div class="flex-1 bg-primary-fixed/70 rounded-t-lg" style="height: 95%"></div>
-<div class="flex-1 bg-primary-fixed/40 rounded-t-lg" style="height: 65%"></div>
-<div class="flex-1 bg-primary-fixed/30 rounded-t-lg" style="height: 40%"></div>
-<div class="flex-1 bg-primary-fixed/20 rounded-t-lg" style="height: 30%"></div>
+<div class="mt-8 flex items-end gap-1 h-32 w-full" id="live-bars">
+<div class="flex-1 bg-primary-fixed/20 rounded-t-lg transition-all duration-500" style="height: 40%"></div>
+<div class="flex-1 bg-primary-fixed/30 rounded-t-lg transition-all duration-500" style="height: 55%"></div>
+<div class="flex-1 bg-primary-fixed/40 rounded-t-lg transition-all duration-500" style="height: 45%"></div>
+<div class="flex-1 bg-primary-fixed/50 rounded-t-lg transition-all duration-500" style="height: 70%"></div>
+<div class="flex-1 bg-primary-fixed/60 rounded-t-lg transition-all duration-500" style="height: 85%"></div>
+<div class="flex-1 bg-primary-fixed/40 rounded-t-lg transition-all duration-500" style="height: 60%"></div>
+<div class="flex-1 bg-primary-fixed/30 rounded-t-lg transition-all duration-500" style="height: 50%"></div>
+<div class="flex-1 bg-primary-fixed/50 rounded-t-lg transition-all duration-500" style="height: 75%"></div>
+<div class="flex-1 bg-primary-fixed/70 rounded-t-lg transition-all duration-500" style="height: 95%"></div>
+<div class="flex-1 bg-primary-fixed/40 rounded-t-lg transition-all duration-500" style="height: 65%"></div>
+<div class="flex-1 bg-primary-fixed/30 rounded-t-lg transition-all duration-500" style="height: 40%"></div>
+<div class="flex-1 bg-primary-fixed/20 rounded-t-lg transition-all duration-500" style="height: 30%"></div>
 </div>
 <div class="flex justify-between items-center mt-6 pt-6 border-t border-outline-variant/10">
 <div class="flex gap-6">
 <div class="flex flex-col">
 <span class="text-xs font-bold text-on-surface-variant/50 uppercase">Efficiency</span>
-<span class="text-lg font-bold text-tertiary">98.4%</span>
+<span class="text-lg font-bold text-tertiary" id="efficiency-value">98.4%</span>
 </div>
 <div class="flex flex-col">
 <span class="text-xs font-bold text-on-surface-variant/50 uppercase">Storage</span>
-<span class="text-lg font-bold text-secondary">82%</span>
+<span class="text-lg font-bold text-secondary" id="storage-value">82%</span>
 </div>
 </div>
-<button class="flex items-center gap-2 text-primary font-bold text-sm hover:underline">
+<button class="flex items-center gap-2 text-primary font-bold text-sm hover:underline transition-all hover:gap-3" id="view-detail-btn">
                         View Detail <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
 </button>
 </div>
@@ -244,13 +426,13 @@
 <div class="mt-8 bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/10">
 <div class="flex justify-between items-center mb-2">
 <span class="text-xs font-bold">Node Health</span>
-<span class="text-xs font-bold">Optimal</span>
+<span class="text-xs font-bold" id="node-health-text">Optimal</span>
 </div>
 <div class="w-full bg-white/20 h-1.5 rounded-full overflow-hidden">
-<div class="bg-tertiary-fixed h-full w-[92%]"></div>
+<div class="bg-tertiary-fixed h-full w-[92%] transition-all duration-1000" id="node-health-bar"></div>
 </div>
 </div>
-<button class="mt-6 w-full bg-white text-secondary py-3 rounded-full font-headline font-bold text-xs tracking-widest uppercase transition-transform active:scale-95">
+<button class="mt-6 w-full bg-white text-secondary py-3 rounded-full font-headline font-bold text-xs tracking-widest uppercase transition-transform active:scale-95 hover:shadow-lg hover:shadow-white/20" id="request-transfer-btn">
                     Request Transfer
                 </button>
 </div>
@@ -258,10 +440,10 @@
 <div class="md:col-span-7 bg-surface-container-low rounded-xl p-8">
 <div class="flex justify-between items-center mb-8">
 <h3 class="text-xl font-bold font-headline text-primary">Consumption Flow</h3>
-<div class="flex gap-2">
-<button class="px-3 py-1 text-xs font-bold rounded-lg bg-surface-container-highest text-primary">D</button>
-<button class="px-3 py-1 text-xs font-bold rounded-lg hover:bg-surface-container-highest">W</button>
-<button class="px-3 py-1 text-xs font-bold rounded-lg hover:bg-surface-container-highest">M</button>
+<div class="flex gap-2" id="time-filters">
+<button class="px-3 py-1 text-xs font-bold rounded-lg bg-surface-container-highest text-primary transition-all" data-period="D">D</button>
+<button class="px-3 py-1 text-xs font-bold rounded-lg hover:bg-surface-container-highest transition-all" data-period="W">W</button>
+<button class="px-3 py-1 text-xs font-bold rounded-lg hover:bg-surface-container-highest transition-all" data-period="M">M</button>
 </div>
 </div>
 <div class="relative h-64 w-full flex items-end justify-between px-4">
@@ -273,8 +455,8 @@
 <div class="border-b border-on-surface"></div>
 </div>
 <!-- Line Chart Simulation -->
-<svg class="absolute inset-0 h-full w-full" preserveaspectratio="none">
-<path d="M0 200 Q 50 180, 100 220 T 200 150 T 300 180 T 400 100 T 500 130 T 600 80 T 700 120" fill="none" stroke="#005db6" stroke-linecap="round" stroke-width="3"></path>
+<svg class="absolute inset-0 h-full w-full" preserveaspectratio="none" id="consumption-chart">
+<path d="M0 200 Q 50 180, 100 220 T 200 150 T 300 180 T 400 100 T 500 130 T 600 80 T 700 120" fill="none" stroke="#005db6" stroke-linecap="round" stroke-width="3" id="chart-line"></path>
 <path d="M0 200 Q 50 180, 100 220 T 200 150 T 300 180 T 400 100 T 500 130 T 600 80 T 700 120 V 256 H 0 Z" fill="url(#grad1)" opacity="0.2"></path>
 <defs>
 <lineargradient id="grad1" x1="0%" x2="0%" y1="0%" y2="100%">
@@ -284,7 +466,7 @@
 </defs>
 </svg>
 <!-- X Axis Labels -->
-<div class="absolute -bottom-6 w-full flex justify-between text-[10px] font-bold text-on-surface-variant/40 uppercase">
+<div class="absolute -bottom-6 w-full flex justify-between text-[10px] font-bold text-on-surface-variant/40 uppercase" id="chart-labels">
 <span>06:00</span>
 <span>09:00</span>
 <span>12:00</span>
@@ -296,36 +478,36 @@
 </div>
 <!-- Recommendations / Insights (Asymmetric) -->
 <div class="md:col-span-5 flex flex-col gap-6">
-<div class="bg-surface-container-high rounded-xl p-6 border-l-4 border-tertiary">
+<div class="bg-surface-container-high rounded-xl p-6 border-l-4 border-tertiary cursor-pointer hover:shadow-md transition-shadow" id="smart-tip">
 <div class="flex items-center gap-3 mb-2">
 <span class="material-symbols-outlined text-tertiary" data-icon="lightbulb">lightbulb</span>
 <span class="text-xs font-bold font-label uppercase text-on-surface">Smart Tip</span>
 </div>
-<p class="text-sm font-semibold text-on-surface leading-snug">Strong winds predicted at 14:00. Recommend shifting battery charging to turbine primary.</p>
+<p class="text-sm font-semibold text-on-surface leading-snug" id="smart-tip-text">Strong winds predicted at 14:00. Recommend shifting battery charging to turbine primary.</p>
 </div>
 <div class="grid grid-cols-2 gap-4">
-<div class="bg-white rounded-xl p-5 flex flex-col justify-center items-center text-center">
+<div class="bg-white rounded-xl p-5 flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow cursor-pointer" id="daily-save-card">
 <span class="material-symbols-outlined text-secondary mb-2" data-icon="bolt">bolt</span>
-<span class="text-2xl font-bold font-headline">42 <span class="text-xs text-on-surface-variant/40">kWh</span></span>
+<span class="text-2xl font-bold font-headline" id="daily-save-value">42 <span class="text-xs text-on-surface-variant/40">kWh</span></span>
 <span class="text-[10px] font-bold text-on-surface-variant/60 uppercase mt-1">Daily Save</span>
 </div>
-<div class="bg-white rounded-xl p-5 flex flex-col justify-center items-center text-center">
+<div class="bg-white rounded-xl p-5 flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow cursor-pointer" id="co2-card">
 <span class="material-symbols-outlined text-tertiary mb-2" data-icon="eco" style="font-variation-settings: 'FILL' 1;">eco</span>
-<span class="text-2xl font-bold font-headline">1.2 <span class="text-xs text-on-surface-variant/40">T</span></span>
+<span class="text-2xl font-bold font-headline" id="co2-value">1.2 <span class="text-xs text-on-surface-variant/40">T</span></span>
 <span class="text-[10px] font-bold text-on-surface-variant/60 uppercase mt-1">CO2 Offset</span>
 </div>
 </div>
-<div class="bg-surface-container-lowest rounded-xl p-6 flex items-center justify-between shadow-sm">
+<div class="bg-surface-container-lowest rounded-xl p-6 flex items-center justify-between shadow-sm hover:shadow-md transition-shadow cursor-pointer" id="savings-card">
 <div class="flex items-center gap-4">
 <div class="h-10 w-10 bg-primary-fixed/20 rounded-full flex items-center justify-center">
 <span class="material-symbols-outlined text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
 </div>
 <div>
 <span class="text-[10px] font-bold text-on-surface-variant/60 uppercase">Projected Savings</span>
-<p class="font-bold text-lg">$124.50 <span class="text-xs text-tertiary font-semibold">+12%</span></p>
+<p class="font-bold text-lg" id="projected-savings">$124.50 <span class="text-xs text-tertiary font-semibold">+12%</span></p>
 </div>
 </div>
-<button class="p-2 hover:bg-surface-container-low rounded-lg">
+<button class="p-2 hover:bg-surface-container-low rounded-lg transition-colors">
 <span class="material-symbols-outlined text-on-surface-variant" data-icon="chevron_right">chevron_right</span>
 </button>
 </div>
@@ -333,22 +515,27 @@
 </div>
 </main>
 <!-- BottomNavBar (Mobile Only) -->
-<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl h-16 flex items-center justify-around px-4 z-50">
-<button class="flex flex-col items-center gap-1 text-primary">
+<nav class="md:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl h-16 flex items-center justify-around px-4 z-30">
+<button class="flex flex-col items-center gap-1 text-primary nav-btn active" data-nav="home">
 <span class="material-symbols-outlined" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
 <span class="text-[10px] font-bold">Home</span>
 </button>
-<button class="flex flex-col items-center gap-1 text-on-surface-variant/50">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant/50 nav-btn" data-nav="data">
 <span class="material-symbols-outlined" data-icon="insights">insights</span>
 <span class="text-[10px] font-bold">Data</span>
 </button>
-<button class="flex flex-col items-center gap-1 text-on-surface-variant/50">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant/50 nav-btn" data-nav="nodes">
 <span class="material-symbols-outlined" data-icon="hub">hub</span>
 <span class="text-[10px] font-bold">Nodes</span>
 </button>
-<button class="flex flex-col items-center gap-1 text-on-surface-variant/50">
+<button class="flex flex-col items-center gap-1 text-on-surface-variant/50 nav-btn" data-nav="profile">
 <span class="material-symbols-outlined" data-icon="person">person</span>
 <span class="text-[10px] font-bold">Profile</span>
 </button>
 </nav>
+
+<!-- Toast Notification Container -->
+<div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2"></div>
+
+<script src="../Javascript/dashboard.js"></script>
 </body></html>
