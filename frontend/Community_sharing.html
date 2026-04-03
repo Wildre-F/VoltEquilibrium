@@ -1,347 +1,414 @@
 <!DOCTYPE html>
 
-<html class="light" lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>VoltEquilibrium - Community Energy Sharing</title>
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<!-- Material Symbols -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "inverse-on-surface": "#eef1f0",
-              "primary": "#005147",
-              "secondary-fixed": "#d6e3ff",
-              "on-secondary-fixed-variant": "#00468c",
-              "on-tertiary-container": "#b5eb3e",
-              "on-surface": "#181c1c",
-              "error": "#ba1a1a",
-              "tertiary-fixed": "#bdf447",
-              "on-background": "#181c1c",
-              "surface-variant": "#e0e3e2",
-              "surface-container": "#ebeeed",
-              "tertiary-container": "#4b6800",
-              "primary-fixed-dim": "#83d5c5",
-              "surface-bright": "#f7faf9",
-              "inverse-primary": "#83d5c5",
-              "surface-dim": "#d7dbda",
-              "on-primary-fixed": "#00201b",
-              "error-container": "#ffdad6",
-              "on-error": "#ffffff",
-              "on-primary": "#ffffff",
-              "tertiary": "#374e00",
-              "on-surface-variant": "#3e4946",
-              "background": "#f7faf9",
-              "surface": "#f7faf9",
-              "on-tertiary-fixed-variant": "#374e00",
-              "primary-fixed": "#9ff2e1",
-              "surface-container-low": "#f1f4f3",
-              "on-secondary-fixed": "#001b3d",
-              "on-tertiary": "#ffffff",
-              "on-error-container": "#93000a",
-              "on-primary-fixed-variant": "#005046",
-              "secondary-fixed-dim": "#a9c7ff",
-              "on-secondary": "#ffffff",
-              "primary-container": "#006b5e",
-              "on-primary-container": "#95e8d8",
-              "surface-container-high": "#e6e9e8",
-              "secondary-container": "#63a1ff",
-              "on-tertiary-fixed": "#141f00",
-              "surface-tint": "#006b5e",
-              "surface-container-lowest": "#ffffff",
-              "outline-variant": "#bec9c5",
-              "outline": "#6e7976",
-              "surface-container-highest": "#e0e3e2",
-              "inverse-surface": "#2d3131",
-              "secondary": "#005db6",
-              "tertiary-fixed-dim": "#a2d729",
-              "on-secondary-container": "#00376f"
-            },
-            fontFamily: {
-              "headline": ["Manrope"],
-              "body": ["Plus Jakarta Sans"],
-              "label": ["Inter"]
-            },
-            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1.5rem", "full": "9999px"},
+<html class="light" lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>VoltEquilibrium - Community Energy Sharing</title>
+  <!-- Fonts -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap"
+    rel="stylesheet" />
+  <!-- Material Symbols -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-on-surface": "#eef1f0",
+            "primary": "#005147",
+            "secondary-fixed": "#d6e3ff",
+            "on-secondary-fixed-variant": "#00468c",
+            "on-tertiary-container": "#b5eb3e",
+            "on-surface": "#181c1c",
+            "error": "#ba1a1a",
+            "tertiary-fixed": "#bdf447",
+            "on-background": "#181c1c",
+            "surface-variant": "#e0e3e2",
+            "surface-container": "#ebeeed",
+            "tertiary-container": "#4b6800",
+            "primary-fixed-dim": "#83d5c5",
+            "surface-bright": "#f7faf9",
+            "inverse-primary": "#83d5c5",
+            "surface-dim": "#d7dbda",
+            "on-primary-fixed": "#00201b",
+            "error-container": "#ffdad6",
+            "on-error": "#ffffff",
+            "on-primary": "#ffffff",
+            "tertiary": "#374e00",
+            "on-surface-variant": "#3e4946",
+            "background": "#f7faf9",
+            "surface": "#f7faf9",
+            "on-tertiary-fixed-variant": "#374e00",
+            "primary-fixed": "#9ff2e1",
+            "surface-container-low": "#f1f4f3",
+            "on-secondary-fixed": "#001b3d",
+            "on-tertiary": "#ffffff",
+            "on-error-container": "#93000a",
+            "on-primary-fixed-variant": "#005046",
+            "secondary-fixed-dim": "#a9c7ff",
+            "on-secondary": "#ffffff",
+            "primary-container": "#006b5e",
+            "on-primary-container": "#95e8d8",
+            "surface-container-high": "#e6e9e8",
+            "secondary-container": "#63a1ff",
+            "on-tertiary-fixed": "#141f00",
+            "surface-tint": "#006b5e",
+            "surface-container-lowest": "#ffffff",
+            "outline-variant": "#bec9c5",
+            "outline": "#6e7976",
+            "surface-container-highest": "#e0e3e2",
+            "inverse-surface": "#2d3131",
+            "secondary": "#005db6",
+            "tertiary-fixed-dim": "#a2d729",
+            "on-secondary-container": "#00376f"
           },
+          fontFamily: {
+            "headline": ["Manrope"],
+            "body": ["Plus Jakarta Sans"],
+            "label": ["Inter"]
+          },
+          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1.5rem", "full": "9999px" },
         },
-      }
-    </script>
-<style>
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-            display: inline-block;
-            line-height: 1;
-        }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.8);
-            backdrop-filter: blur(20px);
-        }
-    </style>
+      },
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      line-height: 1;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .glass-panel {
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(20px);
+    }
+  </style>
 </head>
+
 <body class="bg-surface text-on-surface">
-<!-- TopNavBar -->
-<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-emerald-950/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto">
-<div class="flex items-center gap-8">
-<span class="text-2xl font-extrabold tracking-tighter text-emerald-900 dark:text-emerald-50 font-headline">VoltEquilibrium</span>
-<div class="hidden md:flex items-center gap-6">
-<a class="text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-900 font-headline font-bold" href="#">Insights</a>
-<a class="text-emerald-700 dark:text-emerald-300 border-b-2 border-emerald-700 dark:border-emerald-300 pb-1 font-headline font-bold" href="#">Community</a>
-<a class="text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-900 font-headline font-bold" href="#">Grid Stats</a>
-</div>
-</div>
-<div class="flex items-center gap-4">
-<button class="p-2 hover:bg-emerald-50/50 rounded-full transition-all">
-<span class="material-symbols-outlined text-emerald-900">notifications</span>
-</button>
-<button class="p-2 hover:bg-emerald-50/50 rounded-full transition-all">
-<span class="material-symbols-outlined text-emerald-900">settings</span>
-</button>
-<div class="h-8 w-8 rounded-full bg-primary-fixed overflow-hidden">
-<img alt="User profile avatar" data-alt="User profile avatar circle" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfnnr9zFzpi0fNFsvN79m3ZGy_QsxnY-IBZ76HeHAyrttvjaaEslcBR665FJeQmR5H55bI0K6OqEKSI9ar62KE-0L1BSaZLX6Eg7k0kgNcpCYrpN3NRgMTba9hI0LoCvuixVvUXZmMAuwuDv3Rt2rp9rCnivzi9L1IdrUXamKL5MBGpEUvyASwK4Y6X0vN0RzW8pfxGSOzNdaxBootunIaWJ_6q5ETsJtREw1HkvjbpPc6TlMszgdnb6UOoTPUNjRdrTsnWo6rzr0"/>
-</div>
-</div>
-</nav>
-<div class="flex pt-16">
-<!-- SideNavBar -->
-<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-emerald-50 dark:bg-emerald-950 flex flex-col p-6 gap-y-2 font-['Plus_Jakarta_Sans'] text-sm font-semibold hidden lg:flex">
-<div class="mb-8">
-<div class="flex items-center gap-3">
-<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
-<span class="material-symbols-outlined">hub</span>
-</div>
-<div>
-<p class="text-lg font-bold text-emerald-900 dark:text-emerald-100">Renewable Hub</p>
-<p class="text-xs text-emerald-700/60">Community Grid</p>
-</div>
-</div>
-</div>
-<nav class="flex-1 space-y-1">
-<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1" href="Dashboard.html">
-<span class="material-symbols-outlined">dashboard</span>
-<span>Dashboard</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1" href="Notifications.html">
-<span class="material-symbols-outlined">notifications</span>
-<span>Notifications</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1" href="Energy_request.html">
-<span class="material-symbols-outlined">electric_bolt</span>
-<span>Energy Requests</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1" href="Recommendations.html">
-<span class="material-symbols-outlined">auto_awesome</span>
-<span>Recommendations</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-emerald-800/50 text-emerald-900 dark:text-emerald-50 rounded-xl shadow-sm" href="Community_sharing.html">
-<span class="material-symbols-outlined" data-weight="fill" style="font-variation-settings: 'FILL' 1;">groups</span>
-<span>Community Sharing</span>
-</a>
-</nav>
-<button class="mt-4 bg-gradient-to-br from-primary to-primary-container text-white py-3 px-4 rounded-full font-headline font-bold text-xs tracking-wider uppercase shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-                New Request
-            </button>
-<div class="mt-auto space-y-1">
-<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 rounded-xl transition-transform hover:translate-x-1" href="#">
-<span class="material-symbols-outlined">help</span>
-<span>Support</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 rounded-xl transition-transform hover:translate-x-1" href="#">
-<span class="material-symbols-outlined">logout</span>
-<span>Sign Out</span>
-</a>
-</div>
-</aside>
-<!-- Main Content Area -->
-<main class="flex-1 lg:ml-64 p-8 min-h-screen bg-surface">
-<!-- Header Section with Bento Elements -->
-<header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-<div class="max-w-2xl">
-<h1 class="text-4xl font-extrabold font-headline text-on-surface tracking-tight mb-2">Kinetic Equilibrium</h1>
-<p class="text-on-surface-variant font-body text-lg">Visualizing the real-time energy flow of your local collective. Every watt shared strengthens the whole.</p>
-</div>
-<div class="flex gap-4">
-<div class="bg-surface-container-low p-4 rounded-2xl flex items-center gap-4">
-<div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-primary">
-<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">eco</span>
-</div>
-<div>
-<p class="text-xs font-label uppercase tracking-widest text-on-surface-variant">Grid Health</p>
-<p class="text-xl font-bold font-headline">98.4% Optimal</p>
-</div>
-</div>
-</div>
-</header>
-<!-- Bento Grid Layout -->
-<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-<!-- Large Visual Map/Grid (8 cols) -->
-<div class="lg:col-span-8 space-y-6">
-<div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm overflow-hidden relative min-h-[500px]">
-<div class="absolute inset-0 z-0 opacity-20">
-<!-- Abstract Map Background Representation -->
-<img class="w-full h-full object-cover grayscale brightness-50" data-alt="Topographic abstract map of a city grid" data-location="Berlin" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbRUPtYnD-7p3b0Ui4vrQ__DeH3raMpBNZDtyATQ9gmRTi0NyP9jeyY7aYVO-LTQyJyc5dlFl9k0CyL_mHiS9Msx202dtlusBftTG4YIxxGldGA9Uc1lRkE6KpMm6uF4owbBEMVT4LsX1b6gf83PBRcJq7AFG5F77MliJVF3DCa_VKfOMZzyZ2coNpL5f8bnTJmZwd854Q0LS_cGaXYnTUW7AVpdBmoj-SJSdNCSXGoaZAww538adh1LjJ4FH8Evbfo_X2IX4gb0w"/>
-</div>
-<div class="relative z-10 h-full flex flex-col">
-<div class="flex justify-between items-start mb-6">
-<h3 class="text-xl font-bold font-headline">Live Network Pulse</h3>
-<div class="flex gap-2">
-<span class="px-3 py-1 bg-primary text-white text-xs font-bold rounded-full">LIVE MAP</span>
-<span class="px-3 py-1 bg-surface-container text-on-surface text-xs font-bold rounded-full">ACTIVE FLOWS: 24</span>
-</div>
-</div>
-<!-- Visual Connection Elements (Simulated) -->
-<div class="flex-1 relative flex items-center justify-center">
-<!-- Node: Giver -->
-<div class="absolute top-1/4 left-1/4 group cursor-pointer">
-<div class="relative w-16 h-16 rounded-full bg-tertiary/20 flex items-center justify-center animate-pulse">
-<div class="w-10 h-10 rounded-full bg-tertiary flex items-center justify-center text-white shadow-lg shadow-tertiary/40">
-<span class="material-symbols-outlined">bolt</span>
-</div>
-</div>
-<div class="absolute -top-12 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-lg shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-<p class="text-xs font-bold">Solar House #4</p>
-<p class="text-[10px] text-tertiary font-bold">+4.2 kWh surplus</p>
-</div>
-</div>
-<!-- Node: Receiver -->
-<div class="absolute bottom-1/3 right-1/4 group cursor-pointer">
-<div class="relative w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
-<div class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-white shadow-lg shadow-secondary/40">
-<span class="material-symbols-outlined">home</span>
-</div>
-</div>
-<div class="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-lg shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-<p class="text-xs font-bold">The Green Bakery</p>
-<p class="text-[10px] text-error font-bold">-2.1 kWh requested</p>
-</div>
-</div>
-<!-- Connection Line (SVG) -->
-<svg class="absolute inset-0 w-full h-full pointer-events-none" viewbox="0 0 800 400">
-<path class="opacity-60" d="M 220 120 Q 400 200 600 260" fill="transparent" stroke="#bdf447" stroke-dasharray="10,5" stroke-width="2"></path>
-<circle cx="220" cy="120" fill="#374e00" r="4"></circle>
-<circle cx="600" cy="260" fill="#005db6" r="4"></circle>
-</svg>
-</div>
-<div class="mt-auto flex justify-center gap-8 bg-surface-container-low/80 backdrop-blur-md p-4 rounded-xl">
-<div class="flex items-center gap-2">
-<div class="w-3 h-3 rounded-full bg-tertiary"></div>
-<span class="text-xs font-semibold text-on-surface-variant">Surplus Provider</span>
-</div>
-<div class="flex items-center gap-2">
-<div class="w-3 h-3 rounded-full bg-secondary"></div>
-<span class="text-xs font-semibold text-on-surface-variant">Energy Request</span>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Side Action Column (4 cols) -->
-<div class="lg:col-span-4 space-y-6">
-<!-- Offer Excess Card -->
-<div class="bg-gradient-to-br from-primary to-primary-container rounded-2xl p-6 text-white shadow-xl shadow-primary/10 group cursor-pointer overflow-hidden relative">
-<div class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-500"></div>
-<div class="relative z-10">
-<div class="flex items-center justify-between mb-4">
-<span class="material-symbols-outlined text-4xl">solar_power</span>
-<span class="text-xs font-bold tracking-widest bg-white/20 px-2 py-1 rounded">FAST MATCH</span>
-</div>
-<h4 class="text-xl font-extrabold font-headline mb-2">Offer Excess Energy</h4>
-<p class="text-primary-fixed/80 text-sm mb-6">Convert your surplus battery storage into community credits.</p>
-<div class="flex items-end justify-between">
-<div>
-<p class="text-xs opacity-60 uppercase font-label">Available Surplus</p>
-<p class="text-2xl font-headline font-bold">12.8 <span class="text-sm font-normal">kWh</span></p>
-</div>
-<button class="bg-white text-primary px-4 py-2 rounded-full font-bold text-sm shadow-lg hover:bg-primary-fixed transition-colors">Start Offering</button>
-</div>
-</div>
-</div>
-<!-- Request Energy Card -->
-<div class="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant/20 hover:border-outline-variant/50 transition-all group">
-<div class="flex items-center justify-between mb-4">
-<span class="material-symbols-outlined text-secondary text-4xl">ev_station</span>
-<span class="text-xs font-bold tracking-widest bg-secondary-container/20 text-secondary px-2 py-1 rounded uppercase">Priority</span>
-</div>
-<h4 class="text-xl font-extrabold font-headline mb-2 text-on-surface">Request Energy</h4>
-<p class="text-on-surface-variant text-sm mb-6">Need an extra boost? Request renewable energy from neighbors.</p>
-<div class="flex items-end justify-between">
-<div>
-<p class="text-xs text-on-surface-variant uppercase font-label">Open Requests</p>
-<p class="text-2xl font-headline font-bold text-on-surface">8 <span class="text-sm font-normal text-on-surface-variant">Active</span></p>
-</div>
-<button class="bg-secondary text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg hover:opacity-90 transition-opacity">Post Request</button>
-</div>
-</div>
-</div>
-<!-- Bottom Horizontal Section - Participant Feed -->
-<div class="lg:col-span-12">
-<div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
-<div class="flex justify-between items-center mb-6">
-<h3 class="text-xl font-bold font-headline">Recent Exchanges</h3>
-<button class="text-secondary text-sm font-bold flex items-center gap-1">View Full History <span class="material-symbols-outlined text-sm">arrow_forward</span></button>
-</div>
-<!-- List without Dividers (using spacing per instructions) -->
-<div class="space-y-4">
-<!-- Exchange Item 1 -->
-<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:translate-x-1 transition-transform cursor-pointer">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
-<img alt="Marcus S." data-alt="User portrait for exchange feed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ_gjyV76nAFWTDRXO_elJRsPWLexHY48aFAXiulBIwHD05efMKdUGZdZxz9cQnBXf5oR9ipnG8Q5Hc4RfChFOixZ-ooJiCwtMzSvWtDVR-ZukaKQOHoXiomm1wCjasl7LhYElQnH7YFDClD6JrlMRyRrPSKmy5N-HDI1qZbNOwWMeIrd8h5wv1iY6Et4wR3Kcdi_rSPsSq78Rd-H7yPbC3vqkDk3Hua3PzZc-T9f0_XwdDZB4d6nJTwXJdFh9t-5_tS5ee_I7Mso"/>
-</div>
-<div>
-<p class="font-bold text-on-surface">Marcus S. <span class="font-normal text-on-surface-variant">shared to</span> Village Hall</p>
-<p class="text-xs text-on-surface-variant">2 mins ago • Clean Solar</p>
-</div>
-</div>
-<div class="text-right">
-<p class="text-lg font-bold text-tertiary">+5.5 kWh</p>
-<p class="text-[10px] uppercase tracking-tighter text-on-surface-variant font-label">Transaction ID: 88219</p>
-</div>
-</div>
-<!-- Exchange Item 2 -->
-<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:translate-x-1 transition-transform cursor-pointer">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
-<img alt="Elena D." data-alt="User portrait for exchange feed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHy0cgAT6CDa_3EHxqobeEdkC57xNpK5IDutV2fmpAOCsHDle5VwPEoGc-70ubWBFHJW-hWV_Oh8lbojFY8cm26j_faS4hL8njgliuBfbok68UUaS_LQPdnVT0uqec2S1y7prFXc5M7wznctC2F5l88K8UI1_F7ylnSqoGqUr54s-zwtfiZNcCIvmLTZK0PT6FEcNU8JHDKGUIIA8u7NiBow8L9Ff6iGdOcW4N6GMbmEi8YrdHLO6W83dTKWcgHT6TKEgjzsgGJoY"/>
-</div>
-<div>
-<p class="font-bold text-on-surface">Elena D. <span class="font-normal text-on-surface-variant">requested from</span> Community Pool</p>
-<p class="text-xs text-on-surface-variant">15 mins ago • Priority: Low</p>
-</div>
-</div>
-<div class="text-right">
-<p class="text-lg font-bold text-secondary">-2.1 kWh</p>
-<p class="text-[10px] uppercase tracking-tighter text-on-surface-variant font-label">Transaction ID: 88215</p>
-</div>
-</div>
-<!-- Exchange Item 3 -->
-<div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:translate-x-1 transition-transform cursor-pointer">
-<div class="flex items-center gap-4">
-<div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
-<img alt="John R." data-alt="User portrait for exchange feed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_RuJgJY1sANPkcUYyyH4sDTC6bRsdSXcBB0PK76IlnrRKpnOiNMz11dPMtY80CwCFX8GmL_JdTW_RhDXCCKS80dSQptn7aTtbHlx27LsiUic-3W-Uvt9o6CjdJe_YdeAgZF7whHiAI_IKUvZ73MOPOuwenfLJaKfXkxYJW1FXp9ikK2Fxf3FgywW6flNwEJaSWtph8pAgOQijFMbLrmk5LR25yOW7n9IwOjeSG2FwbrEyC0OPOsZfPoHrJUvnc_84E6fFMgR1mZM"/>
-</div>
-<div>
-<p class="font-bold text-on-surface">John R. <span class="font-normal text-on-surface-variant">donated to</span> Emergency Shelter</p>
-<p class="text-xs text-on-surface-variant">1 hour ago • Wind Origin</p>
-</div>
-</div>
-<div class="text-right">
-<p class="text-lg font-bold text-tertiary">+12.0 kWh</p>
-<p class="text-[10px] uppercase tracking-tighter text-on-surface-variant font-label">Transaction ID: 88201</p>
-</div>
-</div>
-</div>
-</div>
-</div>
-</div>
-</main>
-</div>
-</body></html>
+  <!-- TopNavBar -->
+  <nav
+    class="fixed top-0 w-full z-50 bg-white/80 dark:bg-emerald-950/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto">
+    <div class="flex items-center gap-8">
+      <span
+        class="text-2xl font-extrabold tracking-tighter text-emerald-900 dark:text-emerald-50 font-headline">VoltEquilibrium</span>
+      <div class="hidden md:flex items-center gap-6">
+        <a class="text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-900 font-headline font-bold"
+          href="#">Insights</a>
+        <a class="text-emerald-700 dark:text-emerald-300 border-b-2 border-emerald-700 dark:border-emerald-300 pb-1 font-headline font-bold"
+          href="#">Community</a>
+        <a class="text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-900 font-headline font-bold"
+          href="#">Grid Stats</a>
+      </div>
+    </div>
+    <div class="flex items-center gap-4">
+      <button class="p-2 hover:bg-emerald-50/50 rounded-full transition-all">
+        <span class="material-symbols-outlined text-emerald-900">notifications</span>
+      </button>
+      <button class="p-2 hover:bg-emerald-50/50 rounded-full transition-all">
+        <span class="material-symbols-outlined text-emerald-900">settings</span>
+      </button>
+      <div class="h-8 w-8 rounded-full bg-primary-fixed overflow-hidden">
+        <img alt="User profile avatar" data-alt="User profile avatar circle"
+          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfnnr9zFzpi0fNFsvN79m3ZGy_QsxnY-IBZ76HeHAyrttvjaaEslcBR665FJeQmR5H55bI0K6OqEKSI9ar62KE-0L1BSaZLX6Eg7k0kgNcpCYrpN3NRgMTba9hI0LoCvuixVvUXZmMAuwuDv3Rt2rp9rCnivzi9L1IdrUXamKL5MBGpEUvyASwK4Y6X0vN0RzW8pfxGSOzNdaxBootunIaWJ_6q5ETsJtREw1HkvjbpPc6TlMszgdnb6UOoTPUNjRdrTsnWo6rzr0" />
+      </div>
+    </div>
+  </nav>
+  <div class="flex pt-16">
+    <!-- SideNavBar -->
+    <aside
+      class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-emerald-50 dark:bg-emerald-950 flex flex-col p-6 gap-y-2 font-['Plus_Jakarta_Sans'] text-sm font-semibold hidden lg:flex">
+      <div class="mb-8">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
+            <span class="material-symbols-outlined">hub</span>
+          </div>
+          <div>
+            <p class="text-lg font-bold text-emerald-900 dark:text-emerald-100">Renewable Hub</p>
+            <p class="text-xs text-emerald-700/60">Community Grid</p>
+          </div>
+        </div>
+      </div>
+      <nav class="flex-1 space-y-1">
+        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1"
+          href="Dashboard.html">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span>Dashboard</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1"
+          href="Notifications.html">
+          <span class="material-symbols-outlined">notifications</span>
+          <span>Notifications</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1"
+          href="Energy_request.html">
+          <span class="material-symbols-outlined">electric_bolt</span>
+          <span>Energy Requests</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1"
+          href="Recommendations.html">
+          <span class="material-symbols-outlined">auto_awesome</span>
+          <span>Recommendations</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-emerald-800/50 text-emerald-900 dark:text-emerald-50 rounded-xl shadow-sm"
+          href="Community_sharing.html">
+          <span class="material-symbols-outlined" data-weight="fill"
+            style="font-variation-settings: 'FILL' 1;">groups</span>
+          <span>Community Sharing</span>
+        </a>
+      </nav>
+      <button
+        class="mt-4 bg-gradient-to-br from-primary to-primary-container text-white py-3 px-4 rounded-full font-headline font-bold text-xs tracking-wider uppercase shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
+        New Request
+      </button>
+      <div class="mt-auto space-y-1">
+        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 rounded-xl transition-transform hover:translate-x-1"
+          href="#">
+          <span class="material-symbols-outlined">help</span>
+          <span>Support</span>
+        </a>
+        <a  id="sign-out" class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 rounded-xl transition-transform hover:translate-x-1"
+          href="#">
+          <span class="material-symbols-outlined">logout</span>
+          <span>Sign Out</span>
+        </a>
+      </div>
+    </aside>
+    <!-- Main Content Area -->
+    <main class="flex-1 lg:ml-64 p-8 min-h-screen bg-surface">
+      <!-- Header Section with Bento Elements -->
+      <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div class="max-w-2xl">
+          <h1 class="text-4xl font-extrabold font-headline text-on-surface tracking-tight mb-2">Kinetic Equilibrium</h1>
+          <p class="text-on-surface-variant font-body text-lg">Visualizing the real-time energy flow of your local
+            collective. Every watt shared strengthens the whole.</p>
+        </div>
+        <div class="flex gap-4">
+          <div class="bg-surface-container-low p-4 rounded-2xl flex items-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">eco</span>
+            </div>
+            <div>
+              <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant">Grid Health</p>
+              <p class="text-xl font-bold font-headline">98.4% Optimal</p>
+            </div>
+          </div>
+        </div>
+      </header>
+      <!-- Bento Grid Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- Large Visual Map/Grid (8 cols) -->
+        <div class="lg:col-span-8 space-y-6">
+          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm overflow-hidden relative min-h-[500px]">
+            <div class="absolute inset-0 z-0 opacity-20">
+              <!-- Abstract Map Background Representation -->
+              <img class="w-full h-full object-cover grayscale brightness-50"
+                data-alt="Topographic abstract map of a city grid" data-location="Berlin"
+                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbRUPtYnD-7p3b0Ui4vrQ__DeH3raMpBNZDtyATQ9gmRTi0NyP9jeyY7aYVO-LTQyJyc5dlFl9k0CyL_mHiS9Msx202dtlusBftTG4YIxxGldGA9Uc1lRkE6KpMm6uF4owbBEMVT4LsX1b6gf83PBRcJq7AFG5F77MliJVF3DCa_VKfOMZzyZ2coNpL5f8bnTJmZwd854Q0LS_cGaXYnTUW7AVpdBmoj-SJSdNCSXGoaZAww538adh1LjJ4FH8Evbfo_X2IX4gb0w" />
+            </div>
+            <div class="relative z-10 h-full flex flex-col">
+              <div class="flex justify-between items-start mb-6">
+                <h3 class="text-xl font-bold font-headline">Live Network Pulse</h3>
+                <div class="flex gap-2">
+                  <span class="px-3 py-1 bg-primary text-white text-xs font-bold rounded-full">LIVE MAP</span>
+                  <span class="px-3 py-1 bg-surface-container text-on-surface text-xs font-bold rounded-full">ACTIVE
+                    FLOWS: 24</span>
+                </div>
+              </div>
+              <!-- Visual Connection Elements (Simulated) -->
+              <div class="flex-1 relative flex items-center justify-center">
+                <!-- Node: Giver -->
+                <div class="absolute top-1/4 left-1/4 group cursor-pointer">
+                  <div
+                    class="relative w-16 h-16 rounded-full bg-tertiary/20 flex items-center justify-center animate-pulse">
+                    <div
+                      class="w-10 h-10 rounded-full bg-tertiary flex items-center justify-center text-white shadow-lg shadow-tertiary/40">
+                      <span class="material-symbols-outlined">bolt</span>
+                    </div>
+                  </div>
+                  <div
+                    class="absolute -top-12 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-lg shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p class="text-xs font-bold">Solar House #4</p>
+                    <p class="text-[10px] text-tertiary font-bold">+4.2 kWh surplus</p>
+                  </div>
+                </div>
+                <!-- Node: Receiver -->
+                <div class="absolute bottom-1/3 right-1/4 group cursor-pointer">
+                  <div class="relative w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                    <div
+                      class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-white shadow-lg shadow-secondary/40">
+                      <span class="material-symbols-outlined">home</span>
+                    </div>
+                  </div>
+                  <div
+                    class="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-lg shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p class="text-xs font-bold">The Green Bakery</p>
+                    <p class="text-[10px] text-error font-bold">-2.1 kWh requested</p>
+                  </div>
+                </div>
+                <!-- Connection Line (SVG) -->
+                <svg class="absolute inset-0 w-full h-full pointer-events-none" viewbox="0 0 800 400">
+                  <path class="opacity-60" d="M 220 120 Q 400 200 600 260" fill="transparent" stroke="#bdf447"
+                    stroke-dasharray="10,5" stroke-width="2"></path>
+                  <circle cx="220" cy="120" fill="#374e00" r="4"></circle>
+                  <circle cx="600" cy="260" fill="#005db6" r="4"></circle>
+                </svg>
+              </div>
+              <div
+                class="mt-auto flex justify-center gap-8 bg-surface-container-low/80 backdrop-blur-md p-4 rounded-xl">
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-tertiary"></div>
+                  <span class="text-xs font-semibold text-on-surface-variant">Surplus Provider</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <div class="w-3 h-3 rounded-full bg-secondary"></div>
+                  <span class="text-xs font-semibold text-on-surface-variant">Energy Request</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Side Action Column (4 cols) -->
+        <div class="lg:col-span-4 space-y-6">
+          <!-- Offer Excess Card -->
+          <div
+            class="bg-gradient-to-br from-primary to-primary-container rounded-2xl p-6 text-white shadow-xl shadow-primary/10 group cursor-pointer overflow-hidden relative">
+            <div
+              class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-500">
+            </div>
+            <div class="relative z-10">
+              <div class="flex items-center justify-between mb-4">
+                <span class="material-symbols-outlined text-4xl">solar_power</span>
+                <span class="text-xs font-bold tracking-widest bg-white/20 px-2 py-1 rounded">FAST MATCH</span>
+              </div>
+              <h4 class="text-xl font-extrabold font-headline mb-2">Offer Excess Energy</h4>
+              <p class="text-primary-fixed/80 text-sm mb-6">Convert your surplus battery storage into community credits.
+              </p>
+              <div class="flex items-end justify-between">
+                <div>
+                  <p class="text-xs opacity-60 uppercase font-label">Available Surplus</p>
+                  <p class="text-2xl font-headline font-bold">12.8 <span class="text-sm font-normal">kWh</span></p>
+                </div>
+                <button
+                  class="bg-white text-primary px-4 py-2 rounded-full font-bold text-sm shadow-lg hover:bg-primary-fixed transition-colors">Start
+                  Offering</button>
+              </div>
+            </div>
+          </div>
+          <!-- Request Energy Card -->
+          <div
+            class="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant/20 hover:border-outline-variant/50 transition-all group">
+            <div class="flex items-center justify-between mb-4">
+              <span class="material-symbols-outlined text-secondary text-4xl">ev_station</span>
+              <span
+                class="text-xs font-bold tracking-widest bg-secondary-container/20 text-secondary px-2 py-1 rounded uppercase">Priority</span>
+            </div>
+            <h4 class="text-xl font-extrabold font-headline mb-2 text-on-surface">Request Energy</h4>
+            <p class="text-on-surface-variant text-sm mb-6">Need an extra boost? Request renewable energy from
+              neighbors.</p>
+            <div class="flex items-end justify-between">
+              <div>
+                <p class="text-xs text-on-surface-variant uppercase font-label">Open Requests</p>
+                <p class="text-2xl font-headline font-bold text-on-surface">8 <span
+                    class="text-sm font-normal text-on-surface-variant">Active</span></p>
+              </div>
+              <button
+                class="bg-secondary text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg hover:opacity-90 transition-opacity">Post
+                Request</button>
+            </div>
+          </div>
+        </div>
+        <!-- Bottom Horizontal Section - Participant Feed -->
+        <div class="lg:col-span-12">
+          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-xl font-bold font-headline">Recent Exchanges</h3>
+              <button class="text-secondary text-sm font-bold flex items-center gap-1">View Full History <span
+                  class="material-symbols-outlined text-sm">arrow_forward</span></button>
+            </div>
+            <!-- List without Dividers (using spacing per instructions) -->
+            <div class="space-y-4">
+              <!-- Exchange Item 1 -->
+              <div
+                class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:translate-x-1 transition-transform cursor-pointer">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
+                    <img alt="Marcus S." data-alt="User portrait for exchange feed"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ_gjyV76nAFWTDRXO_elJRsPWLexHY48aFAXiulBIwHD05efMKdUGZdZxz9cQnBXf5oR9ipnG8Q5Hc4RfChFOixZ-ooJiCwtMzSvWtDVR-ZukaKQOHoXiomm1wCjasl7LhYElQnH7YFDClD6JrlMRyRrPSKmy5N-HDI1qZbNOwWMeIrd8h5wv1iY6Et4wR3Kcdi_rSPsSq78Rd-H7yPbC3vqkDk3Hua3PzZc-T9f0_XwdDZB4d6nJTwXJdFh9t-5_tS5ee_I7Mso" />
+                  </div>
+                  <div>
+                    <p class="font-bold text-on-surface">Marcus S. <span
+                        class="font-normal text-on-surface-variant">shared to</span> Village Hall</p>
+                    <p class="text-xs text-on-surface-variant">2 mins ago • Clean Solar</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-bold text-tertiary">+5.5 kWh</p>
+                  <p class="text-[10px] uppercase tracking-tighter text-on-surface-variant font-label">Transaction ID:
+                    88219</p>
+                </div>
+              </div>
+              <!-- Exchange Item 2 -->
+              <div
+                class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:translate-x-1 transition-transform cursor-pointer">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
+                    <img alt="Elena D." data-alt="User portrait for exchange feed"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHy0cgAT6CDa_3EHxqobeEdkC57xNpK5IDutV2fmpAOCsHDle5VwPEoGc-70ubWBFHJW-hWV_Oh8lbojFY8cm26j_faS4hL8njgliuBfbok68UUaS_LQPdnVT0uqec2S1y7prFXc5M7wznctC2F5l88K8UI1_F7ylnSqoGqUr54s-zwtfiZNcCIvmLTZK0PT6FEcNU8JHDKGUIIA8u7NiBow8L9Ff6iGdOcW4N6GMbmEi8YrdHLO6W83dTKWcgHT6TKEgjzsgGJoY" />
+                  </div>
+                  <div>
+                    <p class="font-bold text-on-surface">Elena D. <span
+                        class="font-normal text-on-surface-variant">requested from</span> Community Pool</p>
+                    <p class="text-xs text-on-surface-variant">15 mins ago • Priority: Low</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-bold text-secondary">-2.1 kWh</p>
+                  <p class="text-[10px] uppercase tracking-tighter text-on-surface-variant font-label">Transaction ID:
+                    88215</p>
+                </div>
+              </div>
+              <!-- Exchange Item 3 -->
+              <div
+                class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:translate-x-1 transition-transform cursor-pointer">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
+                    <img alt="John R." data-alt="User portrait for exchange feed"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_RuJgJY1sANPkcUYyyH4sDTC6bRsdSXcBB0PK76IlnrRKpnOiNMz11dPMtY80CwCFX8GmL_JdTW_RhDXCCKS80dSQptn7aTtbHlx27LsiUic-3W-Uvt9o6CjdJe_YdeAgZF7whHiAI_IKUvZ73MOPOuwenfLJaKfXkxYJW1FXp9ikK2Fxf3FgywW6flNwEJaSWtph8pAgOQijFMbLrmk5LR25yOW7n9IwOjeSG2FwbrEyC0OPOsZfPoHrJUvnc_84E6fFMgR1mZM" />
+                  </div>
+                  <div>
+                    <p class="font-bold text-on-surface">John R. <span
+                        class="font-normal text-on-surface-variant">donated to</span> Emergency Shelter</p>
+                    <p class="text-xs text-on-surface-variant">1 hour ago • Wind Origin</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="text-lg font-bold text-tertiary">+12.0 kWh</p>
+                  <p class="text-[10px] uppercase tracking-tighter text-on-surface-variant font-label">Transaction ID:
+                    88201</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+
+</html>

@@ -10,7 +10,9 @@ const pool = require('./db');
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey';
 
-app.use(cors());
+app.use(cors({
+    origin: '*'
+})); 
 app.use(express.json());
 
 // Basic endpoint to check if server is running

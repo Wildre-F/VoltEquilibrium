@@ -1,0 +1,29 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: green-energy-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: green_energy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    image: node:24-alpine
+    container_name: green-energy-backend
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - ./backend:/app
+    command: sh -c "npm install && node app.js"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

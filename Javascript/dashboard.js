@@ -1,7 +1,7 @@
 // VoltEquilibrium Dashboard JavaScript
 // Handles real-time data simulation, interactivity, and UI updates
 
-(function() {
+(function () {
     'use strict';
 
     // Configuration
@@ -157,6 +157,7 @@
                 document.getElementById('grid-voltage').textContent = `${(11 + utils.random(-0.2, 0.3)).toFixed(1)} kV`;
                 document.getElementById('grid-pf').textContent = `${utils.random(0.92, 0.97).toFixed(2)}`;
 
+
             }, CONFIG.detailUpdateInterval);
         },
 
@@ -164,6 +165,29 @@
             clearInterval(detailPanel.updateInterval);
         }
     };
+
+    // Authentication check
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+        window.location.href = '/frontend/login.html';
+    }
+
+    // Sign out function
+    function signOut(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        localStorage.removeItem('authToken');
+        window.location.href = '/frontend/login.html';
+    }
+
+    // Attach sign out event listener
+    const signOutBtn = document.getElementById('sign-out');
+
+    if (signOutBtn) {
+        signOutBtn.addEventListener('click', signOut);
+    }
 
     // Live data simulation
     const liveData = {
@@ -178,7 +202,7 @@
         },
 
         render: () => {
-            document.getElementById('live-generation').innerHTML = 
+            document.getElementById('live-generation').innerHTML =
                 `${utils.format(state.liveGeneration)} <span class="text-2xl text-on-surface-variant/40">MW</span>`;
             document.getElementById('solar-value').textContent = `${utils.format(state.solarOutput)} MW`;
             document.getElementById('wind-value').textContent = `${utils.format(state.windOutput)} MW`;
@@ -270,11 +294,11 @@
             state.co2Offset = utils.randomWalk(state.co2Offset, 0.1, 0.8, 1.5);
             state.projectedSavings = utils.randomWalk(state.projectedSavings, 3, 100, 150);
 
-            document.getElementById('daily-save-value').innerHTML = 
+            document.getElementById('daily-save-value').innerHTML =
                 `${Math.round(state.dailySave)} <span class="text-xs text-on-surface-variant/40">kWh</span>`;
-            document.getElementById('co2-value').innerHTML = 
+            document.getElementById('co2-value').innerHTML =
                 `${utils.format(state.co2Offset)} <span class="text-xs text-on-surface-variant/40">T</span>`;
-            document.getElementById('projected-savings').innerHTML = 
+            document.getElementById('projected-savings').innerHTML =
                 `${utils.formatCurrency(state.projectedSavings)} <span class="text-xs text-tertiary font-semibold">+${Math.round((state.projectedSavings - 100) / 100 * 100)}%</span>`;
         }
     };
