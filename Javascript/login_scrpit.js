@@ -382,9 +382,12 @@
     // ==========================================
 
     function handleSocial(provider, action) {
-        showToast(`${action} with ${provider}...`, 'info');
-        setTimeout(() => showToast(`${provider} ${action} coming soon`, 'info'), 1000);
+    if (provider === 'Google') {
+        window.location.href = 'http://localhost:3000/auth/google';
+    } else {
+        showToast(`${provider} ${action} coming soon`, 'info');
     }
+}
 
     // ==========================================
     // NETWORK HEALTH

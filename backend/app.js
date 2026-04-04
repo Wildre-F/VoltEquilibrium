@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const pool = require('./db');
+const passport = require('./passport');
 
 const PORT = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey';
@@ -14,6 +15,7 @@ app.use(cors({
     origin: '*'
 })); 
 app.use(express.json());
+app.use(passport.initialize()); 
 
 // Basic endpoint to check if server is running
 app.get('/', (req, res) => {
@@ -233,6 +235,21 @@ app.get('/api/db-test', async (req, res) => {
         });
     }
 });
+
+// Google OAuth
+app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+
+app.get('/auth/google/callback',
+    passport.authenticate('google', { session: false, failureRedirect: '/login.html' }),
+    (req, res) => {
+        const token = jwt.sign(
+            { id: req.user.id, email: req.user.email, username: req.user.username },
+            JWT_SECRET,
+            { expiresIn: '1h' }
+        );
+        res.redirect(`http://localhost:5500/frontend/Dashboard.html?token=${token}`);
+    }
+);
 
 // 404 handler
 app.use((req, res) => {
