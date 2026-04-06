@@ -1,6 +1,18 @@
 // VoltEquilibrium Dashboard JavaScript
 // Handles real-time data simulation, interactivity, and UI updates
 
+// Hide page immediately until auth check passes
+document.documentElement.style.visibility = 'hidden';
+
+window.addEventListener('pageshow', (event) => {
+    const token = localStorage.getItem('authToken');
+    if (!token) {
+        window.location.replace('/frontend/login.html');
+    } else {
+        document.documentElement.style.visibility = 'visible';
+    }
+});
+
 (function () {
   "use strict";
 

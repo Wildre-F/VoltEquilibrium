@@ -430,7 +430,7 @@
   }
 
   // ==========================================
-  // NETWORK HEALTH
+  // Loadshedding
   // ==========================================
 
   async function updateLoadShedding() {
