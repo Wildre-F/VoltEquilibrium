@@ -344,7 +344,7 @@
       }
 
       setTimeout(() => {
-        window.location.href = "../frontend/dashboard.html";
+        window.location.href = "../frontend/setup.html";
       }, 1500);
     } catch (err) {
       showToast(err.message, "error");

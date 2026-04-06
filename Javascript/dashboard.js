@@ -2,15 +2,29 @@
 // Handles real-time data simulation, interactivity, and UI updates
 
 // Hide page immediately until auth check passes
-document.documentElement.style.visibility = 'hidden';
+document.documentElement.style.visibility = "hidden";
 
-window.addEventListener('pageshow', (event) => {
-    const token = localStorage.getItem('authToken');
-    if (!token) {
-        window.location.replace('/frontend/login.html');
-    } else {
-        document.documentElement.style.visibility = 'visible';
-    }
+window.addEventListener("pageshow", async (event) => {
+  const token = localStorage.getItem("authToken");
+  if (!token) {
+    window.location.replace("../frontend/login.html");
+    return;
+  }
+
+  // Check setup status
+  const response = await fetch("http://localhost:3000/api/setup/status", {
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  const result = await response.json();
+
+  localStorage.setItem("userRole", result.role);
+
+  if (!result.hasSetup && result.role !== "consumer") {
+    window.location.replace("../frontend/setup.html");
+    return;
+  }
+
+  document.documentElement.style.visibility = "visible";
 });
 
 (function () {

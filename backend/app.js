@@ -411,6 +411,142 @@ app.get("/api/loadshedding", async (req, res) => {
   }
 });
 
+// ===== Setup Routes =====
+
+// Check if user has completed setup
+app.get("/api/setup/status", authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM inverters WHERE user_id = $1",
+      [req.user.id],
+    );
+
+    const userResult = await pool.query(
+      "SELECT role, location FROM users WHERE id = $1",
+      [req.user.id],
+    );
+
+    return res.status(200).json({
+      success: true,
+      hasSetup: result.rows.length > 0,
+      inverters: result.rows,
+      role: userResult.rows[0].role,
+      location: userResult.rows[0].location,
+    });
+  } catch (error) {
+    console.error("Setup status error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Error checking setup status",
+    });
+  }
+});
+
+app.post("/api/setup/inverter", authenticateToken, async (req, res) => {
+  try {
+    const { name, type, capacity, location, lat, lng } = req.body;
+
+    if (!name || !type) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and type are required",
+      });
+    }
+
+    if (!["solar", "wind"].includes(type)) {
+      return res.status(400).json({
+        success: false,
+        message: "Type must be solar or wind",
+      });
+    }
+
+    // Check if user already has this type
+    const existing = await pool.query(
+      "SELECT id FROM inverters WHERE user_id = $1 AND type = $2",
+      [req.user.id, type],
+    );
+
+    if (existing.rows.length > 0) {
+      return res.status(409).json({
+        success: false,
+        message: `You already have a ${type} inverter`,
+      });
+    }
+
+    // Add inverter
+    const result = await pool.query(
+      `INSERT INTO inverters (user_id, name, type, capacity)
+             VALUES ($1, $2, $3, $4)
+             RETURNING *`,
+      [req.user.id, name, type, capacity],
+    );
+
+    await pool.query(
+      "UPDATE users SET role = $1, location = $2, lat = $3, lng = $4 WHERE id = $5",
+      ["generator", location || null, lat, lng, req.user.id],
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Inverter added successfully",
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Add inverter error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Error adding inverter",
+    });
+  }
+});
+
+// Delete inverter
+app.delete("/api/setup/inverter/:id", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Make sure inverter belongs to user
+    const inverter = await pool.query(
+      "SELECT id FROM inverters WHERE id = $1 AND user_id = $2",
+      [id, req.user.id],
+    );
+
+    if (inverter.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Inverter not found",
+      });
+    }
+
+    await pool.query("DELETE FROM inverters WHERE id = $1", [id]);
+
+    // Check if user has any inverters left
+    const remaining = await pool.query(
+      "SELECT id FROM inverters WHERE user_id = $1",
+      [req.user.id],
+    );
+
+    // If no inverters left, revert to consumer
+    if (remaining.rows.length === 0) {
+      await pool.query("UPDATE users SET role = $1 WHERE id = $2", [
+        "consumer",
+        req.user.id,
+      ]);
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Inverter removed successfully",
+    });
+  } catch (error) {
+    console.error("Delete inverter error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Error removing inverter",
+    });
+  }
+});
+
 // Update profile
 app.put("/api/profile/update", authenticateToken, async (req, res) => {
   try {
@@ -458,6 +594,117 @@ app.put("/api/profile/update", authenticateToken, async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error updating profile",
+    });
+  }
+});
+
+// Delete account
+app.delete("/api/account", authenticateToken, async (req, res) => {
+  try {
+    // Delete in order to avoid foreign key constraint errors
+    await pool.query(
+      "DELETE FROM energy_readings WHERE inverter_id IN (SELECT id FROM inverters WHERE user_id = $1)",
+      [req.user.id],
+    );
+    await pool.query("DELETE FROM inverters WHERE user_id = $1", [req.user.id]);
+    await pool.query("DELETE FROM users WHERE id = $1", [req.user.id]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Account deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete account error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Error deleting account",
+    });
+  }
+});
+
+// Submit energy reading from inverter
+app.post("/api/readings", authenticateToken, async (req, res) => {
+  try {
+    const { inverter_id, kwh } = req.body;
+
+    if (!inverter_id || kwh === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "inverter_id and kwh are required",
+      });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO energy_readings (inverter_id, kwh)
+             VALUES ($1, $2)
+             RETURNING *`,
+      [inverter_id, kwh],
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Reading recorded",
+      data: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Reading error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Error recording reading",
+    });
+  }
+});
+
+// Get latest readings for all inverters
+app.get("/api/readings/latest", authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(`
+            SELECT 
+                i.id,
+                i.name,
+                i.type,
+                i.location,
+                er.kwh,
+                er.recorded_at
+            FROM inverters i
+            LEFT JOIN LATERAL (
+                SELECT kwh, recorded_at
+                FROM energy_readings
+                WHERE inverter_id = i.id
+                ORDER BY recorded_at DESC
+                LIMIT 1
+            ) er ON true
+            ORDER BY i.type, i.name
+        `);
+
+    const solar = result.rows.filter((r) => r.type === "solar");
+    const wind = result.rows.filter((r) => r.type === "wind");
+
+    const totalSolar = solar.reduce(
+      (sum, r) => sum + parseFloat(r.kwh || 0),
+      0,
+    );
+    const totalWind = wind.reduce((sum, r) => sum + parseFloat(r.kwh || 0), 0);
+    const totalGeneration = totalSolar + totalWind;
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        inverters: result.rows,
+        solar,
+        wind,
+        totals: {
+          solar: totalSolar.toFixed(2),
+          wind: totalWind.toFixed(2),
+          generation: totalGeneration.toFixed(2),
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Readings error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Error fetching readings",
     });
   }
 });
