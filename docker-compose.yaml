@@ -12,6 +12,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  mqtt:
+    image: eclipse-mosquitto:2
+    container_name: green-energy-mqtt
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+
   backend:
     image: node:24-alpine
     container_name: green-energy-backend
@@ -24,6 +36,7 @@ services:
       - "3000:3000"
     depends_on:
       - postgres
+      - mqtt
 
 volumes:
   postgres_data:

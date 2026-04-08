@@ -1,0 +1,6 @@
+﻿# Mosquitto runtime files
+mosquitto/log/
+mosquitto/data/
+
+# Logs
+*.log

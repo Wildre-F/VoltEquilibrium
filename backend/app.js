@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const fetch = require("node-fetch");
+const mqtt = require("mqtt");
 
 // ===== Internal Modules =====
 const pool = require("./db");
@@ -22,6 +23,121 @@ const JWT_SECRET = process.env.JWT_SECRET || "mysecretkey";
 app.use(cors({ origin: process.env.FRONTEND_URL }));
 app.use(express.json());
 app.use(passport.initialize());
+
+// ===== MQTT Setup =====
+const mqttClient = mqtt.connect("mqtt://mqtt:1883");
+
+mqttClient.on("connect", () => {
+  console.log("Connected to MQTT broker");
+  // Subscribe to all user topics
+  mqttClient.subscribe("voltequilibrium/#", (err) => {
+    if (!err) console.log("Subscribed to voltequilibrium/#");
+  });
+});
+
+mqttClient.on("message", async (topic, message) => {
+  try {
+    const parts = topic.split("/");
+    // Expected topic: voltequilibrium/VE-xxxx/solar or /wind or /battery
+    if (parts.length !== 3) return;
+
+    const apiKey = parts[1];
+    const deviceType = parts[2]; // solar, wind, battery
+
+    const data = JSON.parse(message.toString());
+
+    // Find user by API key
+    const userResult = await pool.query(
+      "SELECT id FROM users WHERE api_key = $1",
+      [apiKey],
+    );
+
+    if (userResult.rows.length === 0) {
+      console.log(`Unknown API key: ${apiKey}`);
+      return;
+    }
+
+    const userId = userResult.rows[0].id;
+
+    if (deviceType === "solar" || deviceType === "wind") {
+      // Find inverter for this user and type
+      const inverterResult = await pool.query(
+        "SELECT id FROM inverters WHERE user_id = $1 AND type = $2",
+        [userId, deviceType],
+      );
+
+      if (inverterResult.rows.length === 0) return;
+      const inverterId = inverterResult.rows[0].id;
+
+      // Save raw reading
+      await pool.query(
+        `INSERT INTO raw_readings 
+                (inverter_id, dc_voltage, dc_current, ac_voltage, ac_current, 
+                frequency, temperature, power_w, energy_kwh, wind_speed, rotor_rpm, pitch_angle)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        [
+          inverterId,
+          data.dc_voltage || null,
+          data.dc_current || null,
+          data.ac_voltage || null,
+          data.ac_current || null,
+          data.frequency || null,
+          data.temperature || null,
+          data.power_w || null,
+          data.energy_kwh || null,
+          data.wind_speed || null,
+          data.rotor_rpm || null,
+          data.pitch_angle || null,
+        ],
+      );
+
+      // Save energy reading summary
+      if (data.energy_kwh) {
+        await pool.query(
+          "INSERT INTO energy_readings (inverter_id, kwh) VALUES ($1, $2)",
+          [inverterId, data.energy_kwh],
+        );
+      }
+
+      console.log(
+        `[${deviceType}] User ${userId}: ${data.power_w}W | ${data.energy_kwh}kWh`,
+      );
+    } else if (deviceType === "battery") {
+      // Find battery for this user
+      const batteryResult = await pool.query(
+        "SELECT id FROM batteries WHERE user_id = $1",
+        [userId],
+      );
+
+      if (batteryResult.rows.length === 0) return;
+      const batteryId = batteryResult.rows[0].id;
+
+      await pool.query(
+        `INSERT INTO battery_readings 
+                (battery_id, state_of_charge, voltage, current, temperature, power_w)
+                VALUES ($1,$2,$3,$4,$5,$6)`,
+        [
+          batteryId,
+          data.state_of_charge || null,
+          data.voltage || null,
+          data.current || null,
+          data.temperature || null,
+          data.power_w || null,
+        ],
+      );
+
+      console.log(
+        `[battery] User ${userId}: ${data.state_of_charge}% | ${data.voltage}V`,
+      );
+    }
+  } catch (error) {
+    console.error("MQTT message error:", error.message);
+  }
+});
+
+mqttClient.on("error", (error) => {
+  console.error("MQTT error:", error.message);
+});
 
 // Prevent caching of protected pages
 app.use((req, res, next) => {
@@ -269,7 +385,7 @@ app.get(
       { expiresIn: "1h" },
     );
     res.redirect(
-      `${process.env.FRONTEND_URL}/frontend/Dashboard.html?token=${token}`,
+      `${process.env.FRONTEND_URL}/frontend/setup.html?token=${token}`,
     );
   },
 );
@@ -391,7 +507,7 @@ app.post("/api/reset-password", async (req, res) => {
   }
 });
 
-// Load shedding status proxy
+// Loadshedding status proxy
 app.get("/api/loadshedding", async (req, res) => {
   try {
     const response = await fetch(
@@ -406,7 +522,7 @@ app.get("/api/loadshedding", async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Could not fetch load shedding status",
+      message: "Could not fetch loadshedding status",
     });
   }
 });
@@ -482,14 +598,26 @@ app.post("/api/setup/inverter", authenticateToken, async (req, res) => {
     );
 
     await pool.query(
-      "UPDATE users SET role = $1, location = $2, lat = $3, lng = $4 WHERE id = $5",
-      ["generator", location || null, lat, lng, req.user.id],
+      `INSERT INTO batteries (user_id, name, capacity_kwh) 
+   VALUES ($1, $2, 10.0) 
+   ON CONFLICT DO NOTHING`,
+      [req.user.id, "Main Battery"],
+    );
+
+    // Generate unique API key
+    const crypto = require("crypto");
+    const apiKey = "VE-" + crypto.randomBytes(8).toString("hex");
+
+    await pool.query(
+      "UPDATE users SET role = $1, location = $2, lat = $3, lng = $4, api_key = $5 WHERE id = $6",
+      ["generator", location || null, lat, lng, apiKey, req.user.id],
     );
 
     return res.status(201).json({
       success: true,
       message: "Inverter added successfully",
       data: result.rows[0],
+      apiKey: apiKey,
     });
   } catch (error) {
     console.error("Add inverter error:", error.message);
@@ -598,27 +726,117 @@ app.put("/api/profile/update", authenticateToken, async (req, res) => {
   }
 });
 
-// Delete account
-app.delete("/api/account", authenticateToken, async (req, res) => {
+// Delete all user data but keep account
+app.delete("/api/account/data", authenticateToken, async (req, res) => {
   try {
-    // Delete in order to avoid foreign key constraint errors
+    const userId = req.user.id;
+
+    // Delete in correct order to respect foreign keys
     await pool.query(
-      "DELETE FROM energy_readings WHERE inverter_id IN (SELECT id FROM inverters WHERE user_id = $1)",
-      [req.user.id],
+      `
+      DELETE FROM battery_readings 
+      WHERE battery_id IN (SELECT id FROM batteries WHERE user_id = $1)
+    `,
+      [userId],
     );
-    await pool.query("DELETE FROM inverters WHERE user_id = $1", [req.user.id]);
-    await pool.query("DELETE FROM users WHERE id = $1", [req.user.id]);
+
+    await pool.query("DELETE FROM batteries WHERE user_id = $1", [userId]);
+
+    await pool.query(
+      `
+      DELETE FROM energy_readings 
+      WHERE inverter_id IN (SELECT id FROM inverters WHERE user_id = $1)
+    `,
+      [userId],
+    );
+
+    await pool.query(
+      `
+      DELETE FROM raw_readings 
+      WHERE inverter_id IN (SELECT id FROM inverters WHERE user_id = $1)
+    `,
+      [userId],
+    );
+
+    await pool.query("DELETE FROM inverters WHERE user_id = $1", [userId]);
+
+    // Clear api_key and reset role to consumer
+    await pool.query(
+      "UPDATE users SET api_key = NULL, role = 'consumer' WHERE id = $1",
+      [userId],
+    );
+
+    return res
+      .status(200)
+      .json({ success: true, message: "All data deleted successfully" });
+  } catch (error) {
+    console.error("Delete data error:", error.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error deleting data" });
+  }
+});
+
+// Get user API key
+app.get("/api/user/apikey", authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query("SELECT api_key FROM users WHERE id = $1", [
+      req.user.id,
+    ]);
 
     return res.status(200).json({
       success: true,
-      message: "Account deleted successfully",
+      apiKey: result.rows[0].api_key,
     });
   } catch (error) {
-    console.error("Delete account error:", error.message);
+    console.error("API key error:", error.message);
     return res.status(500).json({
       success: false,
-      message: "Error deleting account",
+      message: "Error fetching API key",
     });
+  }
+});
+
+// Shared weather cache — all simulators use this instead of hitting Open-Meteo directly
+let weatherCache = {};
+
+app.get("/api/weather", authenticateToken, async (req, res) => {
+  const { lat, lng } = req.query;
+  const key = `${lat},${lng}`;
+  const now = Date.now();
+
+  // Return cached result if less than 15 minutes old
+  if (weatherCache[key] && now - weatherCache[key].fetchedAt < 15 * 60 * 1000) {
+    return res.json({
+      success: true,
+      data: weatherCache[key].data,
+      cached: true,
+    });
+  }
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=cloud_cover,wind_speed_10m,temperature_2m&timezone=auto`;
+    const response = await fetch(url);
+    const data = await response.json();
+
+    weatherCache[key] = {
+      fetchedAt: now,
+      data: {
+        cloudCover: data.current.cloud_cover,
+        windSpeed: data.current.wind_speed_10m,
+        temperature: data.current.temperature_2m,
+      },
+    };
+
+    return res.json({
+      success: true,
+      data: weatherCache[key].data,
+      cached: false,
+    });
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ success: false, message: "Weather fetch failed" });
   }
 });
 
@@ -655,56 +873,73 @@ app.post("/api/readings", authenticateToken, async (req, res) => {
   }
 });
 
-// Get latest readings for all inverters
+// Get latest rich readings for dashboard (Power, SOC, voltages, etc.)
 app.get("/api/readings/latest", authenticateToken, async (req, res) => {
   try {
     const result = await pool.query(`
-            SELECT 
-                i.id,
-                i.name,
-                i.type,
-                i.location,
-                er.kwh,
-                er.recorded_at
-            FROM inverters i
-            LEFT JOIN LATERAL (
-                SELECT kwh, recorded_at
-                FROM energy_readings
-                WHERE inverter_id = i.id
-                ORDER BY recorded_at DESC
-                LIMIT 1
-            ) er ON true
-            ORDER BY i.type, i.name
-        `);
+      SELECT 
+        u.username,
+        i.id as inverter_id,
+        i.name as inverter_name,
+        i.type,
+        rr.power_w,
+        rr.dc_voltage,
+        rr.dc_current,
+        rr.ac_voltage,
+        rr.ac_current,
+        rr.frequency,
+        rr.temperature as inverter_temp,
+        rr.energy_kwh,
+        rr.wind_speed,
+        rr.rotor_rpm,
+        rr.pitch_angle,
+        br.state_of_charge,
+        br.voltage as battery_voltage,
+        br.current as battery_current,
+        br.temperature as battery_temp,
+        br.power_w as battery_power,
+        rr.recorded_at
+      FROM inverters i
+      JOIN users u ON i.user_id = u.id
+      LEFT JOIN LATERAL (
+        SELECT * FROM raw_readings 
+        WHERE inverter_id = i.id 
+        ORDER BY recorded_at DESC 
+        LIMIT 1
+      ) rr ON true
+      LEFT JOIN LATERAL (
+        SELECT * FROM battery_readings 
+        WHERE battery_id = (SELECT id FROM batteries WHERE user_id = u.id LIMIT 1)
+        ORDER BY recorded_at DESC 
+        LIMIT 1
+      ) br ON true
+      ORDER BY i.type, i.name;
+    `);
 
     const solar = result.rows.filter((r) => r.type === "solar");
     const wind = result.rows.filter((r) => r.type === "wind");
 
-    const totalSolar = solar.reduce(
-      (sum, r) => sum + parseFloat(r.kwh || 0),
+    const totalPower = result.rows.reduce(
+      (sum, r) => sum + (parseFloat(r.power_w) || 0),
       0,
     );
-    const totalWind = wind.reduce((sum, r) => sum + parseFloat(r.kwh || 0), 0);
-    const totalGeneration = totalSolar + totalWind;
 
     return res.status(200).json({
       success: true,
       data: {
-        inverters: result.rows,
+        all: result.rows,
         solar,
         wind,
-        totals: {
-          solar: totalSolar.toFixed(2),
-          wind: totalWind.toFixed(2),
-          generation: totalGeneration.toFixed(2),
-        },
+        totalPower: Math.round(totalPower),
+        totalPowerMW: (totalPower / 1000).toFixed(2),
+        lastUpdated: new Date(),
       },
     });
   } catch (error) {
-    console.error("Readings error:", error.message);
+    console.error("Dashboard readings error:", error.message);
     return res.status(500).json({
       success: false,
-      message: "Error fetching readings",
+      message: "Error fetching live readings",
     });
   }
 });
