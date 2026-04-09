@@ -12,7 +12,7 @@ const INTERVAL_MS = 30000; // publish every 30 seconds
 
 if (!API_KEY || isNaN(LAT) || isNaN(LNG)) {
   console.error(
-    "[solar-small] Missing SIM_API_KEY, SIM_LAT or SIM_LNG in environment.",
+    "[solar-large] Missing SIM_API_KEY, SIM_LAT or SIM_LNG in environment.",
   );
   process.exit(1);
 }
@@ -23,21 +23,23 @@ const TOPIC_SOLAR = `voltequilibrium/${API_KEY}/${DEVICE_ID}/solar`;
 const TOPIC_BATTERY = `voltequilibrium/${API_KEY}/${DEVICE_ID}/battery`;
 
 client.on("connect", () => {
-  console.log(`[solar-small] Connected to MQTT broker → ${MQTT_BROKER}`);
-  console.log(`[solar-small] Publishing to ${TOPIC_SOLAR}`);
-  // Run immediately, then on interval
+  console.log(`[solar-large] Connected to MQTT broker → ${MQTT_BROKER}`);
+  console.log(`[solar-large] Publishing to ${TOPIC_SOLAR}`);
   runSimulation();
   setInterval(runSimulation, INTERVAL_MS);
 });
 
 client.on("error", (err) => {
-  console.error("[solar-small] MQTT error:", err.message);
+  console.error("[solar-large] MQTT error:", err.message);
 });
 
 // ── Weather ───────────────────────────────────────────────────────────────────
+// Each simulator has its own local cache to avoid hammering the backend.
+// The backend /api/weather route also caches for 15 min, so this is a
+// secondary safety net.
 let cachedWeather = null;
 let weatherFetchedAt = 0;
-const WEATHER_TTL_MS = 10 * 60 * 1000; // re-fetch every 10 minutes
+const WEATHER_TTL_MS = 10 * 60 * 1000; // re-fetch locally every 10 minutes
 
 async function getWeather() {
   const now = Date.now();
@@ -55,11 +57,11 @@ async function getWeather() {
     cachedWeather = data.data;
     weatherFetchedAt = now;
     console.log(
-      `[solar-small] Weather → cloud: ${cachedWeather.cloudCover}% | wind: ${cachedWeather.windSpeed} m/s | temp: ${cachedWeather.temperature}°C`,
+      `[solar-large] Weather → cloud: ${cachedWeather.cloudCover}% | wind: ${cachedWeather.windSpeed} m/s | temp: ${cachedWeather.temperature}°C`,
     );
   } catch (err) {
     console.warn(
-      "[solar-small] Weather fetch failed, using defaults:",
+      "[solar-large] Weather fetch failed, using defaults:",
       err.message,
     );
     cachedWeather = cachedWeather || {
@@ -72,31 +74,41 @@ async function getWeather() {
 }
 
 // ── Solar output model ────────────────────────────────────────────────────────
-// Small household: 1–3 kW peak capacity
-const PEAK_POWER_W = 3000; // watts at perfect midday, clear sky
-const PANEL_VOLTAGE = 36; // typical panel Voc (volts)
-const BATTERY_CAP_WH = 5000; // 5 kWh battery for small household
+// Large commercial/farm array: 5–10 kW peak capacity.
+//
+// Key differences from solar-small:
+//   • Higher peak power (10 kW vs 3 kW)
+//   • Higher panel string voltage (string of 3 panels in series = 108 V)
+//   • Larger battery bank (20 kWh vs 5 kWh)
+//   • Higher house/building load (1 kW vs 300 W)
+//   • Inverter runs slightly hotter under load
+const PEAK_POWER_W = 10000; // watts at perfect midday, clear sky
+const PANEL_VOLTAGE = 108; // ~3 panels in series (3 × 36 V)
+const BATTERY_CAP_WH = 20000; // 20 kWh battery bank
 
-let batterySOC = 60; // start at 60 % state of charge
-let energyToday = 0; // kWh accumulated today
+let batterySOC = 60; // start at 60% state of charge
+let energyToday = 0; // kWh accumulated since midnight
 let lastHour = new Date().getHours();
 
+// Bell-curve multiplier: 0 before sunrise (6 AM), peak at 13:00, 0 after sunset (19)
+// This is the same formula as solar-small — the physics of the sun don't change!
 function getSolarMultiplier(hour) {
-  // Bell curve: 0 before sunrise (6), peaks at 13:00, 0 after sunset (19)
   if (hour < 6 || hour > 19) return 0;
   return Math.sin(((hour - 6) * Math.PI) / 13);
 }
 
+// Add small random noise to a value to simulate real-world sensor readings.
+// pct = fraction of the value used as the ± range, e.g. 0.05 = ±5%
 function jitter(value, pct = 0.05) {
-  // Add ±pct random noise to simulate real-world fluctuation
   return value * (1 + (Math.random() - 0.5) * 2 * pct);
 }
 
 async function runSimulation() {
   const weather = await getWeather();
-  // Use the location's local time, not the server's time.
+
   // Intl.DateTimeFormat converts the current UTC time to the correct
   // local hour for wherever the inverter is physically located.
+
   const localHour = parseInt(
     new Intl.DateTimeFormat("en-US", {
       hour: "numeric",
@@ -113,43 +125,57 @@ async function runSimulation() {
 
   // ── Solar power calculation ───────────────────────────────────────────────
   const timeMultiplier = getSolarMultiplier(hour);
-  // Cloud cover reduces output: 0% cloud = full, 100% cloud = 20% remaining
-  const cloudMultiplier = 1 - (weather.cloudCover / 100) * 0.8;
-  // Temperature coefficient: panels lose ~0.4% efficiency per °C above 25°C
-  const tempMultiplier = 1 - Math.max(0, (weather.temperature - 25) * 0.004);
+
+  // Cloud cover: heavier impact on large arrays because they rely on direct
+  // irradiance more than diffuse light (no micro-inverter tricks).
+  // 100% cloud cover → only ~15% of rated power (vs 20% for small rooftop).
+  const cloudMultiplier = 1 - (weather.cloudCover / 100) * 0.85;
+
+  // Temperature coefficient: panels lose ~0.4% efficiency per °C above 25°C.
+  // Large arrays in open fields often run hotter (+5°C vs ambient).
+  const panelTemp = weather.temperature + 5;
+  const tempMultiplier = 1 - Math.max(0, (panelTemp - 25) * 0.004);
 
   const rawPower =
     PEAK_POWER_W * timeMultiplier * cloudMultiplier * tempMultiplier;
-  const power_w = Math.max(0, jitter(rawPower, 0.06));
+  const power_w = Math.max(0, jitter(rawPower, 0.05));
 
-  // DC side (panels → inverter input)
+  // DC side — higher voltage string, lower current for the same power
+  // (this is actually an advantage of large arrays: less resistive loss)
   const dc_current = power_w > 0 ? jitter(power_w / PANEL_VOLTAGE, 0.03) : 0;
   const dc_voltage = power_w > 0 ? jitter(PANEL_VOLTAGE, 0.02) : 0;
 
-  // AC side (inverter output) — ~96% efficiency
-  const ac_voltage = power_w > 0 ? jitter(230, 0.01) : 0; // SA mains 230V
-  const ac_current = power_w > 0 ? jitter((power_w * 0.96) / 230, 0.03) : 0;
-  const frequency = power_w > 0 ? jitter(50, 0.005) : 0; // SA grid 50Hz
+  // AC side — 3-phase output is common on large inverters, but we model
+  // single-phase equivalent here for simplicity. ~96.5% efficiency.
+  const ac_voltage = power_w > 0 ? jitter(230, 0.01) : 0;
+  const ac_current = power_w > 0 ? jitter((power_w * 0.965) / 230, 0.03) : 0;
+  const frequency = power_w > 0 ? jitter(50, 0.005) : 0;
+
+  // Large inverters run hotter under load; ambient + up to 25°C rise at full power
   const inverter_temp = jitter(
-    weather.temperature + (power_w / PEAK_POWER_W) * 15,
+    weather.temperature + (power_w / PEAK_POWER_W) * 25,
     0.02,
   );
 
-  // Energy accumulated (kWh) — add slice for this 30-second interval
+  // Energy accumulated (kWh) for this 30-second interval
+  // Formula: Energy = Power × Time  →  kWh = (W / 1000) × hours
   const intervalHours = INTERVAL_MS / 1000 / 3600;
   energyToday += (power_w / 1000) * intervalHours;
 
   // ── Battery simulation ────────────────────────────────────────────────────
-  // Solar charges battery; at night battery slowly discharges (house load ~300W)
-  const HOUSE_LOAD_W = 300;
-  const netPower = power_w - HOUSE_LOAD_W; // + = charging, - = discharging
+  // Excess solar charges the battery; deficit draws from it.
+  const BUILDING_LOAD_W = 1000; // larger building draws more than a household
+  const netPower = power_w - BUILDING_LOAD_W;
+
+  // SOC change: socDelta = (net energy this interval) / (total battery capacity) × 100
   const socDelta = ((netPower * intervalHours) / (BATTERY_CAP_WH / 1000)) * 100;
   batterySOC = Math.min(100, Math.max(0, batterySOC + socDelta));
 
-  const battery_voltage = 48 + (batterySOC / 100) * 6; // 48–54V typical LiFePO4
-  const battery_current = netPower / battery_voltage; // + charging, - discharging
+  // LiFePO4 voltage range: 48 V (empty) → 58 V (full) for a 48 V nominal bank
+  const battery_voltage = 48 + (batterySOC / 100) * 10;
+  const battery_current = netPower / battery_voltage;
   const battery_power = netPower;
-  const battery_temp = jitter(weather.temperature + 3, 0.02);
+  const battery_temp = jitter(weather.temperature + 4, 0.02);
 
   // ── Build payloads ────────────────────────────────────────────────────────
   const solarPayload = {
@@ -161,12 +187,10 @@ async function runSimulation() {
     frequency: parseFloat(frequency.toFixed(2)),
     temperature: parseFloat(inverter_temp.toFixed(1)),
     energy_kwh: parseFloat(energyToday.toFixed(4)),
-    // Solar-specific (null for solar — only used by wind scripts)
     wind_speed: null,
     rotor_rpm: null,
     pitch_angle: null,
-    // Metadata
-    profile: "solar-small",
+    profile: "solar-large",
     cloud_cover: weather.cloudCover,
     timestamp: now.toISOString(),
   };
@@ -185,7 +209,7 @@ async function runSimulation() {
   client.publish(TOPIC_BATTERY, JSON.stringify(batteryPayload), { qos: 1 });
 
   console.log(
-    `[solar-small] ${now.toLocaleTimeString()} | ` +
+    `[solar-large] ${now.toLocaleTimeString()} | ` +
       `☀️  ${power_w.toFixed(0)}W | ` +
       `🌥  cloud:${weather.cloudCover}% | ` +
       `🔋 SOC:${batterySOC.toFixed(1)}% | ` +

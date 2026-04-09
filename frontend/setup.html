@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Setup - VoltEquilibrium</title>
     <style>
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
       body {
         font-family: Arial, sans-serif;
         background-color: #f0f0f0;
@@ -19,13 +23,23 @@
         background: white;
         padding: 2rem;
         border-radius: 12px;
-        box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
         width: 100%;
         max-width: 600px;
       }
-      .header { text-align: center; margin-bottom: 2rem; }
-      .header h1 { color: #005147; font-size: 1.8rem; margin-bottom: 0.5rem; }
-      .header p { color: #666; font-size: 0.95rem; }
+      .header {
+        text-align: center;
+        margin-bottom: 2rem;
+      }
+      .header h1 {
+        color: #005147;
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+      }
+      .header p {
+        color: #666;
+        font-size: 0.95rem;
+      }
       .location-card {
         border: 2px solid #005147;
         border-radius: 8px;
@@ -33,7 +47,10 @@
         margin-bottom: 1.5rem;
         background: #f0faf8;
       }
-      .location-card h3 { color: #005147; margin-bottom: 1rem; }
+      .location-card h3 {
+        color: #005147;
+        margin-bottom: 1rem;
+      }
       .inverter-card {
         border: 2px solid #e0e0e0;
         border-radius: 8px;
@@ -41,7 +58,10 @@
         margin-bottom: 1.5rem;
         transition: border-color 0.2s;
       }
-      .inverter-card.added { border-color: #005147; background-color: #f0faf8; }
+      .inverter-card.added {
+        border-color: #005147;
+        background-color: #f0faf8;
+      }
       .inverter-card h3 {
         display: flex;
         align-items: center;
@@ -56,8 +76,12 @@
         padding: 2px 8px;
         border-radius: 20px;
       }
-      .badge.optional { background: #999; }
-      .field { margin-bottom: 1rem; }
+      .badge.optional {
+        background: #999;
+      }
+      .field {
+        margin-bottom: 1rem;
+      }
       label {
         display: block;
         font-size: 0.8rem;
@@ -66,7 +90,8 @@
         margin-bottom: 0.3rem;
         text-transform: uppercase;
       }
-      input, select {
+      input,
+      select {
         width: 100%;
         padding: 0.65rem;
         border: 1px solid #ddd;
@@ -74,8 +99,16 @@
         font-size: 0.95rem;
         background: white;
       }
-      input:focus, select:focus { outline: none; border-color: #005147; }
-      .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #005147;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
       .btn {
         padding: 0.65rem 1.5rem;
         border: none;
@@ -84,10 +117,20 @@
         cursor: pointer;
         font-weight: bold;
       }
-      .btn-primary { background: #005147; color: white; }
-      .btn-primary:hover { background: #003d36; }
-      .btn-danger { background: #dc3545; color: white; }
-      .btn-danger:hover { background: #c82333; }
+      .btn-primary {
+        background: #005147;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #003d36;
+      }
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-danger:hover {
+        background: #c82333;
+      }
       .btn-success {
         width: 100%;
         padding: 1rem;
@@ -100,8 +143,13 @@
         cursor: pointer;
         margin-top: 1rem;
       }
-      .btn-success:hover { background: #003d36; }
-      .btn-success:disabled { background: #ccc; cursor: not-allowed; }
+      .btn-success:hover {
+        background: #003d36;
+      }
+      .btn-success:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
       .added-info {
         display: flex;
         justify-content: space-between;
@@ -111,7 +159,11 @@
         border-radius: 6px;
         margin-top: 0.5rem;
       }
-      .added-info span { color: #2e7d32; font-weight: bold; font-size: 0.9rem; }
+      .added-info span {
+        color: #2e7d32;
+        font-weight: bold;
+        font-size: 0.9rem;
+      }
       .profile-info {
         margin-top: 0.75rem;
         padding: 0.65rem;
@@ -128,13 +180,35 @@
         margin-bottom: 1rem;
         display: none;
       }
-      .success { background-color: #d4edda; color: #155724; display: block; }
-      .error { background-color: #f8d7da; color: #721c24; display: block; }
-      .skip-link { text-align: center; margin-top: 1rem; }
-      .skip-link a { color: #999; font-size: 0.85rem; text-decoration: none; }
-      .skip-link a:hover { color: #666; text-decoration: underline; }
-      .form-section { display: block; }
-      .form-section.hidden { display: none; }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+        display: block;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+        display: block;
+      }
+      .skip-link {
+        text-align: center;
+        margin-top: 1rem;
+      }
+      .skip-link a {
+        color: #999;
+        font-size: 0.85rem;
+        text-decoration: none;
+      }
+      .skip-link a:hover {
+        color: #666;
+        text-decoration: underline;
+      }
+      .form-section {
+        display: block;
+      }
+      .form-section.hidden {
+        display: none;
+      }
       .api-key-box {
         margin-top: 0.75rem;
         padding: 0.65rem;
@@ -145,14 +219,18 @@
         border-left: 3px solid #ffc107;
         word-break: break-all;
       }
-      .api-key-box strong { color: #333; }
+      .api-key-box strong {
+        color: #333;
+      }
     </style>
   </head>
   <body>
     <div class="container">
       <div class="header">
         <h1>⚡ VoltEquilibrium</h1>
-        <p>Let's set up your energy sources. You can add solar, wind, or both.</p>
+        <p>
+          Let's set up your energy sources. You can add solar, wind, or both.
+        </p>
       </div>
 
       <div id="message" class="message"></div>
@@ -161,15 +239,48 @@
       <div class="location-card">
         <h3>📍 Energy Generation Site</h3>
         <div class="field">
-          <label>City or Area</label>
-          <div style="display:flex;gap:0.5rem">
-            <input type="text" id="site-location" placeholder="e.g. Johannesburg, Sandton" />
-            <button class="btn btn-primary" onclick="getLocation()" id="location-btn" style="white-space:nowrap">
+          <label>Quick Select (Demo)</label>
+          <select id="location-preset" onchange="applyPreset()">
+            <option value="">— Pick a demo location —</option>
+            <option value="-33.9249|18.4241|Cape Town, South Africa">
+              🇿🇦 Cape Town, South Africa
+            </option>
+            <option value="51.5074|-0.1278|London, United Kingdom">
+              🇬🇧 London, United Kingdom
+            </option>
+            <option value="35.6762|139.6503|Tokyo, Japan">
+              🇯🇵 Tokyo, Japan
+            </option>
+            <option value="-33.8688|151.2093|Sydney, Australia">
+              🇦🇺 Sydney, Australia
+            </option>
+            <option value="40.7128|-74.0060|New York, USA">
+              🇺🇸 New York, USA
+            </option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Or enter manually</label>
+          <div style="display: flex; gap: 0.5rem">
+            <input
+              type="text"
+              id="site-location"
+              placeholder="e.g. Johannesburg, Sandton"
+            />
+            <button
+              class="btn btn-primary"
+              onclick="getLocation()"
+              id="location-btn"
+              style="white-space: nowrap"
+            >
               📍 Use My Location
             </button>
           </div>
         </div>
-        <p id="location-status" style="font-size:0.8rem;color:#666;margin-top:0.5rem">
+        <p
+          id="location-status"
+          style="font-size: 0.8rem; color: #666; margin-top: 0.5rem"
+        >
           This will be used to fetch live weather data for your generation site.
         </p>
       </div>
@@ -181,11 +292,21 @@
           <div class="grid-2">
             <div class="field">
               <label>Inverter Name</label>
-              <input type="text" id="solar-name" placeholder="e.g. Rooftop Solar" />
+              <input
+                type="text"
+                id="solar-name"
+                placeholder="e.g. Rooftop Solar"
+              />
             </div>
             <div class="field">
               <label>Capacity (kW)</label>
-              <input type="number" id="solar-capacity" placeholder="e.g. 5" step="0.1" min="0" />
+              <input
+                type="number"
+                id="solar-capacity"
+                placeholder="e.g. 5"
+                step="0.1"
+                min="0"
+              />
             </div>
           </div>
           <!-- NEW: Profile dropdown -->
@@ -193,23 +314,36 @@
             <label>Simulation Profile</label>
             <select id="solar-profile" onchange="updateProfileInfo('solar')">
               <option value="">— Select a profile —</option>
-              <option value="solar-small">Small household (1–3 kW) · weather-sensitive</option>
-              <option value="solar-large">Large array (5–10 kW) · weather-sensitive</option>
+              <option value="solar-small">
+                Small household (1–3 kW) · weather-sensitive
+              </option>
+              <option value="solar-large">
+                Large array (5–10 kW) · weather-sensitive
+              </option>
             </select>
           </div>
           <div class="profile-info hidden" id="solar-profile-info"></div>
-          <button class="btn btn-primary" onclick="addInverter('solar')" style="margin-top:0.5rem">
+          <button
+            class="btn btn-primary"
+            onclick="addInverter('solar')"
+            style="margin-top: 0.5rem"
+          >
             Add Solar Inverter
           </button>
         </div>
         <div class="form-section hidden" id="solar-added">
           <div class="added-info">
             <span id="solar-added-text">✅ Solar inverter added</span>
-            <button class="btn btn-danger" onclick="removeInverter('solar')">Remove</button>
+            <button class="btn btn-danger" onclick="removeInverter('solar')">
+              Remove
+            </button>
           </div>
-          <div class="api-key-box" id="solar-apikey-box" style="display:none">
-            <strong>Your API Key:</strong> <span id="solar-apikey-value"></span><br>
-            <span style="color:#888">Saved automatically — your simulator will use this.</span>
+          <div class="api-key-box" id="solar-apikey-box" style="display: none">
+            <strong>Your API Key:</strong> <span id="solar-apikey-value"></span
+            ><br />
+            <span style="color: #888"
+              >Saved automatically — your simulator will use this.</span
+            >
           </div>
         </div>
       </div>
@@ -221,11 +355,21 @@
           <div class="grid-2">
             <div class="field">
               <label>Inverter Name</label>
-              <input type="text" id="wind-name" placeholder="e.g. Backyard Turbine" />
+              <input
+                type="text"
+                id="wind-name"
+                placeholder="e.g. Backyard Turbine"
+              />
             </div>
             <div class="field">
               <label>Capacity (kW)</label>
-              <input type="number" id="wind-capacity" placeholder="e.g. 2" step="0.1" min="0" />
+              <input
+                type="number"
+                id="wind-capacity"
+                placeholder="e.g. 2"
+                step="0.1"
+                min="0"
+              />
             </div>
           </div>
           <!-- NEW: Profile dropdown -->
@@ -233,143 +377,216 @@
             <label>Simulation Profile</label>
             <select id="wind-profile" onchange="updateProfileInfo('wind')">
               <option value="">— Select a profile —</option>
-              <option value="wind-small">Small turbine (1–2 kW) · wind-speed driven</option>
-              <option value="wind-large">Large turbine (5–15 kW) · wind-speed driven</option>
+              <option value="wind-small">
+                Small turbine (1–2 kW) · wind-speed driven
+              </option>
+              <option value="wind-large">
+                Large turbine (5–15 kW) · wind-speed driven
+              </option>
             </select>
           </div>
           <div class="profile-info hidden" id="wind-profile-info"></div>
-          <button class="btn btn-primary" onclick="addInverter('wind')" style="margin-top:0.5rem">
+          <button
+            class="btn btn-primary"
+            onclick="addInverter('wind')"
+            style="margin-top: 0.5rem"
+          >
             Add Wind Inverter
           </button>
         </div>
         <div class="form-section hidden" id="wind-added">
           <div class="added-info">
             <span id="wind-added-text">✅ Wind inverter added</span>
-            <button class="btn btn-danger" onclick="removeInverter('wind')">Remove</button>
+            <button class="btn btn-danger" onclick="removeInverter('wind')">
+              Remove
+            </button>
           </div>
-          <div class="api-key-box" id="wind-apikey-box" style="display:none">
-            <strong>Your API Key:</strong> <span id="wind-apikey-value"></span><br>
-            <span style="color:#888">Saved automatically — your simulator will use this.</span>
+          <div class="api-key-box" id="wind-apikey-box" style="display: none">
+            <strong>Your API Key:</strong> <span id="wind-apikey-value"></span
+            ><br />
+            <span style="color: #888"
+              >Saved automatically — your simulator will use this.</span
+            >
           </div>
         </div>
       </div>
 
-      <button class="btn-success" id="proceed-btn" onclick="proceedToDashboard()" disabled>
+      <button
+        class="btn-success"
+        id="proceed-btn"
+        onclick="proceedToDashboard()"
+        disabled
+      >
         Proceed to Dashboard
       </button>
 
       <div class="skip-link">
-        <a href="#" onclick="skipSetup()">I don't generate power, skip to consumer view →</a>
+        <a href="#" onclick="skipSetup()"
+          >I don't generate power, skip to consumer view →</a
+        >
       </div>
     </div>
 
     <script>
       // Handle OAuth token from URL
       const urlParams = new URLSearchParams(window.location.search);
-      const oauthToken = urlParams.get('token');
+      const oauthToken = urlParams.get("token");
       if (oauthToken) {
-        localStorage.setItem('authToken', oauthToken);
-        window.history.replaceState({}, document.title, window.location.pathname);
+        localStorage.setItem("authToken", oauthToken);
+        window.history.replaceState(
+          {},
+          document.title,
+          window.location.pathname,
+        );
       }
 
-      const API_BASE = 'http://localhost:3000';
-      const token = localStorage.getItem('authToken');
+      const API_BASE = "http://localhost:3000";
+      const token = localStorage.getItem("authToken");
       let addedInverters = { solar: null, wind: null };
 
-      if (!token) window.location.href = '../frontend/login.html';
+      if (!token) window.location.href = "../frontend/login.html";
 
       // Profile descriptions shown below dropdown
       const profileDescriptions = {
-        'solar-small': 'Simulates a small rooftop solar setup. Peak output ~3 kW at midday. Output scales down with cloud cover from Open-Meteo weather data.',
-        'solar-large': 'Simulates a large solar array. Peak output ~10 kW at midday. Output scales down with cloud cover from Open-Meteo weather data.',
-        'wind-small':  'Simulates a small domestic wind turbine. Output scales up with live wind speed. Rated at ~2 kW at 12 m/s wind.',
-        'wind-large':  'Simulates a large wind turbine. Output scales up with live wind speed. Rated at ~15 kW at 12 m/s wind.'
+        "solar-small":
+          "Simulates a small rooftop solar setup. Peak output ~3 kW at midday. Output scales down with cloud cover from Open-Meteo weather data.",
+        "solar-large":
+          "Simulates a large solar array. Peak output ~10 kW at midday. Output scales down with cloud cover from Open-Meteo weather data.",
+        "wind-small":
+          "Simulates a small domestic wind turbine. Output scales up with live wind speed. Rated at ~2 kW at 12 m/s wind.",
+        "wind-large":
+          "Simulates a large wind turbine. Output scales up with live wind speed. Rated at ~15 kW at 12 m/s wind.",
       };
 
       function updateProfileInfo(type) {
         const profile = document.getElementById(`${type}-profile`).value;
         const infoBox = document.getElementById(`${type}-profile-info`);
         if (profile && profileDescriptions[profile]) {
-          infoBox.textContent = '💡 ' + profileDescriptions[profile];
-          infoBox.classList.remove('hidden');
+          infoBox.textContent = "💡 " + profileDescriptions[profile];
+          infoBox.classList.remove("hidden");
         } else {
-          infoBox.classList.add('hidden');
+          infoBox.classList.add("hidden");
         }
       }
 
       function getLocation() {
-        const btn = document.getElementById('location-btn');
-        const status = document.getElementById('location-status');
+        const btn = document.getElementById("location-btn");
+        const status = document.getElementById("location-status");
         if (!navigator.geolocation) {
-          status.textContent = 'Geolocation is not supported by your browser.';
-          status.style.color = '#dc3545';
+          status.textContent = "Geolocation is not supported by your browser.";
+          status.style.color = "#dc3545";
           return;
         }
-        btn.textContent = '⏳ Getting location...';
+        btn.textContent = "⏳ Getting location...";
         btn.disabled = true;
-        status.textContent = 'Requesting location access...';
-        status.style.color = '#666';
+        status.textContent = "Requesting location access...";
+        status.style.color = "#666";
 
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const lat = position.coords.latitude.toFixed(6);
             const lng = position.coords.longitude.toFixed(6);
             try {
-              const response = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+              const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+              );
               const data = await response.json();
-              const city = data.address.city || data.address.town || data.address.suburb || data.address.village;
-              const suburb = data.address.suburb || '';
+              const city =
+                data.address.city ||
+                data.address.town ||
+                data.address.suburb ||
+                data.address.village;
+              const suburb = data.address.suburb || "";
               const locationName = suburb ? `${suburb}, ${city}` : city;
-              document.getElementById('site-location').value = locationName;
+              document.getElementById("site-location").value = locationName;
               status.textContent = `✅ Location detected: ${locationName} (${lat}, ${lng})`;
-              status.style.color = '#2e7d32';
-              document.getElementById('site-location').dataset.lat = lat;
-              document.getElementById('site-location').dataset.lng = lng;
+              status.style.color = "#2e7d32";
+              document.getElementById("site-location").dataset.lat = lat;
+              document.getElementById("site-location").dataset.lng = lng;
             } catch (error) {
-              document.getElementById('site-location').value = `${lat}, ${lng}`;
+              document.getElementById("site-location").value = `${lat}, ${lng}`;
               status.textContent = `✅ Location detected: ${lat}, ${lng}`;
-              status.style.color = '#2e7d32';
+              status.style.color = "#2e7d32";
             }
-            btn.textContent = '📍 Use My Location';
+            btn.textContent = "📍 Use My Location";
             btn.disabled = false;
           },
           (error) => {
-            btn.textContent = '📍 Use My Location';
+            btn.textContent = "📍 Use My Location";
             btn.disabled = false;
             switch (error.code) {
               case error.PERMISSION_DENIED:
-                status.textContent = '❌ Location access denied. Please enter your location manually.'; break;
+                status.textContent =
+                  "❌ Location access denied. Please enter your location manually.";
+                break;
               case error.POSITION_UNAVAILABLE:
-                status.textContent = '❌ Location unavailable. Please enter your location manually.'; break;
+                status.textContent =
+                  "❌ Location unavailable. Please enter your location manually.";
+                break;
               default:
-                status.textContent = '❌ Could not get location. Please enter manually.';
+                status.textContent =
+                  "❌ Could not get location. Please enter manually.";
             }
-            status.style.color = '#dc3545';
-          }
+            status.style.color = "#dc3545";
+          },
         );
       }
 
+      function applyPreset() {
+        const val = document.getElementById("location-preset").value;
+        if (!val) return;
+        // Use | as separator to avoid conflict with commas in location names
+        const parts = val.split("|");
+        const lat = parts[0];
+        const lng = parts[1];
+        const name = parts[2];
+        const input = document.getElementById("site-location");
+        input.value = name;
+        input.dataset.lat = lat;
+        input.dataset.lng = lng;
+        const status = document.getElementById("location-status");
+        status.textContent = `✅ ${name} (${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)})`;
+        status.style.color = "#2e7d32";
+      }
+
       async function addInverter(type) {
-        const name     = document.getElementById(`${type}-name`).value.trim();
+        const name = document.getElementById(`${type}-name`).value.trim();
         const capacity = document.getElementById(`${type}-capacity`).value;
-        const profile  = document.getElementById(`${type}-profile`).value;
-        const locationInput = document.getElementById('site-location');
+        const profile = document.getElementById(`${type}-profile`).value;
+        const locationInput = document.getElementById("site-location");
         const location = locationInput.value.trim();
         const lat = locationInput.dataset.lat || null;
         const lng = locationInput.dataset.lng || null;
 
-        if (!name) { showMessage('Please enter a name for your inverter', 'error'); return; }
-        if (!profile) { showMessage('Please select a simulation profile', 'error'); return; }
-        if (!location) { showMessage('Please enter or detect your location first', 'error'); return; }
+        if (!name) {
+          showMessage("Please enter a name for your inverter", "error");
+          return;
+        }
+        if (!profile) {
+          showMessage("Please select a simulation profile", "error");
+          return;
+        }
+        if (!location) {
+          showMessage("Please enter or detect your location first", "error");
+          return;
+        }
 
         try {
           const response = await fetch(`${API_BASE}/api/setup/inverter`, {
-            method: 'POST',
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ name, type, capacity: capacity || null, location, lat, lng, profile })
+            body: JSON.stringify({
+              name,
+              type,
+              capacity: capacity || null,
+              location,
+              lat,
+              lng,
+              profile,
+            }),
           });
 
           const result = await response.json();
@@ -379,24 +596,29 @@
 
             // Save api_key and profile to localStorage for the simulator to use
             if (result.apiKey) {
-              localStorage.setItem('apiKey', result.apiKey);
-              localStorage.setItem('userLat', lat);
-              localStorage.setItem('userLng', lng);
+              localStorage.setItem("apiKey", result.apiKey);
+              localStorage.setItem("userLat", lat);
+              localStorage.setItem("userLng", lng);
               // Show the API key to the user
-              document.getElementById(`${type}-apikey-value`).textContent = result.apiKey;
-              document.getElementById(`${type}-apikey-box`).style.display = 'block';
+              document.getElementById(`${type}-apikey-value`).textContent =
+                result.apiKey;
+              document.getElementById(`${type}-apikey-box`).style.display =
+                "block";
             }
             // Save the chosen profile
             localStorage.setItem(`${type}Profile`, profile);
 
             showInverterAdded(type, name, capacity, profile);
             updateProceedButton();
-            showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} inverter added!`, 'success');
+            showMessage(
+              `${type.charAt(0).toUpperCase() + type.slice(1)} inverter added!`,
+              "success",
+            );
           } else {
-            showMessage(result.message, 'error');
+            showMessage(result.message, "error");
           }
         } catch (error) {
-          showMessage('Error adding inverter', 'error');
+          showMessage("Error adding inverter", "error");
         }
       }
 
@@ -405,68 +627,80 @@
         if (!inverterId) return;
 
         try {
-          const response = await fetch(`${API_BASE}/api/setup/inverter/${inverterId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
+          const response = await fetch(
+            `${API_BASE}/api/setup/inverter/${inverterId}`,
+            {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
           const result = await response.json();
           if (result.success) {
             addedInverters[type] = null;
             localStorage.removeItem(`${type}Profile`);
-            document.getElementById(`${type}-form`).classList.remove('hidden');
-            document.getElementById(`${type}-added`).classList.add('hidden');
-            document.getElementById(`${type}-card`).classList.remove('added');
-            document.getElementById(`${type}-name`).value = '';
-            document.getElementById(`${type}-capacity`).value = '';
-            document.getElementById(`${type}-profile`).value = '';
-            document.getElementById(`${type}-profile-info`).classList.add('hidden');
-            document.getElementById(`${type}-apikey-box`).style.display = 'none';
+            document.getElementById(`${type}-form`).classList.remove("hidden");
+            document.getElementById(`${type}-added`).classList.add("hidden");
+            document.getElementById(`${type}-card`).classList.remove("added");
+            document.getElementById(`${type}-name`).value = "";
+            document.getElementById(`${type}-capacity`).value = "";
+            document.getElementById(`${type}-profile`).value = "";
+            document
+              .getElementById(`${type}-profile-info`)
+              .classList.add("hidden");
+            document.getElementById(`${type}-apikey-box`).style.display =
+              "none";
             updateProceedButton();
-            showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} inverter removed`, 'success');
+            showMessage(
+              `${type.charAt(0).toUpperCase() + type.slice(1)} inverter removed`,
+              "success",
+            );
           }
         } catch (error) {
-          showMessage('Error removing inverter', 'error');
+          showMessage("Error removing inverter", "error");
         }
       }
 
       function showInverterAdded(type, name, capacity, profile) {
-        document.getElementById(`${type}-form`).classList.add('hidden');
-        document.getElementById(`${type}-added`).classList.remove('hidden');
-        document.getElementById(`${type}-card`).classList.add('added');
-        const profileLabel = profile ? ` · ${profile}` : '';
+        document.getElementById(`${type}-form`).classList.add("hidden");
+        document.getElementById(`${type}-added`).classList.remove("hidden");
+        document.getElementById(`${type}-card`).classList.add("added");
+        const profileLabel = profile ? ` · ${profile}` : "";
         document.getElementById(`${type}-added-text`).textContent =
-          `✅ ${name}${capacity ? ` • ${capacity} kW` : ''}${profileLabel}`;
+          `✅ ${name}${capacity ? ` • ${capacity} kW` : ""}${profileLabel}`;
       }
 
       function updateProceedButton() {
         const hasAny = addedInverters.solar || addedInverters.wind;
-        document.getElementById('proceed-btn').disabled = !hasAny;
+        document.getElementById("proceed-btn").disabled = !hasAny;
       }
 
       function proceedToDashboard() {
-        window.location.href = '../frontend/Dashboard.html';
+        window.location.href = "../frontend/Dashboard.html";
       }
 
       function skipSetup() {
-        window.location.href = '../frontend/Dashboard.html';
+        window.location.href = "../frontend/Dashboard.html";
       }
 
       function showMessage(msg, type) {
-        const el = document.getElementById('message');
+        const el = document.getElementById("message");
         el.textContent = msg;
         el.className = `message ${type}`;
-        setTimeout(() => { el.className = 'message'; }, 3000);
+        setTimeout(() => {
+          el.className = "message";
+        }, 3000);
       }
 
       async function checkExistingSetup() {
         try {
           const response = await fetch(`${API_BASE}/api/setup/status`, {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           });
           const result = await response.json();
-          if (result.hasSetup) window.location.href = '../frontend/Dashboard.html';
+          if (result.hasSetup)
+            window.location.href = "../frontend/Dashboard.html";
         } catch (error) {
-          console.error('Error checking setup:', error);
+          console.error("Error checking setup:", error);
         }
       }
 

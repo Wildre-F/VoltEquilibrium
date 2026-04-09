@@ -1,547 +1,933 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Profile - VoltEquilibrium</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: Arial, sans-serif; background-color: #f0f0f0; min-height: 100vh; padding: 20px; }
-        .container { max-width: 650px; margin: 0 auto; }
-        .back-btn {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            color: #005147; font-weight: bold; text-decoration: none;
-            margin-bottom: 1.5rem; cursor: pointer; background: none;
-            border: none; font-size: 0.95rem;
-        }
-        .card {
-            background: white; padding: 1.5rem; border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 1.5rem;
-        }
-        .card h2 {
-            color: #005147; margin-bottom: 1.2rem; font-size: 1.2rem;
-            padding-bottom: 0.75rem; border-bottom: 1px solid #eee;
-        }
-        .field { margin-bottom: 1rem; }
-        label { display: block; font-size: 0.75rem; font-weight: bold; color: #666; margin-bottom: 0.3rem; text-transform: uppercase; }
-        input, select {
-            width: 100%; padding: 0.65rem; border: 1px solid #ddd;
-            border-radius: 4px; font-size: 0.95rem; background: white;
-        }
-        input:focus, select:focus { outline: none; border-color: #005147; }
-        input:disabled { background: #f5f5f5; color: #999; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .btn { padding: 0.65rem 1.2rem; border: none; border-radius: 4px; font-size: 0.9rem; cursor: pointer; font-weight: bold; }
-        .btn-primary { background: #005147; color: white; }
-        .btn-primary:hover { background: #003d36; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-danger:hover { background: #c82333; }
-        .btn-block { width: 100%; padding: 0.75rem; margin-top: 0.5rem; }
-        .inverter-card { border: 2px solid #e0e0e0; border-radius: 8px; padding: 1.2rem; margin-bottom: 1rem; }
-        .inverter-card.added { border-color: #005147; background: #f0faf8; }
-        .inverter-card h3 { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; color: #333; font-size: 1rem; }
-        .badge { background: #005147; color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 20px; }
-        .badge.optional { background: #999; }
-        .added-info { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem; background: #e8f5e9; border-radius: 6px; }
-        .added-info span { color: #2e7d32; font-weight: bold; font-size: 0.9rem; }
-        .form-section { display: block; }
-        .form-section.hidden { display: none; }
-        .message { padding: 0.75rem; border-radius: 4px; text-align: center; margin-bottom: 1rem; display: none; }
-        .success { background-color: #d4edda; color: #155724; display: block; }
-        .error { background-color: #f8d7da; color: #721c24; display: block; }
-        .member-since { color: #999; font-size: 0.85rem; margin-top: 0.5rem; }
-        .danger-zone { border: 2px solid #dc3545; }
-        .danger-zone h2 { color: #dc3545; border-bottom-color: #ffd6d6; }
-        .location-row { display: flex; gap: 0.5rem; }
-        .location-row input { flex: 1; }
-        .api-key-box {
-            margin-top: 1rem; padding: 0.75rem; background: #fff8e1;
-            border-radius: 6px; border-left: 3px solid #ffc107;
-            font-size: 0.85rem; color: #555;
-        }
-        .api-key-box strong { color: #333; display: block; margin-bottom: 0.3rem; }
-        .api-key-value {
-            font-family: monospace; font-size: 0.9rem; color: #005147;
-            background: #f5f5f5; padding: 0.4rem 0.6rem; border-radius: 4px;
-            display: inline-block; margin-top: 0.3rem; word-break: break-all;
-        }
-        .copy-btn {
-            margin-left: 0.5rem; padding: 0.25rem 0.6rem;
-            font-size: 0.75rem; background: #005147; color: white;
-            border: none; border-radius: 4px; cursor: pointer;
-        }
-        .copy-btn:hover { background: #003d36; }
-        .profile-info {
-            margin-top: 0.75rem; padding: 0.65rem; background: #e8f4fd;
-            border-radius: 4px; font-size: 0.82rem; color: #1565c0;
-            border-left: 3px solid #1976d2;
-        }
-        .danger-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f0f0;
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 650px;
+        margin: 0 auto;
+      }
+      .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #005147;
+        font-weight: bold;
+        text-decoration: none;
+        margin-bottom: 1.5rem;
+        cursor: pointer;
+        background: none;
+        border: none;
+        font-size: 0.95rem;
+      }
+      .card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 1.5rem;
+      }
+      .card h2 {
+        color: #005147;
+        margin-bottom: 1.2rem;
+        font-size: 1.2rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #eee;
+      }
+      .field {
+        margin-bottom: 1rem;
+      }
+      label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: bold;
+        color: #666;
+        margin-bottom: 0.3rem;
+        text-transform: uppercase;
+      }
+      input,
+      select {
+        width: 100%;
+        padding: 0.65rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 0.95rem;
+        background: white;
+      }
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: #005147;
+      }
+      input:disabled {
+        background: #f5f5f5;
+        color: #999;
+      }
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+      }
+      .btn {
+        padding: 0.65rem 1.2rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .btn-primary {
+        background: #005147;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #003d36;
+      }
+      .btn-danger {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-danger:hover {
+        background: #c82333;
+      }
+      .btn-block {
+        width: 100%;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+      }
+      .inverter-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 1.2rem;
+        margin-bottom: 1rem;
+      }
+      .inverter-card.added {
+        border-color: #005147;
+        background: #f0faf8;
+      }
+      .inverter-card h3 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        color: #333;
+        font-size: 1rem;
+      }
+      .badge {
+        background: #005147;
+        color: white;
+        font-size: 0.7rem;
+        padding: 2px 8px;
+        border-radius: 20px;
+      }
+      .badge.optional {
+        background: #999;
+      }
+      .added-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        background: #e8f5e9;
+        border-radius: 6px;
+      }
+      .added-info span {
+        color: #2e7d32;
+        font-weight: bold;
+        font-size: 0.9rem;
+      }
+      .form-section {
+        display: block;
+      }
+      .form-section.hidden {
+        display: none;
+      }
+      .message {
+        padding: 0.75rem;
+        border-radius: 4px;
+        text-align: center;
+        margin-bottom: 1rem;
+        display: none;
+      }
+      .success {
+        background-color: #d4edda;
+        color: #155724;
+        display: block;
+      }
+      .error {
+        background-color: #f8d7da;
+        color: #721c24;
+        display: block;
+      }
+      .member-since {
+        color: #999;
+        font-size: 0.85rem;
+        margin-top: 0.5rem;
+      }
+      .danger-zone {
+        border: 2px solid #dc3545;
+      }
+      .danger-zone h2 {
+        color: #dc3545;
+        border-bottom-color: #ffd6d6;
+      }
+      .location-row {
+        display: flex;
+        gap: 0.5rem;
+      }
+      .location-row input {
+        flex: 1;
+      }
+      .api-key-box {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: #fff8e1;
+        border-radius: 6px;
+        border-left: 3px solid #ffc107;
+        font-size: 0.85rem;
+        color: #555;
+      }
+      .api-key-box strong {
+        color: #333;
+        display: block;
+        margin-bottom: 0.3rem;
+      }
+      .api-key-value {
+        font-family: monospace;
+        font-size: 0.9rem;
+        color: #005147;
+        background: #f5f5f5;
+        padding: 0.4rem 0.6rem;
+        border-radius: 4px;
+        display: inline-block;
+        margin-top: 0.3rem;
+        word-break: break-all;
+      }
+      .copy-btn {
+        margin-left: 0.5rem;
+        padding: 0.25rem 0.6rem;
+        font-size: 0.75rem;
+        background: #005147;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .copy-btn:hover {
+        background: #003d36;
+      }
+      .profile-info {
+        margin-top: 0.75rem;
+        padding: 0.65rem;
+        background: #e8f4fd;
+        border-radius: 4px;
+        font-size: 0.82rem;
+        color: #1565c0;
+        border-left: 3px solid #1976d2;
+      }
+      .danger-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <button class="back-btn" onclick="window.location.href='../frontend/Dashboard.html'">
-            ← Back to Dashboard
+      <button
+        class="back-btn"
+        onclick="window.location.href = '../frontend/Dashboard.html'"
+      >
+        ← Back to Dashboard
+      </button>
+
+      <div id="message" class="message"></div>
+
+      <!-- Profile Info -->
+      <div class="card">
+        <h2>👤 My Profile</h2>
+        <div class="field">
+          <label>Username</label>
+          <input type="text" id="username" placeholder="Username" />
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="Email" />
+        </div>
+        <div class="field">
+          <label>New Password (leave blank to keep current)</label>
+          <input type="password" id="new-password" placeholder="New password" />
+        </div>
+        <div class="field">
+          <label>Confirm New Password</label>
+          <input
+            type="password"
+            id="confirm-password"
+            placeholder="Confirm new password"
+          />
+        </div>
+        <button class="btn btn-primary btn-block" onclick="updateProfile()">
+          Save Changes
         </button>
+        <p class="member-since" id="member-since"></p>
+      </div>
 
-        <div id="message" class="message"></div>
+      <!-- Energy Setup -->
+      <div class="card">
+        <h2>⚡ My Energy Setup</h2>
 
-        <!-- Profile Info -->
-        <div class="card">
-            <h2>👤 My Profile</h2>
-            <div class="field">
-                <label>Username</label>
-                <input type="text" id="username" placeholder="Username" />
-            </div>
-            <div class="field">
-                <label>Email</label>
-                <input type="email" id="email" placeholder="Email" />
-            </div>
-            <div class="field">
-                <label>New Password (leave blank to keep current)</label>
-                <input type="password" id="new-password" placeholder="New password" />
-            </div>
-            <div class="field">
-                <label>Confirm New Password</label>
-                <input type="password" id="confirm-password" placeholder="Confirm new password" />
-            </div>
-            <button class="btn btn-primary btn-block" onclick="updateProfile()">Save Changes</button>
-            <p class="member-since" id="member-since"></p>
+        <!-- API Key display -->
+        <div class="api-key-box" id="api-key-section" style="display: none">
+          <strong>🔑 Your API Key</strong>
+          <div>
+            <span class="api-key-value" id="api-key-display"></span>
+            <button class="copy-btn" onclick="copyApiKey()">Copy</button>
+          </div>
+          <div style="margin-top: 0.4rem; font-size: 0.78rem; color: #888">
+            This key links your simulator script to your account. Keep it safe.
+          </div>
         </div>
 
-        <!-- Energy Setup -->
-        <div class="card">
-            <h2>⚡ My Energy Setup</h2>
-
-            <!-- API Key display -->
-            <div class="api-key-box" id="api-key-section" style="display:none">
-                <strong>🔑 Your API Key</strong>
-                <div>
-                    <span class="api-key-value" id="api-key-display"></span>
-                    <button class="copy-btn" onclick="copyApiKey()">Copy</button>
-                </div>
-                <div style="margin-top:0.4rem;font-size:0.78rem;color:#888">
-                    This key links your simulator script to your account. Keep it safe.
-                </div>
-            </div>
-
-            <!-- Location -->
-            <div class="field" style="margin-top:1rem">
-                <label>Generation Site Location</label>
-                <div class="location-row">
-                    <input type="text" id="site-location" placeholder="e.g. Johannesburg, Sandton" />
-                    <button class="btn btn-primary" onclick="getLocation()">📍 Detect</button>
-                </div>
-                <p id="location-status" style="font-size:0.8rem;color:#666;margin-top:0.4rem"></p>
-            </div>
-
-            <!-- Solar Inverter -->
-            <div class="inverter-card" id="solar-card">
-                <h3>
-                    ☀️ Solar Inverter
-                    <span class="badge optional" id="solar-badge">Not Added</span>
-                </h3>
-                <div class="form-section" id="solar-form">
-                    <div class="grid-2">
-                        <div class="field">
-                            <label>Name</label>
-                            <input type="text" id="solar-name" placeholder="e.g. Rooftop Solar" />
-                        </div>
-                        <div class="field">
-                            <label>Capacity (kW)</label>
-                            <input type="number" id="solar-capacity" placeholder="e.g. 5" step="0.1" min="0" />
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label>Simulation Profile</label>
-                        <select id="solar-profile" onchange="updateProfileInfo('solar')">
-                            <option value="">— Select a profile —</option>
-                            <option value="solar-small">Small household (1–3 kW)</option>
-                            <option value="solar-large">Large array (5–10 kW)</option>
-                        </select>
-                    </div>
-                    <div class="profile-info" id="solar-profile-info" style="display:none"></div>
-                    <button class="btn btn-primary" style="margin-top:0.5rem" onclick="addInverter('solar')">Add Solar Inverter</button>
-                </div>
-                <div class="form-section hidden" id="solar-added">
-                    <div class="added-info">
-                        <span id="solar-added-text">✅ Solar inverter added</span>
-                        <button class="btn btn-danger" onclick="removeInverter('solar')">Remove</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Wind Inverter -->
-            <div class="inverter-card" id="wind-card">
-                <h3>
-                    💨 Wind Inverter
-                    <span class="badge optional" id="wind-badge">Not Added</span>
-                </h3>
-                <div class="form-section" id="wind-form">
-                    <div class="grid-2">
-                        <div class="field">
-                            <label>Name</label>
-                            <input type="text" id="wind-name" placeholder="e.g. Backyard Turbine" />
-                        </div>
-                        <div class="field">
-                            <label>Capacity (kW)</label>
-                            <input type="number" id="wind-capacity" placeholder="e.g. 2" step="0.1" min="0" />
-                        </div>
-                    </div>
-                    <div class="field">
-                        <label>Simulation Profile</label>
-                        <select id="wind-profile" onchange="updateProfileInfo('wind')">
-                            <option value="">— Select a profile —</option>
-                            <option value="wind-small">Small turbine (1–2 kW)</option>
-                            <option value="wind-large">Large turbine (5–15 kW)</option>
-                        </select>
-                    </div>
-                    <div class="profile-info" id="wind-profile-info" style="display:none"></div>
-                    <button class="btn btn-primary" style="margin-top:0.5rem" onclick="addInverter('wind')">Add Wind Inverter</button>
-                </div>
-                <div class="form-section hidden" id="wind-added">
-                    <div class="added-info">
-                        <span id="wind-added-text">✅ Wind inverter added</span>
-                        <button class="btn btn-danger" onclick="removeInverter('wind')">Remove</button>
-                    </div>
-                </div>
-            </div>
+        <!-- Generation Site Location -->
+        <div class="field">
+          <label>Generation Site Location</label>
+          <select id="location-preset" onchange="applyLocationPreset()">
+            <option value="">— Pick a demo location —</option>
+            <option value="-33.9249|18.4241|Cape Town, South Africa">
+              🇿🇦 Cape Town, South Africa
+            </option>
+            <option value="51.5074|-0.1278|London, United Kingdom">
+              🇬🇧 London, United Kingdom
+            </option>
+            <option value="35.6762|139.6503|Tokyo, Japan">
+              🇯🇵 Tokyo, Japan
+            </option>
+            <option value="-33.8688|151.2093|Sydney, Australia">
+              🇦🇺 Sydney, Australia
+            </option>
+            <option value="40.7128|-74.0060|New York, USA">
+              🇺🇸 New York, USA
+            </option>
+          </select>
+          <div style="display: flex; gap: 8px; margin-top: 8px">
+            <input
+              type="text"
+              id="site-location"
+              placeholder="Or type a location name"
+              style="flex: 1"
+            />
+            <button type="button" onclick="getLocation()">📍 Detect</button>
+          </div>
+          <p
+            id="location-status"
+            style="font-size: 0.8rem; color: #666; margin-top: 4px"
+          ></p>
+          <button
+            type="button"
+            onclick="saveLocation()"
+            style="margin-top: 8px"
+          >
+            💾 Save Location
+          </button>
         </div>
 
-        <!-- Danger Zone -->
-        <div class="card danger-zone">
-            <h2>⚠️ Danger Zone</h2>
-            <p style="color:#666;font-size:0.9rem;margin-bottom:0.5rem">
-                These actions are permanent and cannot be undone.
-            </p>
-            <div class="danger-actions">
-                <button class="btn btn-danger" onclick="confirmDeleteData()">
-                    🗑️ Delete All My Data
-                </button>
-                <button class="btn btn-danger" onclick="confirmDeleteAccount()">
-                    ❌ Delete My Account
-                </button>
+        <!-- Solar Inverter -->
+        <div class="inverter-card" id="solar-card">
+          <h3>
+            ☀️ Solar Inverter
+            <span class="badge optional" id="solar-badge">Not Added</span>
+          </h3>
+          <div class="form-section" id="solar-form">
+            <div class="grid-2">
+              <div class="field">
+                <label>Name</label>
+                <input
+                  type="text"
+                  id="solar-name"
+                  placeholder="e.g. Rooftop Solar"
+                />
+              </div>
+              <div class="field">
+                <label>Capacity (kW)</label>
+                <input
+                  type="number"
+                  id="solar-capacity"
+                  placeholder="e.g. 5"
+                  step="0.1"
+                  min="0"
+                />
+              </div>
             </div>
-            <p style="color:#999;font-size:0.78rem;margin-top:0.75rem">
-                "Delete All My Data" removes your readings and inverters but keeps your account.
-                "Delete My Account" removes everything permanently.
-            </p>
+            <div class="field">
+              <label>Simulation Profile</label>
+              <select id="solar-profile" onchange="updateProfileInfo('solar')">
+                <option value="">— Select a profile —</option>
+                <option value="solar-small">Small household (1–3 kW)</option>
+                <option value="solar-large">Large array (5–10 kW)</option>
+              </select>
+            </div>
+            <div
+              class="profile-info"
+              id="solar-profile-info"
+              style="display: none"
+            ></div>
+            <button
+              class="btn btn-primary"
+              style="margin-top: 0.5rem"
+              onclick="addInverter('solar')"
+            >
+              Add Solar Inverter
+            </button>
+          </div>
+          <div class="form-section hidden" id="solar-added">
+            <div class="added-info">
+              <span id="solar-added-text">✅ Solar inverter added</span>
+              <button class="btn btn-danger" onclick="removeInverter('solar')">
+                Remove
+              </button>
+            </div>
+          </div>
         </div>
+
+        <!-- Wind Inverter -->
+        <div class="inverter-card" id="wind-card">
+          <h3>
+            💨 Wind Inverter
+            <span class="badge optional" id="wind-badge">Not Added</span>
+          </h3>
+          <div class="form-section" id="wind-form">
+            <div class="grid-2">
+              <div class="field">
+                <label>Name</label>
+                <input
+                  type="text"
+                  id="wind-name"
+                  placeholder="e.g. Backyard Turbine"
+                />
+              </div>
+              <div class="field">
+                <label>Capacity (kW)</label>
+                <input
+                  type="number"
+                  id="wind-capacity"
+                  placeholder="e.g. 2"
+                  step="0.1"
+                  min="0"
+                />
+              </div>
+            </div>
+            <div class="field">
+              <label>Simulation Profile</label>
+              <select id="wind-profile" onchange="updateProfileInfo('wind')">
+                <option value="">— Select a profile —</option>
+                <option value="wind-small">Small turbine (1–2 kW)</option>
+                <option value="wind-large">Large turbine (5–15 kW)</option>
+              </select>
+            </div>
+            <div
+              class="profile-info"
+              id="wind-profile-info"
+              style="display: none"
+            ></div>
+            <button
+              class="btn btn-primary"
+              style="margin-top: 0.5rem"
+              onclick="addInverter('wind')"
+            >
+              Add Wind Inverter
+            </button>
+          </div>
+          <div class="form-section hidden" id="wind-added">
+            <div class="added-info">
+              <span id="wind-added-text">✅ Wind inverter added</span>
+              <button class="btn btn-danger" onclick="removeInverter('wind')">
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="card danger-zone">
+        <h2>⚠️ Danger Zone</h2>
+        <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem">
+          These actions are permanent and cannot be undone.
+        </p>
+        <div class="danger-actions">
+          <button class="btn btn-danger" onclick="confirmDeleteData()">
+            🗑️ Delete All My Data
+          </button>
+          <button class="btn btn-danger" onclick="confirmDeleteAccount()">
+            ❌ Delete My Account
+          </button>
+        </div>
+        <p style="color: #999; font-size: 0.78rem; margin-top: 0.75rem">
+          "Delete All My Data" removes your readings and inverters but keeps
+          your account. "Delete My Account" removes everything permanently.
+        </p>
+      </div>
     </div>
 
     <script>
-        const API_BASE = 'http://localhost:3000';
-        const token = localStorage.getItem('authToken');
-        let inverterIds = { solar: null, wind: null };
+      const API_BASE = "http://localhost:3000";
+      const token = localStorage.getItem("authToken");
+      let inverterIds = { solar: null, wind: null };
 
-        if (!token) window.location.href = '../frontend/login.html';
+      if (!token) window.location.href = "../frontend/login.html";
 
-        const profileDescriptions = {
-            'solar-small': 'Peak ~3 kW at midday. Output scales with cloud cover.',
-            'solar-large': 'Peak ~10 kW at midday. Output scales with cloud cover.',
-            'wind-small':  'Rated ~2 kW at 12 m/s wind speed.',
-            'wind-large':  'Rated ~15 kW at 12 m/s wind speed.'
-        };
+      const profileDescriptions = {
+        "solar-small": "Peak ~3 kW at midday. Output scales with cloud cover.",
+        "solar-large": "Peak ~10 kW at midday. Output scales with cloud cover.",
+        "wind-small": "Rated ~2 kW at 12 m/s wind speed.",
+        "wind-large": "Rated ~15 kW at 12 m/s wind speed.",
+      };
 
-        function updateProfileInfo(type) {
-            const profile = document.getElementById(`${type}-profile`).value;
-            const infoBox = document.getElementById(`${type}-profile-info`);
-            if (profile) {
-                infoBox.textContent = '💡 ' + profileDescriptions[profile];
-                infoBox.style.display = 'block';
-            } else {
-                infoBox.style.display = 'none';
-            }
+      function updateProfileInfo(type) {
+        const profile = document.getElementById(`${type}-profile`).value;
+        const infoBox = document.getElementById(`${type}-profile-info`);
+        if (profile) {
+          infoBox.textContent = "💡 " + profileDescriptions[profile];
+          infoBox.style.display = "block";
+        } else {
+          infoBox.style.display = "none";
         }
+      }
 
-        function copyApiKey() {
-            const key = document.getElementById('api-key-display').textContent;
-            navigator.clipboard.writeText(key).then(() => {
-                showMessage('API key copied to clipboard!', 'success');
+      function copyApiKey() {
+        const key = document.getElementById("api-key-display").textContent;
+        navigator.clipboard.writeText(key).then(() => {
+          showMessage("API key copied to clipboard!", "success");
+        });
+      }
+
+      async function loadProfile() {
+        try {
+          const response = await fetch(`${API_BASE}/api/profile`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const result = await response.json();
+          if (result.success) {
+            document.getElementById("username").value = result.data.username;
+            document.getElementById("email").value = result.data.email;
+            document.getElementById("member-since").textContent =
+              `Member since: ${new Date(result.data.created_at).toLocaleDateString()}`;
+          }
+        } catch (error) {
+          showMessage("Error loading profile", "error");
+        }
+      }
+
+      async function loadInverters() {
+        try {
+          const response = await fetch(`${API_BASE}/api/setup/status`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            // Show location
+            if (result.location) {
+              document.getElementById("site-location").value = result.location;
+            }
+
+            // Show inverters
+            if (result.inverters && result.inverters.length > 0) {
+              result.inverters.forEach((inv) => {
+                inverterIds[inv.type] = inv.id;
+                showInverterAdded(
+                  inv.type,
+                  inv.name,
+                  inv.capacity,
+                  inv.profile,
+                );
+              });
+            }
+          }
+
+          // Show API key — try localStorage first, then fetch from backend
+          let apiKey = localStorage.getItem("apiKey");
+          if (!apiKey) {
+            const keyRes = await fetch(`${API_BASE}/api/user/apikey`, {
+              headers: { Authorization: `Bearer ${token}` },
             });
-        }
-
-        async function loadProfile() {
-            try {
-                const response = await fetch(`${API_BASE}/api/profile`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const result = await response.json();
-                if (result.success) {
-                    document.getElementById('username').value = result.data.username;
-                    document.getElementById('email').value = result.data.email;
-                    document.getElementById('member-since').textContent =
-                        `Member since: ${new Date(result.data.created_at).toLocaleDateString()}`;
-                }
-            } catch (error) {
-                showMessage('Error loading profile', 'error');
+            const keyData = await keyRes.json();
+            if (keyData.success && keyData.apiKey) {
+              localStorage.setItem("apiKey", keyData.apiKey); // update localStorage too
+              document.getElementById("api-key-display").textContent =
+                keyData.apiKey;
+              document.getElementById("api-key-section").style.display =
+                "block";
             }
+          }
+          if (apiKey) {
+            document.getElementById("api-key-display").textContent = apiKey;
+            document.getElementById("api-key-section").style.display = "block";
+          }
+        } catch (error) {
+          console.error("Error loading inverters:", error);
+        }
+      }
+
+      async function updateProfile() {
+        const username = document.getElementById("username").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const newPass = document.getElementById("new-password").value;
+        const confPass = document.getElementById("confirm-password").value;
+
+        if (!username || !email) {
+          showMessage("Username and email are required", "error");
+          return;
+        }
+        if (newPass && newPass !== confPass) {
+          showMessage("Passwords do not match", "error");
+          return;
+        }
+        if (newPass && newPass.length < 8) {
+          showMessage("Password must be at least 8 characters", "error");
+          return;
         }
 
-        async function loadInverters() {
-            try {
-                const response = await fetch(`${API_BASE}/api/setup/status`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const result = await response.json();
+        try {
+          const response = await fetch(`${API_BASE}/api/profile/update`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              username,
+              email,
+              password: newPass || undefined,
+            }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            showMessage("Profile updated successfully!", "success");
+            document.getElementById("new-password").value = "";
+            document.getElementById("confirm-password").value = "";
+          } else {
+            showMessage(result.message, "error");
+          }
+        } catch (error) {
+          showMessage("Error updating profile", "error");
+        }
+      }
 
-                if (result.success) {
-                    // Show location
-                    if (result.location) {
-                        document.getElementById('site-location').value = result.location;
-                    }
+      async function addInverter(type) {
+        const name = document.getElementById(`${type}-name`).value.trim();
+        const capacity = document.getElementById(`${type}-capacity`).value;
+        const profile = document.getElementById(`${type}-profile`).value;
+        const locationInput = document.getElementById("site-location");
+        const location = locationInput.value.trim();
+        const lat = locationInput.dataset.lat || null;
+        const lng = locationInput.dataset.lng || null;
 
-                    // Show inverters
-                    if (result.inverters && result.inverters.length > 0) {
-                        result.inverters.forEach(inv => {
-                            inverterIds[inv.type] = inv.id;
-                            showInverterAdded(inv.type, inv.name, inv.capacity, inv.profile);
-                        });
-                    }
-                }
+        if (!name) {
+          showMessage("Please enter a name for your inverter", "error");
+          return;
+        }
+        if (!profile) {
+          showMessage("Please select a simulation profile", "error");
+          return;
+        }
+        if (!location) {
+          showMessage("Please enter or detect your location first", "error");
+          return;
+        }
 
-                // Show API key — try localStorage first, then fetch from backend
-                let apiKey = localStorage.getItem('apiKey');
-                if (!apiKey) {
-                    const keyRes = await fetch(`${API_BASE}/api/user/apikey`, {
-                        headers: { 'Authorization': `Bearer ${token}` }
-                    });
-                    const keyData = await keyRes.json();
-                    if (keyData.success && keyData.apiKey) {
-                        apiKey = keyData.apiKey;
-                        localStorage.setItem('apiKey', apiKey);
-                    }
-                }
-                if (apiKey) {
-                    document.getElementById('api-key-display').textContent = apiKey;
-                    document.getElementById('api-key-section').style.display = 'block';
-                }
-
-            } catch (error) {
-                console.error('Error loading inverters:', error);
+        try {
+          const response = await fetch(`${API_BASE}/api/setup/inverter`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              name,
+              type,
+              capacity: capacity || null,
+              location,
+              lat,
+              lng,
+              profile,
+            }),
+          });
+          const result = await response.json();
+          if (result.success) {
+            inverterIds[type] = result.data.id;
+            // Update API key display if returned
+            if (result.apiKey) {
+              localStorage.setItem("apiKey", result.apiKey);
+              document.getElementById("api-key-display").textContent =
+                result.apiKey;
+              document.getElementById("api-key-section").style.display =
+                "block";
             }
-        }
-
-        async function updateProfile() {
-            const username = document.getElementById('username').value.trim();
-            const email    = document.getElementById('email').value.trim();
-            const newPass  = document.getElementById('new-password').value;
-            const confPass = document.getElementById('confirm-password').value;
-
-            if (!username || !email) { showMessage('Username and email are required', 'error'); return; }
-            if (newPass && newPass !== confPass) { showMessage('Passwords do not match', 'error'); return; }
-            if (newPass && newPass.length < 8) { showMessage('Password must be at least 8 characters', 'error'); return; }
-
-            try {
-                const response = await fetch(`${API_BASE}/api/profile/update`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ username, email, password: newPass || undefined })
-                });
-                const result = await response.json();
-                if (result.success) {
-                    showMessage('Profile updated successfully!', 'success');
-                    document.getElementById('new-password').value = '';
-                    document.getElementById('confirm-password').value = '';
-                } else {
-                    showMessage(result.message, 'error');
-                }
-            } catch (error) {
-                showMessage('Error updating profile', 'error');
-            }
-        }
-
-        async function addInverter(type) {
-            const name     = document.getElementById(`${type}-name`).value.trim();
-            const capacity = document.getElementById(`${type}-capacity`).value;
-            const profile  = document.getElementById(`${type}-profile`).value;
-            const locationInput = document.getElementById('site-location');
-            const location = locationInput.value.trim();
-            const lat      = locationInput.dataset.lat || null;
-            const lng      = locationInput.dataset.lng || null;
-
-            if (!name)     { showMessage('Please enter a name for your inverter', 'error'); return; }
-            if (!profile)  { showMessage('Please select a simulation profile', 'error'); return; }
-            if (!location) { showMessage('Please enter or detect your location first', 'error'); return; }
-
-            try {
-                const response = await fetch(`${API_BASE}/api/setup/inverter`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ name, type, capacity: capacity || null, location, lat, lng, profile })
-                });
-                const result = await response.json();
-                if (result.success) {
-                    inverterIds[type] = result.data.id;
-                    // Update API key display if returned
-                    if (result.apiKey) {
-                        localStorage.setItem('apiKey', result.apiKey);
-                        document.getElementById('api-key-display').textContent = result.apiKey;
-                        document.getElementById('api-key-section').style.display = 'block';
-                    }
-                    localStorage.setItem(`${type}Profile`, profile);
-                    showInverterAdded(type, name, capacity, profile);
-                    showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} inverter added!`, 'success');
-                } else {
-                    showMessage(result.message, 'error');
-                }
-            } catch (error) {
-                showMessage('Error adding inverter', 'error');
-            }
-        }
-
-        async function removeInverter(type) {
-            const inverterId = inverterIds[type];
-            if (!inverterId) return;
-
-            if (!confirm(`Remove your ${type} inverter? This will also delete all its readings.`)) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/api/setup/inverter/${inverterId}`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const result = await response.json();
-                if (result.success) {
-                    inverterIds[type] = null;
-                    localStorage.removeItem(`${type}Profile`);
-                    document.getElementById(`${type}-form`).classList.remove('hidden');
-                    document.getElementById(`${type}-added`).classList.add('hidden');
-                    document.getElementById(`${type}-card`).classList.remove('added');
-                    document.getElementById(`${type}-name`).value = '';
-                    document.getElementById(`${type}-capacity`).value = '';
-                    document.getElementById(`${type}-profile`).value = '';
-                    document.getElementById(`${type}-profile-info`).style.display = 'none';
-                    document.getElementById(`${type}-badge`).textContent = 'Not Added';
-                    document.getElementById(`${type}-badge`).className = 'badge optional';
-                    showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} inverter removed`, 'success');
-                } else {
-                    showMessage(result.message || 'Error removing inverter', 'error');
-                }
-            } catch (error) {
-                showMessage('Error removing inverter', 'error');
-            }
-        }
-
-        function showInverterAdded(type, name, capacity, profile) {
-            document.getElementById(`${type}-form`).classList.add('hidden');
-            document.getElementById(`${type}-added`).classList.remove('hidden');
-            document.getElementById(`${type}-card`).classList.add('added');
-            const profileLabel = profile ? ` · ${profile}` : '';
-            document.getElementById(`${type}-added-text`).textContent =
-                `✅ ${name}${capacity ? ` • ${capacity} kW` : ''}${profileLabel}`;
-            document.getElementById(`${type}-badge`).textContent = 'Added';
-            document.getElementById(`${type}-badge`).className = 'badge';
-        }
-
-        function getLocation() {
-            const btn = event.target;
-            const status = document.getElementById('location-status');
-            if (!navigator.geolocation) {
-                status.textContent = 'Geolocation not supported.';
-                status.style.color = '#dc3545';
-                return;
-            }
-            btn.textContent = '⏳';
-            btn.disabled = true;
-            navigator.geolocation.getCurrentPosition(
-                async (position) => {
-                    const lat = position.coords.latitude.toFixed(6);
-                    const lng = position.coords.longitude.toFixed(6);
-                    try {
-                        const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
-                        const data = await res.json();
-                        const city = data.address.city || data.address.town || data.address.suburb || data.address.village;
-                        const suburb = data.address.suburb || '';
-                        const locationName = suburb ? `${suburb}, ${city}` : city;
-                        const input = document.getElementById('site-location');
-                        input.value = locationName;
-                        input.dataset.lat = lat;
-                        input.dataset.lng = lng;
-                        status.textContent = `✅ ${locationName} (${lat}, ${lng})`;
-                        status.style.color = '#2e7d32';
-                    } catch {
-                        const input = document.getElementById('site-location');
-                        input.value = `${lat}, ${lng}`;
-                        input.dataset.lat = lat;
-                        input.dataset.lng = lng;
-                        status.textContent = `✅ ${lat}, ${lng}`;
-                        status.style.color = '#2e7d32';
-                    }
-                    btn.textContent = '📍 Detect';
-                    btn.disabled = false;
-                },
-                () => {
-                    btn.textContent = '📍 Detect';
-                    btn.disabled = false;
-                    status.textContent = '❌ Could not get location.';
-                    status.style.color = '#dc3545';
-                }
+            localStorage.setItem(`${type}Profile`, profile);
+            showInverterAdded(type, name, capacity, profile);
+            showMessage(
+              `${type.charAt(0).toUpperCase() + type.slice(1)} inverter added!`,
+              "success",
             );
+          } else {
+            showMessage(result.message, "error");
+          }
+        } catch (error) {
+          showMessage("Error adding inverter", "error");
         }
+      }
 
-        async function confirmDeleteData() {
-            if (!confirm('Delete all your energy readings and inverters?\n\nYour account will be kept but all readings, inverters and battery data will be permanently deleted.')) return;
+      async function removeInverter(type) {
+        const inverterId = inverterIds[type];
+        if (!inverterId) return;
 
+        if (
+          !confirm(
+            `Remove your ${type} inverter? This will also delete all its readings.`,
+          )
+        )
+          return;
+
+        try {
+          const response = await fetch(
+            `${API_BASE}/api/setup/inverter/${inverterId}`,
+            {
+              method: "DELETE",
+              headers: { Authorization: `Bearer ${token}` },
+            },
+          );
+          const result = await response.json();
+          if (result.success) {
+            inverterIds[type] = null;
+            localStorage.removeItem(`${type}Profile`);
+            document.getElementById(`${type}-form`).classList.remove("hidden");
+            document.getElementById(`${type}-added`).classList.add("hidden");
+            document.getElementById(`${type}-card`).classList.remove("added");
+            document.getElementById(`${type}-name`).value = "";
+            document.getElementById(`${type}-capacity`).value = "";
+            document.getElementById(`${type}-profile`).value = "";
+            document.getElementById(`${type}-profile-info`).style.display =
+              "none";
+            document.getElementById(`${type}-badge`).textContent = "Not Added";
+            document.getElementById(`${type}-badge`).className =
+              "badge optional";
+            showMessage(
+              `${type.charAt(0).toUpperCase() + type.slice(1)} inverter removed`,
+              "success",
+            );
+          } else {
+            showMessage(result.message || "Error removing inverter", "error");
+          }
+        } catch (error) {
+          showMessage("Error removing inverter", "error");
+        }
+      }
+
+      function showInverterAdded(type, name, capacity, profile) {
+        document.getElementById(`${type}-form`).classList.add("hidden");
+        document.getElementById(`${type}-added`).classList.remove("hidden");
+        document.getElementById(`${type}-card`).classList.add("added");
+        const profileLabel = profile ? ` · ${profile}` : "";
+        document.getElementById(`${type}-added-text`).textContent =
+          `✅ ${name}${capacity ? ` • ${capacity} kW` : ""}${profileLabel}`;
+        document.getElementById(`${type}-badge`).textContent = "Added";
+        document.getElementById(`${type}-badge`).className = "badge";
+      }
+
+      function getLocation() {
+        const btn = event.target;
+        const status = document.getElementById("location-status");
+        if (!navigator.geolocation) {
+          status.textContent = "Geolocation not supported.";
+          status.style.color = "#dc3545";
+          return;
+        }
+        btn.textContent = "⏳";
+        btn.disabled = true;
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const lat = position.coords.latitude.toFixed(6);
+            const lng = position.coords.longitude.toFixed(6);
             try {
-                const response = await fetch(`${API_BASE}/api/account/data`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const result = await response.json();
-                if (result.success) {
-                    inverterIds = { solar: null, wind: null };
-                    localStorage.removeItem('apiKey');
-                    localStorage.removeItem('solarProfile');
-                    localStorage.removeItem('windProfile');
-                    // Reset inverter UI
-                    ['solar', 'wind'].forEach(type => {
-                        document.getElementById(`${type}-form`).classList.remove('hidden');
-                        document.getElementById(`${type}-added`).classList.add('hidden');
-                        document.getElementById(`${type}-card`).classList.remove('added');
-                        document.getElementById(`${type}-badge`).textContent = 'Not Added';
-                        document.getElementById(`${type}-badge`).className = 'badge optional';
-                    });
-                    document.getElementById('api-key-section').style.display = 'none';
-                    showMessage('All data deleted successfully', 'success');
-                } else {
-                    showMessage(result.message, 'error');
-                }
-            } catch (error) {
-                showMessage('Error deleting data', 'error');
+              const res = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+              );
+              const data = await res.json();
+              const city =
+                data.address.city ||
+                data.address.town ||
+                data.address.suburb ||
+                data.address.village;
+              const suburb = data.address.suburb || "";
+              const locationName = suburb ? `${suburb}, ${city}` : city;
+              const input = document.getElementById("site-location");
+              input.value = locationName;
+              input.dataset.lat = lat;
+              input.dataset.lng = lng;
+              status.textContent = `✅ ${locationName} (${lat}, ${lng})`;
+              status.style.color = "#2e7d32";
+            } catch {
+              const input = document.getElementById("site-location");
+              input.value = `${lat}, ${lng}`;
+              input.dataset.lat = lat;
+              input.dataset.lng = lng;
+              status.textContent = `✅ ${lat}, ${lng}`;
+              status.style.color = "#2e7d32";
             }
+            btn.textContent = "📍 Detect";
+            btn.disabled = false;
+          },
+          () => {
+            btn.textContent = "📍 Detect";
+            btn.disabled = false;
+            status.textContent = "❌ Could not get location.";
+            status.style.color = "#dc3545";
+          },
+        );
+      }
+
+      function applyLocationPreset() {
+        const val = document.getElementById("location-preset").value;
+        if (!val) return;
+        const parts = val.split("|");
+        const lat = parts[0];
+        const lng = parts[1];
+        const name = parts[2];
+        const input = document.getElementById("site-location");
+        input.value = name;
+        input.dataset.lat = lat;
+        input.dataset.lng = lng;
+        document.getElementById("location-status").textContent =
+          `✅ ${name} selected — click Save Location to apply`;
+        document.getElementById("location-status").style.color = "#1565c0";
+      }
+
+      async function saveLocation() {
+        const input = document.getElementById("site-location");
+        const location = input.value.trim();
+        const lat = input.dataset.lat;
+        const lng = input.dataset.lng;
+
+        if (!lat || !lng) {
+          showMessage("Please select or detect a location first", "error");
+          return;
         }
 
-        async function confirmDeleteAccount() {
-            if (!confirm('Delete your entire account?\n\nThis permanently deletes your profile, inverters, and all energy readings. This cannot be undone!')) return;
-
-            try {
-                const response = await fetch(`${API_BASE}/api/account`, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const result = await response.json();
-                if (result.success) {
-                    localStorage.clear();
-                    window.location.href = '../frontend/login.html';
-                } else {
-                    showMessage(result.message, 'error');
-                }
-            } catch (error) {
-                showMessage('Error deleting account', 'error');
-            }
+        try {
+          const res = await fetch(`${API_BASE}/api/profile/location`, {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ location, lat, lng }),
+          });
+          const result = await res.json();
+          if (result.success) {
+            showMessage(
+              "Location updated — simulators restarting with new weather",
+              "success",
+            );
+          } else {
+            showMessage(result.message, "error");
+          }
+        } catch (err) {
+          showMessage("Error saving location", "error");
         }
+      }
 
-        function showMessage(msg, type) {
-            const el = document.getElementById('message');
-            el.textContent = msg;
-            el.className = `message ${type}`;
-            setTimeout(() => { el.className = 'message'; }, 3000);
+      async function confirmDeleteData() {
+        if (
+          !confirm(
+            "Delete all your energy readings and inverters?\n\nYour account will be kept but all readings, inverters and battery data will be permanently deleted.",
+          )
+        )
+          return;
+
+        try {
+          const response = await fetch(`${API_BASE}/api/account/data`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const result = await response.json();
+          if (result.success) {
+            inverterIds = { solar: null, wind: null };
+            localStorage.removeItem("apiKey");
+            localStorage.removeItem("solarProfile");
+            localStorage.removeItem("windProfile");
+            // Reset inverter UI
+            ["solar", "wind"].forEach((type) => {
+              document
+                .getElementById(`${type}-form`)
+                .classList.remove("hidden");
+              document.getElementById(`${type}-added`).classList.add("hidden");
+              document.getElementById(`${type}-card`).classList.remove("added");
+              document.getElementById(`${type}-badge`).textContent =
+                "Not Added";
+              document.getElementById(`${type}-badge`).className =
+                "badge optional";
+            });
+            document.getElementById("api-key-section").style.display = "none";
+            showMessage("All data deleted successfully", "success");
+          } else {
+            showMessage(result.message, "error");
+          }
+        } catch (error) {
+          showMessage("Error deleting data", "error");
         }
+      }
 
-        loadProfile();
-        loadInverters();
+      async function confirmDeleteAccount() {
+        if (
+          !confirm(
+            "Delete your entire account?\n\nThis permanently deletes your profile, inverters, and all energy readings. This cannot be undone!",
+          )
+        )
+          return;
+
+        try {
+          const response = await fetch(`${API_BASE}/api/account`, {
+            method: "DELETE",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const result = await response.json();
+          if (result.success) {
+            localStorage.clear();
+            window.location.href = "../frontend/login.html";
+          } else {
+            showMessage(result.message, "error");
+          }
+        } catch (error) {
+          showMessage("Error deleting account", "error");
+        }
+      }
+
+      function showMessage(msg, type) {
+        const el = document.getElementById("message");
+        el.textContent = msg;
+        el.className = `message ${type}`;
+        setTimeout(() => {
+          el.className = "message";
+        }, 3000);
+      }
+
+      loadProfile();
+      loadInverters();
     </script>
-</body>
+  </body>
 </html>

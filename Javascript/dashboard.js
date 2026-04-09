@@ -1,27 +1,32 @@
-// VoltEquilibrium Dashboard JavaScript
-// Handles real-time data simulation, interactivity, and UI updates
+// VoltEquilibrium Dashboard — Live Data
+// Fetches from GET /api/readings/latest every 30 s and drives:
+//   • Speed-dial SVG gauges
+//   • Stat tiles
+//   • Chart.js power history line graph
+//   • Solar / Wind source toggle
 
-// Hide page immediately until auth check passes
+// ── Auth guard ────────────────────────────────────────────────────────────────
 document.documentElement.style.visibility = "hidden";
 
-window.addEventListener("pageshow", async (event) => {
+window.addEventListener("pageshow", async () => {
   const token = localStorage.getItem("authToken");
   if (!token) {
     window.location.replace("../frontend/login.html");
     return;
   }
 
-  // Check setup status
-  const response = await fetch("http://localhost:3000/api/setup/status", {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const result = await response.json();
-
-  localStorage.setItem("userRole", result.role);
-
-  if (!result.hasSetup && result.role !== "consumer") {
-    window.location.replace("../frontend/setup.html");
-    return;
+  try {
+    const res = await fetch("http://localhost:3000/api/setup/status", {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    localStorage.setItem("userRole", data.role);
+    if (!data.hasSetup && data.role !== "consumer") {
+      window.location.replace("../frontend/setup.html");
+      return;
+    }
+  } catch {
+    /* show page anyway if status check fails */
   }
 
   document.documentElement.style.visibility = "visible";
@@ -30,493 +35,497 @@ window.addEventListener("pageshow", async (event) => {
 (function () {
   "use strict";
 
-  // Configuration
-  const CONFIG = {
-    updateInterval: 3000,
-    chartUpdateInterval: 5000,
-    toastDuration: 3000,
-    animationDuration: 500,
-    detailUpdateInterval: 2000,
-  };
+  const API_BASE = "http://localhost:3000";
+  const POLL_MS = 30000;
+  const MAX_HISTORY = 20; // rolling window of chart points
 
-  // State management
-  const state = {
-    liveGeneration: 12.4,
-    solarOutput: 8.2,
-    windOutput: 4.2,
-    efficiency: 98.4,
-    storage: 82,
-    nodeHealth: 92,
-    dailySave: 42,
-    co2Offset: 1.2,
-    projectedSavings: 124.5,
-    currentPeriod: "D",
-    isTransferRequested: false,
-    detailPanelOpen: false,
-  };
+  const token = localStorage.getItem("authToken");
 
-  // Utility functions
-  const utils = {
-    random: (min, max) => Math.random() * (max - min) + min,
-    format: (num, decimals = 1) => num.toFixed(decimals),
-    formatCurrency: (num) => `$${num.toFixed(2)}`,
-    clamp: (val, min, max) => Math.min(Math.max(val, min), max),
-    randomWalk: (current, variance, min, max) => {
-      const change = utils.random(-variance, variance);
-      return utils.clamp(current + change, min, max);
-    },
-  };
+  // Handle OAuth token in URL
+  const oauthToken = new URLSearchParams(window.location.search).get("token");
+  if (oauthToken) {
+    localStorage.setItem("authToken", oauthToken);
+    window.history.replaceState({}, "", window.location.pathname);
+  }
 
-  // Toast notification system
+  // ── Sign out ───────────────────────────────────────────────────────────────
+  // The HTML uses id="sign-out" (not "sign-out-btn") so we target that directly.
+  document.getElementById("sign-out")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    localStorage.removeItem("authToken");
+    window.location.href = "../frontend/login.html";
+  });
+
+  // ── Toast ──────────────────────────────────────────────────────────────────
   const toast = {
-    container: document.getElementById("toast-container"),
-
-    show: (message, type = "info") => {
-      const toastEl = document.createElement("div");
+    show(msg, type = "info") {
       const colors = {
         info: "bg-primary text-white",
         success: "bg-tertiary text-on-surface",
         warning: "bg-secondary text-white",
         error: "bg-error text-white",
       };
-
-      toastEl.className = `${colors[type]} px-4 py-3 rounded-xl shadow-lg transform translate-x-full transition-transform duration-300 flex items-center gap-2 min-w-[200px]`;
-      toastEl.innerHTML = `
-                <span class="material-symbols-outlined text-sm">${type === "success" ? "check_circle" : type === "warning" ? "warning" : type === "error" ? "error" : "info"}</span>
-                <span class="text-sm font-semibold">${message}</span>
-            `;
-
-      toast.container.appendChild(toastEl);
-
-      requestAnimationFrame(() => {
-        toastEl.classList.remove("translate-x-full");
-      });
-
+      const icons = {
+        info: "info",
+        success: "check_circle",
+        warning: "warning",
+        error: "error",
+      };
+      const el = document.createElement("div");
+      el.className = `${colors[type]} px-4 py-3 rounded-xl shadow-lg transform translate-x-full transition-transform duration-300 flex items-center gap-2 min-w-[200px]`;
+      el.innerHTML = `<span class="material-symbols-outlined text-sm">${icons[type]}</span><span class="text-sm font-semibold">${msg}</span>`;
+      document.getElementById("toast-container").appendChild(el);
+      requestAnimationFrame(() => el.classList.remove("translate-x-full"));
       setTimeout(() => {
-        toastEl.classList.add("translate-x-full");
-        setTimeout(() => toastEl.remove(), 300);
-      }, CONFIG.toastDuration);
+        el.classList.add("translate-x-full");
+        setTimeout(() => el.remove(), 300);
+      }, 3000);
     },
   };
 
-  // Detail Panel System
-  const detailPanel = {
-    panel: document.getElementById("detail-panel"),
-    overlay: document.getElementById("detail-overlay"),
-    updateInterval: null,
+  // ── Speed dial helper ──────────────────────────────────────────────────────
+  // How the dial works:
+  //   The SVG <path> draws a 270-degree arc (from bottom-left to bottom-right).
+  //   stroke-dasharray=216 sets the total visible length of the arc.
+  //   stroke-dashoffset controls how much of that length is hidden from the start.
+  //   dashoffset = ARC_LEN × (1 - fraction)  →  0 = full, 216 = empty.
+  const ARC_LEN = 216;
+  function setDial(arcId, textId, value, max, displayText) {
+    const arc = document.getElementById(arcId);
+    const text = document.getElementById(textId);
+    if (!arc || !text) return;
+    const fraction = Math.min(1, Math.max(0, (value || 0) / max));
+    arc.style.strokeDashoffset = (ARC_LEN * (1 - fraction)).toFixed(2);
+    text.textContent = displayText;
+  }
 
-    init: () => {
-      const viewBtn = document.getElementById("view-detail-btn");
-      const closeBtn = document.getElementById("close-detail");
+  // ── Chart.js setup ─────────────────────────────────────────────────────────
+  function makeChart(canvasId, color) {
+    const ctx = document.getElementById(canvasId);
+    if (!ctx) return null;
+    return new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            data: [],
+            borderColor: color,
+            backgroundColor: color + "18",
+            borderWidth: 2.5,
+            pointRadius: 3,
+            pointBackgroundColor: color,
+            tension: 0.4,
+            fill: true,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        animation: { duration: 400 },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: { label: (ctx) => `${ctx.parsed.y.toFixed(0)} W` },
+          },
+        },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 10 }, maxTicksLimit: 8, color: "#6e7976" },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: { font: { size: 10 }, color: "#6e7976" },
+            grid: { color: "#e0e3e240" },
+          },
+        },
+      },
+    });
+  }
 
-      viewBtn.addEventListener("click", detailPanel.open);
-      closeBtn.addEventListener("click", detailPanel.close);
-      detailPanel.overlay.addEventListener("click", detailPanel.close);
+  const solarChart = makeChart("solar-chart", "#005147");
+  const windChart = makeChart("wind-chart", "#005db6");
 
-      // Close on escape key
-      document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && state.detailPanelOpen) {
-          detailPanel.close();
-        }
+  function pushToChart(chart, timeLabel, value) {
+    if (!chart) return;
+    chart.data.labels.push(timeLabel);
+    chart.data.datasets[0].data.push(value || 0);
+    if (chart.data.labels.length > MAX_HISTORY) {
+      chart.data.labels.shift();
+      chart.data.datasets[0].data.shift();
+    }
+    chart.update();
+  }
+
+  // ── Source toggle ──────────────────────────────────────────────────────────
+  let activeSource = "solar";
+
+  document.querySelectorAll(".src-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      activeSource = btn.dataset.source;
+      document.querySelectorAll(".src-btn").forEach((b) => {
+        const isActive = b.dataset.source === activeSource;
+        b.classList.toggle("active", isActive);
       });
-    },
+      showActivePanel();
+    });
+  });
 
-    open: () => {
-      state.detailPanelOpen = true;
-      detailPanel.panel.classList.remove("translate-x-full");
-      detailPanel.overlay.classList.remove("opacity-0", "pointer-events-none");
-      document.body.style.overflow = "hidden"; // Prevent background scrolling
+  function showActivePanel() {
+    const hasSolar = !!lastData?.solar?.length;
+    const hasWind = !!lastData?.wind?.length;
 
-      toast.show("Loading detailed telemetry...", "info");
-      detailPanel.startRealtimeUpdates();
+    document.getElementById("panel-solar").classList.add("hidden");
+    document.getElementById("panel-wind").classList.add("hidden");
+    document.getElementById("panel-nodata").classList.add("hidden");
 
-      // Animate bars on open
-      setTimeout(() => {
-        document.querySelectorAll(".detail-bar").forEach((bar) => {
-          bar.style.width = bar.style.width;
-        });
-      }, 100);
-    },
-
-    close: () => {
-      state.detailPanelOpen = false;
-      detailPanel.panel.classList.add("translate-x-full");
-      detailPanel.overlay.classList.add("opacity-0", "pointer-events-none");
-      document.body.style.overflow = "";
-      detailPanel.stopRealtimeUpdates();
-    },
-
-    startRealtimeUpdates: () => {
-      // Update detail panel values every 2 seconds
-      detailPanel.updateInterval = setInterval(() => {
-        if (!state.detailPanelOpen) return;
-
-        // Update solar arrays
-        const solarA = utils.random(3.5, 4.5);
-        const solarB = utils.random(3.8, 4.8);
-        document.getElementById("solar-a").textContent =
-          `${solarA.toFixed(1)} MW`;
-        document.getElementById("solar-b").textContent =
-          `${solarB.toFixed(1)} MW`;
-        document.getElementById("detail-total").textContent =
-          `${(solarA + solarB + utils.random(2.5, 3.5) + utils.random(1.2, 1.8)).toFixed(1)} MW`;
-
-        // Update temps and irradiance
-        document.getElementById("temp-a").textContent =
-          `${Math.round(utils.random(32, 38))}°C`;
-        document.getElementById("temp-b").textContent =
-          `${Math.round(utils.random(34, 40))}°C`;
-        document.getElementById("irr-a").textContent =
-          `${Math.round(utils.random(850, 920))} W/m²`;
-        document.getElementById("irr-b").textContent =
-          `${Math.round(utils.random(820, 890))} W/m²`;
-        document.getElementById("eff-a").textContent =
-          `${utils.random(20.5, 22).toFixed(1)}%`;
-        document.getElementById("eff-b").textContent =
-          `${utils.random(20, 21.5).toFixed(1)}%`;
-
-        // Update wind turbines
-        const wind1 = utils.random(2.5, 3.2);
-        const wind2 = utils.random(1.2, 1.8);
-        document.getElementById("wind-1").textContent =
-          `${wind1.toFixed(1)} MW`;
-        document.getElementById("wind-2").textContent =
-          `${wind2.toFixed(1)} MW`;
-        document.getElementById("wind-speed-1").textContent =
-          `${Math.round(utils.random(12, 16))} m/s`;
-        document.getElementById("wind-speed-2").textContent =
-          `${Math.round(utils.random(8, 12))} m/s`;
-        document.getElementById("rotor-1").textContent =
-          `${Math.round(utils.random(16, 20))} RPM`;
-        document.getElementById("rotor-2").textContent =
-          `${Math.round(utils.random(10, 14))} RPM`;
-        document.getElementById("pitch-1").textContent =
-          `${Math.round(utils.random(10, 15))}°`;
-        document.getElementById("pitch-2").textContent =
-          `${Math.round(utils.random(6, 12))}°`;
-
-        // Update grid parameters
-        document.getElementById("grid-freq").textContent =
-          `${(50 + utils.random(-0.05, 0.05)).toFixed(2)} Hz`;
-        document.getElementById("grid-voltage").textContent =
-          `${(11 + utils.random(-0.2, 0.3)).toFixed(1)} kV`;
-        document.getElementById("grid-pf").textContent =
-          `${utils.random(0.92, 0.97).toFixed(2)}`;
-      }, CONFIG.detailUpdateInterval);
-    },
-
-    stopRealtimeUpdates: () => {
-      clearInterval(detailPanel.updateInterval);
-    },
-  };
-
-  // Handle OAuth token from URL
-  const urlParams = new URLSearchParams(window.location.search);
-  const oauthToken = urlParams.get("token");
-  if (oauthToken) {
-    localStorage.setItem("authToken", oauthToken);
-    window.history.replaceState({}, document.title, window.location.pathname);
+    if (activeSource === "solar" && hasSolar) {
+      document.getElementById("panel-solar").classList.remove("hidden");
+    } else if (activeSource === "wind" && hasWind) {
+      document.getElementById("panel-wind").classList.remove("hidden");
+    } else {
+      document.getElementById("panel-nodata").classList.remove("hidden");
+    }
   }
 
-  // Authentication check
-  const token = localStorage.getItem("authToken");
+  // ── Render ─────────────────────────────────────────────────────────────────
+  let lastData = null;
 
-  // Sign out function
-  function signOut(event) {
-    event.preventDefault();
-    event.stopPropagation();
+  function render(data) {
+    lastData = data;
+    const now = new Date().toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
 
-    localStorage.removeItem("authToken");
-    window.location.href = "/frontend/login.html";
-  }
+    const lu = document.getElementById("last-updated");
+    if (lu) lu.textContent = `Updated ${now}`;
 
-  // Attach sign out event listener
-  const signOutBtn = document.getElementById("sign-out");
+    const solar = data.solar?.[0] || null;
+    const wind = data.wind?.[0] || null;
 
-  if (signOutBtn) {
-    signOutBtn.addEventListener("click", signOut);
-  }
+    // ── Solar ──────────────────────────────────────────────────────────────
+    if (solar) {
+      const pw = parseFloat(solar.power_w) || 0;
+      const maxW = (solar.inverter_name || "").toLowerCase().includes("large")
+        ? 10000
+        : 3000;
 
-  // Live data simulation
-  const liveData = {
-    update: () => {
-      state.liveGeneration = utils.randomWalk(
-        state.liveGeneration,
-        0.3,
-        10,
-        15,
+      setDial(
+        "solar-power-arc",
+        "solar-power-text",
+        pw,
+        maxW,
+        pw >= 1000 ? `${(pw / 1000).toFixed(2)} kW` : `${Math.round(pw)} W`,
       );
-      state.solarOutput = utils.randomWalk(state.solarOutput, 0.2, 6, 10);
-      state.windOutput = utils.randomWalk(state.windOutput, 0.15, 3, 6);
-      state.efficiency = utils.randomWalk(state.efficiency, 0.2, 95, 99.5);
-      state.storage = utils.randomWalk(state.storage, 1, 70, 95);
-
-      liveData.render();
-    },
-
-    render: () => {
-      document.getElementById("live-generation").innerHTML =
-        `${utils.format(state.liveGeneration)} <span class="text-2xl text-on-surface-variant/40">MW</span>`;
-      document.getElementById("solar-value").textContent =
-        `${utils.format(state.solarOutput)} MW`;
-      document.getElementById("wind-value").textContent =
-        `${utils.format(state.windOutput)} MW`;
-      document.getElementById("efficiency-value").textContent =
-        `${utils.format(state.efficiency)}%`;
-      document.getElementById("storage-value").textContent =
-        `${Math.round(state.storage)}%`;
-    },
-  };
-
-  // Live bar chart animation
-  const barChart = {
-    update: () => {
-      const bars = document.querySelectorAll("#live-bars > div");
-      bars.forEach((bar) => {
-        const newHeight = utils.random(20, 100);
-        bar.style.height = `${newHeight}%`;
-      });
-    },
-  };
-
-  // Time period filter handling
-  const timeFilters = {
-    init: () => {
-      const buttons = document.querySelectorAll("#time-filters button");
-      buttons.forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          buttons.forEach((b) => {
-            b.classList.remove("bg-surface-container-highest", "text-primary");
-            b.classList.add("hover:bg-surface-container-highest");
-          });
-          e.target.classList.add(
-            "bg-surface-container-highest",
-            "text-primary",
-          );
-          e.target.classList.remove("hover:bg-surface-container-highest");
-
-          state.currentPeriod = e.target.dataset.period;
-          timeFilters.updateChart(state.currentPeriod);
-
-          toast.show(
-            `Switched to ${e.target.dataset.period === "D" ? "Daily" : e.target.dataset.period === "W" ? "Weekly" : "Monthly"} view`,
-            "info",
-          );
-        });
-      });
-    },
-
-    updateChart: (period) => {
-      const chartLine = document.getElementById("chart-line");
-      const labels = document.getElementById("chart-labels");
-
-      const paths = {
-        D: "M0 200 Q 50 180, 100 220 T 200 150 T 300 180 T 400 100 T 500 130 T 600 80 T 700 120",
-        W: "M0 180 Q 100 120, 200 160 T 400 80 T 600 140 T 700 100",
-        M: "M0 220 Q 50 200, 150 140 T 350 180 T 550 60 T 700 120",
-      };
-
-      const labelSets = {
-        D: ["06:00", "09:00", "12:00", "15:00", "18:00", "21:00"],
-        W: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
-        M: ["Week 1", "Week 2", "Week 3", "Week 4", "Week 5", "Current"],
-      };
-
-      chartLine.style.transition = "d 0.5s ease";
-      chartLine.setAttribute("d", paths[period]);
-      labels.innerHTML = labelSets[period]
-        .map((label) => `<span>${label}</span>`)
-        .join("");
-    },
-  };
-
-  // Node health simulation
-  const nodeHealth = {
-    update: () => {
-      state.nodeHealth = utils.randomWalk(state.nodeHealth, 2, 85, 98);
-      const bar = document.getElementById("node-health-bar");
-      const text = document.getElementById("node-health-text");
-
-      bar.style.width = `${state.nodeHealth}%`;
-
-      if (state.nodeHealth > 90) {
-        text.textContent = "Optimal";
-        bar.className = "bg-tertiary-fixed h-full transition-all duration-1000";
-      } else if (state.nodeHealth > 80) {
-        text.textContent = "Good";
-        bar.className = "bg-secondary h-full transition-all duration-1000";
-      } else {
-        text.textContent = "Fair";
-        bar.className = "bg-warning h-full transition-all duration-1000";
-      }
-    },
-  };
-
-  // Savings calculation simulation
-  const savings = {
-    update: () => {
-      state.dailySave = utils.randomWalk(state.dailySave, 2, 35, 50);
-      state.co2Offset = utils.randomWalk(state.co2Offset, 0.1, 0.8, 1.5);
-      state.projectedSavings = utils.randomWalk(
-        state.projectedSavings,
-        3,
-        100,
+      setDial(
+        "solar-dcv-arc",
+        "solar-dcv-text",
+        parseFloat(solar.dc_voltage) || 0,
         150,
+        `${(+solar.dc_voltage || 0).toFixed(1)} V`,
+      );
+      setDial(
+        "solar-acv-arc",
+        "solar-acv-text",
+        parseFloat(solar.ac_voltage) || 0,
+        260,
+        `${(+solar.ac_voltage || 0).toFixed(1)} V`,
+      );
+      setDial(
+        "solar-soc-arc",
+        "solar-soc-text",
+        parseFloat(solar.state_of_charge) || 0,
+        100,
+        `${(+solar.state_of_charge || 0).toFixed(1)} %`,
       );
 
-      document.getElementById("daily-save-value").innerHTML =
-        `${Math.round(state.dailySave)} <span class="text-xs text-on-surface-variant/40">kWh</span>`;
-      document.getElementById("co2-value").innerHTML =
-        `${utils.format(state.co2Offset)} <span class="text-xs text-on-surface-variant/40">T</span>`;
-      document.getElementById("projected-savings").innerHTML =
-        `${utils.formatCurrency(state.projectedSavings)} <span class="text-xs text-tertiary font-semibold">+${Math.round(((state.projectedSavings - 100) / 100) * 100)}%</span>`;
-    },
-  };
+      setText(
+        "solar-freq",
+        solar.frequency != null ? `${(+solar.frequency).toFixed(2)} Hz` : "—",
+      );
+      setText(
+        "solar-temp",
+        solar.inverter_temp != null
+          ? `${(+solar.inverter_temp).toFixed(1)}°C`
+          : "—",
+      );
+      setText(
+        "solar-kwh",
+        solar.energy_kwh != null
+          ? `${(+solar.energy_kwh).toFixed(3)} kWh`
+          : "—",
+      );
+      setText(
+        "solar-cloud",
+        solar.cloud_cover != null ? `${solar.cloud_cover}%` : "—",
+      );
 
-  // Smart tips rotation
-  const smartTips = {
-    tips: [
-      "Strong winds predicted at 14:00. Recommend shifting battery charging to turbine primary.",
-      "Solar efficiency peak expected at noon. Consider deferring high-consumption tasks.",
-      "Community grid has excess capacity. Good time to sell surplus energy.",
-      "Battery at optimal charge level. Ready for evening demand surge.",
-      "Weather forecast indicates cloudy afternoon. Solar output may decrease by 15%.",
-    ],
-    currentIndex: 0,
+      pushToChart(solarChart, now, pw);
+    }
 
-    rotate: () => {
-      smartTips.currentIndex =
-        (smartTips.currentIndex + 1) % smartTips.tips.length;
-      const tipText = document.getElementById("smart-tip-text");
-      tipText.style.opacity = "0";
-      setTimeout(() => {
-        tipText.textContent = smartTips.tips[smartTips.currentIndex];
-        tipText.style.opacity = "1";
-      }, 300);
-    },
+    // ── Wind ───────────────────────────────────────────────────────────────
+    const windBattery = data.all.find((r) => r.state_of_charge != null) || wind;
 
-    init: () => {
-      document.getElementById("smart-tip").addEventListener("click", () => {
-        smartTips.rotate();
-        toast.show("Tip updated based on current conditions", "info");
+    if (wind) {
+      const pw = parseFloat(wind.power_w) || 0;
+      const maxW = (wind.inverter_name || "").toLowerCase().includes("large")
+        ? 15000
+        : 2000;
+      const maxRPM = (wind.inverter_name || "").toLowerCase().includes("large")
+        ? 25
+        : 600;
+
+      setDial(
+        "wind-power-arc",
+        "wind-power-text",
+        pw,
+        maxW,
+        pw >= 1000 ? `${(pw / 1000).toFixed(2)} kW` : `${Math.round(pw)} W`,
+      );
+      setDial(
+        "wind-speed-arc",
+        "wind-speed-text",
+        parseFloat(wind.wind_speed) || 0,
+        25,
+        `${(+wind.wind_speed || 0).toFixed(1)} m/s`,
+      );
+      setDial(
+        "wind-rpm-arc",
+        "wind-rpm-text",
+        parseFloat(wind.rotor_rpm) || 0,
+        maxRPM,
+        `${(+wind.rotor_rpm || 0).toFixed(0)} RPM`,
+      );
+      const batteryRow = data.all.find((r) => r.state_of_charge != null) || {};
+      const windSoc = parseFloat(batteryRow.state_of_charge) || 0;
+      setDial(
+        "wind-soc-arc",
+        "wind-soc-text",
+        windSoc,
+        100,
+        `${windSoc.toFixed(1)} %`,
+      );
+
+      setText(
+        "wind-pitch",
+        wind.pitch_angle != null ? `${(+wind.pitch_angle).toFixed(1)}°` : "—",
+      );
+      setText(
+        "wind-temp",
+        wind.inverter_temp != null
+          ? `${(+wind.inverter_temp).toFixed(1)}°C`
+          : "—",
+      );
+      setText(
+        "wind-kwh",
+        wind.energy_kwh != null ? `${(+wind.energy_kwh).toFixed(3)} kWh` : "—",
+      );
+      setText(
+        "wind-freq",
+        wind.frequency != null ? `${(+wind.frequency).toFixed(2)} Hz` : "—",
+      );
+
+      pushToChart(windChart, now, pw);
+    }
+
+    showActivePanel();
+  }
+
+  function setText(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  // ── Fetch loop ─────────────────────────────────────────────────────────────
+  let errShown = false;
+
+  async function fetchAndRender() {
+    try {
+      const res = await fetch(`${API_BASE}/api/readings/latest`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-    },
-  };
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      if (!json.success) throw new Error(json.message);
+      errShown = false;
+      render(json.data);
+    } catch (err) {
+      console.error("[dashboard]", err.message);
+      if (!errShown) {
+        toast.show("Could not reach server — retrying...", "warning");
+        errShown = true;
+      }
+    }
+  }
 
-  // Request transfer button
-  const transferButton = {
-    init: () => {
-      const btn = document.getElementById("request-transfer-btn");
-      btn.addEventListener("click", () => {
-        if (state.isTransferRequested) {
-          toast.show("Transfer already in progress", "warning");
-          return;
-        }
-
-        state.isTransferRequested = true;
-        btn.textContent = "Processing...";
-        btn.disabled = true;
-        btn.classList.add("opacity-75", "cursor-not-allowed");
-
-        toast.show("Energy transfer request submitted", "success");
-
-        setTimeout(() => {
-          state.isTransferRequested = false;
-          btn.textContent = "Request Transfer";
-          btn.disabled = false;
-          btn.classList.remove("opacity-75", "cursor-not-allowed");
-          toast.show("Transfer completed successfully!", "success");
-
-          state.projectedSavings += 5;
-          savings.update();
-        }, 3000);
+  // ── History ────────────────────────────────────────────────────────────────
+  async function loadHistory() {
+    try {
+      const res = await fetch(`${API_BASE}/api/readings/history?limit=20`, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-    },
-  };
 
-  // Mobile navigation
-  const mobileNav = {
-    init: () => {
-      const buttons = document.querySelectorAll(".nav-btn");
-      buttons.forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          const target = e.currentTarget;
+      const json = await res.json();
+      if (!json.success) return;
 
-          buttons.forEach((b) => {
-            b.classList.remove("text-primary");
-            b.classList.add("text-on-surface-variant/50");
-            b.querySelector(
-              ".material-symbols-outlined",
-            ).style.fontVariationSettings = "'FILL' 0";
+      // Safe handling for solar data
+      (json.data?.solar || []).forEach((row) => {
+        const t = new Date(row.recorded_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+        pushToChart(solarChart, t, parseFloat(row.power_w) || 0);
+      });
+
+      // Safe handling for wind data
+      (json.data?.wind || []).forEach((row) => {
+        const t = new Date(row.recorded_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        });
+        pushToChart(windChart, t, parseFloat(row.power_w) || 0);
+      });
+    } catch (err) {
+      console.warn("[dashboard] History load failed:", err.message);
+    }
+  }
+
+  // ── Weather forecast widget ────────────────────────────────────────────────
+  async function loadForecast() {
+    try {
+      const res = await fetch(`${API_BASE}/api/weather/forecast`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+
+      if (!json.success) {
+        document.getElementById("weather-loading").textContent =
+          json.message || "No location set — update in Profile.";
+        return;
+      }
+
+      const d = json.data;
+
+      // Location label + updated time
+      setText("weather-location-label", d.location);
+      setText(
+        "weather-updated",
+        `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
+      );
+
+      // Current conditions
+      setText("w-temp", `${d.current.temp?.toFixed(1)}°C`);
+      setText("w-wind", `${d.current.wind?.toFixed(1)} m/s`);
+      setText("w-cloud", `${d.current.cloud}%`);
+
+      // Hourly forecast cards
+      const container = document.getElementById("weather-hourly");
+      document.getElementById("weather-loading")?.remove();
+
+      container.innerHTML = d.hourly
+        .map((h) => {
+          // Pick icon based on cloud cover
+          const icon =
+            h.cloud > 70
+              ? "cloud"
+              : h.cloud > 30
+                ? "partly_cloudy_day"
+                : "sunny";
+          const iconColor =
+            h.cloud > 70 ? "#6e7976" : h.cloud > 30 ? "#005db6" : "#374e00";
+          return `
+          <div class="bg-surface-container-low rounded-xl p-3 text-center">
+            <div class="text-xs font-bold font-label text-on-surface-variant/60 mb-1">${h.time}</div>
+            <span class="material-symbols-outlined text-xl block mb-1" style="color:${iconColor}">${icon}</span>
+            <div class="text-sm font-bold font-headline text-primary">${h.temp?.toFixed(1)}°</div>
+            <div class="text-xs text-on-surface-variant/60 mt-1">${h.wind?.toFixed(1)} m/s</div>
+          </div>
+        `;
+        })
+        .join("");
+    } catch (err) {
+      console.warn("[dashboard] Forecast failed:", err.message);
+      setText("weather-loading", "Could not load forecast.");
+    }
+  }
+
+  function initChartFilters() {
+    document.querySelectorAll(".chart-filter-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const chartType = btn.dataset.chart; // "solar" or "wind"
+        const range = parseInt(btn.dataset.range);
+
+        // Update active button styling within this filter group
+        const group =
+          chartType === "solar" ? "solar-chart-filters" : "wind-chart-filters";
+        document
+          .querySelectorAll(`#${group} .chart-filter-btn`)
+          .forEach((b) => {
+            b.classList.toggle("active", b === btn);
           });
 
-          target.classList.remove("text-on-surface-variant/50");
-          target.classList.add("text-primary");
-          target.querySelector(
-            ".material-symbols-outlined",
-          ).style.fontVariationSettings = "'FILL' 1";
+        const chart = chartType === "solar" ? solarChart : windChart;
+        if (!chart) return;
 
-          const nav = target.dataset.nav;
-          toast.show(
-            `Navigating to ${nav.charAt(0).toUpperCase() + nav.slice(1)}...`,
-            "info",
-          );
+        if (range === 20) {
+          // "Live" — just reload history with 20 points (same as boot)
+          await reloadChart(chart, chartType, 20);
+        } else {
+          await reloadChart(chart, chartType, range);
+        }
+      });
+    });
+  }
+
+  async function reloadChart(chart, type, limit) {
+    try {
+      const res = await fetch(
+        `${API_BASE}/api/readings/history?limit=${limit}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      const json = await res.json();
+      if (!json.success) return;
+
+      const rows =
+        type === "solar" ? json.data.solar || [] : json.data.wind || [];
+
+      // Clear existing chart data and repopulate
+      chart.data.labels = [];
+      chart.data.datasets[0].data = [];
+
+      rows.forEach((row) => {
+        const t = new Date(row.recorded_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
         });
-      });
-    },
-  };
-
-  // Card interactions
-  const cardInteractions = {
-    init: () => {
-      document
-        .getElementById("daily-save-card")
-        .addEventListener("click", () => {
-          toast.show(
-            `Daily energy savings: ${Math.round(state.dailySave)} kWh`,
-            "info",
-          );
-        });
-
-      document.getElementById("co2-card").addEventListener("click", () => {
-        toast.show(
-          `CO2 offset this month: ${utils.format(state.co2Offset)} tonnes`,
-          "success",
-        );
+        chart.data.labels.push(t);
+        chart.data.datasets[0].data.push(parseFloat(row.power_w) || 0);
       });
 
-      document.getElementById("savings-card").addEventListener("click", () => {
-        toast.show(
-          `Projected monthly savings: ${utils.formatCurrency(state.projectedSavings)}`,
-          "info",
-        );
-      });
-    },
-  };
+      chart.update();
+    } catch (err) {
+      console.warn("[dashboard] Chart reload failed:", err.message);
+    }
+  }
 
-  // Initialize all modules
-  const init = () => {
-    setInterval(liveData.update, CONFIG.updateInterval);
-    setInterval(barChart.update, CONFIG.chartUpdateInterval);
-    setInterval(nodeHealth.update, 5000);
-    setInterval(savings.update, 8000);
-    setInterval(smartTips.rotate, 15000);
-
-    timeFilters.init();
-    smartTips.init();
-    transferButton.init();
-    detailPanel.init();
-    mobileNav.init();
-    cardInteractions.init();
-
-    liveData.render();
-
-    setTimeout(() => {
-      toast.show("Welcome to VoltEquilibrium Dashboard", "success");
-    }, 500);
-
-    console.log("VoltEquilibrium Dashboard initialized");
-  };
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  async function init() {
+    initChartFilters(); // wire up filter buttons
+    await loadHistory(); // pre-fill charts from DB
+    await fetchAndRender(); // get latest live readings
+    await loadForecast(); // load weather widget
+    setInterval(fetchAndRender, POLL_MS);
+    setInterval(loadForecast, 15 * 60 * 1000); // refresh forecast every 15 min
+    setTimeout(() => toast.show("Welcome to VoltEquilibrium", "success"), 600);
+  }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

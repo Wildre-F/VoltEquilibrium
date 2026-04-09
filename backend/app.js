@@ -11,6 +11,7 @@ const mqtt = require("mqtt");
 // ===== Internal Modules =====
 const pool = require("./db");
 const passport = require("./passport");
+const launcher = require("./launcher");
 
 // ===== App Init =====
 const app = express();
@@ -38,11 +39,23 @@ mqttClient.on("connect", () => {
 mqttClient.on("message", async (topic, message) => {
   try {
     const parts = topic.split("/");
-    // Expected topic: voltequilibrium/VE-xxxx/solar or /wind or /battery
-    if (parts.length !== 3) return;
+    // New format: voltequilibrium/{apiKey}/{deviceId}/{type}
+    // Old format: voltequilibrium/{apiKey}/{type}  ← still supported for compatibility
+    let apiKey, deviceId, deviceType;
 
-    const apiKey = parts[1];
-    const deviceType = parts[2]; // solar, wind, battery
+    if (parts.length === 4) {
+      // New format
+      apiKey = parts[1];
+      deviceId = parseInt(parts[2]);
+      deviceType = parts[3];
+    } else if (parts.length === 3) {
+      // Old format fallback
+      apiKey = parts[1];
+      deviceId = null;
+      deviceType = parts[2];
+    } else {
+      return;
+    }
 
     const data = JSON.parse(message.toString());
 
@@ -60,11 +73,16 @@ mqttClient.on("message", async (topic, message) => {
     const userId = userResult.rows[0].id;
 
     if (deviceType === "solar" || deviceType === "wind") {
-      // Find inverter for this user and type
-      const inverterResult = await pool.query(
-        "SELECT id FROM inverters WHERE user_id = $1 AND type = $2",
-        [userId, deviceType],
-      );
+      // If deviceId provided, look up by id directly; else fall back to type match
+      const inverterResult = deviceId
+        ? await pool.query(
+            "SELECT id FROM inverters WHERE id = $1 AND user_id = $2",
+            [deviceId, userId],
+          )
+        : await pool.query(
+            "SELECT id FROM inverters WHERE user_id = $1 AND type = $2",
+            [userId, deviceType],
+          );
 
       if (inverterResult.rows.length === 0) return;
       const inverterId = inverterResult.rows[0].id;
@@ -560,7 +578,7 @@ app.get("/api/setup/status", authenticateToken, async (req, res) => {
 
 app.post("/api/setup/inverter", authenticateToken, async (req, res) => {
   try {
-    const { name, type, capacity, location, lat, lng } = req.body;
+    const { name, type, capacity, location, lat, lng, profile } = req.body;
 
     if (!name || !type) {
       return res.status(400).json({
@@ -591,10 +609,10 @@ app.post("/api/setup/inverter", authenticateToken, async (req, res) => {
 
     // Add inverter
     const result = await pool.query(
-      `INSERT INTO inverters (user_id, name, type, capacity)
-             VALUES ($1, $2, $3, $4)
+      `INSERT INTO inverters (user_id, name, type, capacity, profile)
+             VALUES ($1, $2, $3, $4, $5)
              RETURNING *`,
-      [req.user.id, name, type, capacity],
+      [req.user.id, name, type, capacity, profile || null],
     );
 
     await pool.query(
@@ -604,14 +622,37 @@ app.post("/api/setup/inverter", authenticateToken, async (req, res) => {
       [req.user.id, "Main Battery"],
     );
 
-    // Generate unique API key
+    // Reuse existing API key if user already has one, otherwise generate
     const crypto = require("crypto");
-    const apiKey = "VE-" + crypto.randomBytes(8).toString("hex");
+    const existingKey = await pool.query(
+      "SELECT api_key FROM users WHERE id = $1",
+      [req.user.id],
+    );
+    const apiKey =
+      existingKey.rows[0].api_key ||
+      "VE-" + crypto.randomBytes(8).toString("hex");
 
     await pool.query(
       "UPDATE users SET role = $1, location = $2, lat = $3, lng = $4, api_key = $5 WHERE id = $6",
       ["generator", location || null, lat, lng, apiKey, req.user.id],
     );
+
+    // Start the simulator immediately — no server restart needed
+    const simToken = jwt.sign(
+      { id: req.user.id, role: "generator", purpose: "simulator" },
+      JWT_SECRET,
+      { expiresIn: "30d" },
+    );
+    if (profile && lat && lng) {
+      launcher.startSimulator({
+        apiKey,
+        profile,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        token: simToken,
+        deviceId: result.rows[0].id,
+      });
+    }
 
     return res.status(201).json({
       success: true,
@@ -644,6 +685,22 @@ app.delete("/api/setup/inverter/:id", authenticateToken, async (req, res) => {
         success: false,
         message: "Inverter not found",
       });
+    }
+
+    // Stop the simulator for this inverter before deleting
+    const userRow = await pool.query(
+      "SELECT api_key FROM users WHERE id = $1",
+      [req.user.id],
+    );
+    const deletedInverter = await pool.query(
+      "SELECT profile FROM inverters WHERE id = $1",
+      [id],
+    );
+    if (userRow.rows[0]?.api_key && deletedInverter.rows[0]?.profile) {
+      launcher.stopSimulator(
+        userRow.rows[0].api_key,
+        deletedInverter.rows[0].profile,
+      );
     }
 
     await pool.query("DELETE FROM inverters WHERE id = $1", [id]);
@@ -726,10 +783,76 @@ app.put("/api/profile/update", authenticateToken, async (req, res) => {
   }
 });
 
+// Update user location
+app.put("/api/profile/location", authenticateToken, async (req, res) => {
+  try {
+    const { location, lat, lng } = req.body;
+
+    if (!lat || !lng) {
+      return res
+        .status(400)
+        .json({ success: false, message: "lat and lng are required" });
+    }
+
+    await pool.query(
+      "UPDATE users SET location = $1, lat = $2, lng = $3 WHERE id = $4",
+      [location || null, parseFloat(lat), parseFloat(lng), req.user.id],
+    );
+
+    // Also restart simulators with new location so weather updates immediately
+    const userRow = await pool.query(
+      "SELECT api_key FROM users WHERE id = $1",
+      [req.user.id],
+    );
+    const inverters = await pool.query(
+      "SELECT id, profile FROM inverters WHERE user_id = $1",
+      [req.user.id],
+    );
+
+    if (userRow.rows[0]?.api_key && inverters.rows.length > 0) {
+      const simToken = jwt.sign(
+        { id: req.user.id, role: "generator", purpose: "simulator" },
+        JWT_SECRET,
+        { expiresIn: "30d" },
+      );
+      // Stop old simulators and restart with new coordinates
+      launcher.stopAllForUser(userRow.rows[0].api_key);
+      setTimeout(() => {
+        inverters.rows.forEach((inv) => {
+          launcher.startSimulator({
+            apiKey: userRow.rows[0].api_key,
+            profile: inv.profile,
+            lat: parseFloat(lat),
+            lng: parseFloat(lng),
+            token: simToken,
+            deviceId: inv.id,
+          });
+        });
+      }, 1000);
+    }
+
+    return res.status(200).json({ success: true, message: "Location updated" });
+  } catch (error) {
+    console.error("Location update error:", error.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error updating location" });
+  }
+});
+
 // Delete all user data but keep account
 app.delete("/api/account/data", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
+
+    // Stop all running simulators for this user before wiping data
+    const userKeyRow = await pool.query(
+      "SELECT api_key FROM users WHERE id = $1",
+      [userId],
+    );
+    if (userKeyRow.rows[0]?.api_key) {
+      launcher.stopAllForUser(userKeyRow.rows[0].api_key);
+    }
 
     // Delete in correct order to respect foreign keys
     await pool.query(
@@ -820,13 +943,14 @@ app.get("/api/weather", authenticateToken, async (req, res) => {
     const data = await response.json();
 
     weatherCache[key] = {
-      fetchedAt: now,
-      data: {
-        cloudCover: data.current.cloud_cover,
-        windSpeed: data.current.wind_speed_10m,
-        temperature: data.current.temperature_2m,
-      },
-    };
+  fetchedAt: now,
+  data: {
+    cloudCover: data.current.cloud_cover,
+    windSpeed: data.current.wind_speed_10m,
+    temperature: data.current.temperature_2m,
+    timezone: data.timezone, 
+  },
+};
 
     return res.json({
       success: true,
@@ -837,6 +961,90 @@ app.get("/api/weather", authenticateToken, async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Weather fetch failed" });
+  }
+});
+
+// Hourly forecast for the weather widget — uses Open-Meteo hourly endpoint
+// Returns current conditions + next 6 hours
+app.get("/api/weather/forecast", authenticateToken, async (req, res) => {
+  try {
+    const userRow = await pool.query(
+      "SELECT lat, lng, location FROM users WHERE id = $1",
+      [req.user.id],
+    );
+
+    const user = userRow.rows[0];
+    if (!user?.lat || !user?.lng) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "No location set. Please update your location in profile.",
+        });
+    }
+
+    const { lat, lng, location } = user;
+    const cacheKey = `forecast:${lat},${lng}`;
+    const now = Date.now();
+
+    // Cache forecasts for 15 minutes (same as weather cache)
+    if (
+      weatherCache[cacheKey] &&
+      now - weatherCache[cacheKey].fetchedAt < 15 * 60 * 1000
+    ) {
+      return res.json({
+        success: true,
+        data: weatherCache[cacheKey].data,
+        cached: true,
+      });
+    }
+
+    // Open-Meteo hourly: temperature, wind speed, cloud cover for next 7 hours
+    const url =
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
+      `&current=temperature_2m,wind_speed_10m,cloud_cover` +
+      `&hourly=temperature_2m,wind_speed_10m,cloud_cover` +
+      `&forecast_days=2&timezone=auto`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    // Find the current hour index in the hourly array
+    const currentIso = data.current.time; // e.g. "2026-04-09T12:00"
+    const hourlyTimes = data.hourly.time;
+    const currentIdx = hourlyTimes.findIndex((t) => t === currentIso);
+    const startIdx = currentIdx >= 0 ? currentIdx : 0;
+
+    // Build next 6 hours
+    const hourly = [];
+    for (let i = 1; i <= 6; i++) {
+      const idx = startIdx + i;
+      if (idx >= hourlyTimes.length) break;
+      hourly.push({
+        time: hourlyTimes[idx].split("T")[1], // "14:00"
+        temp: data.hourly.temperature_2m[idx],
+        wind: data.hourly.wind_speed_10m[idx],
+        cloud: data.hourly.cloud_cover[idx],
+      });
+    }
+
+    const result = {
+      location: location || `${lat}, ${lng}`,
+      current: {
+        temp: data.current.temperature_2m,
+        wind: data.current.wind_speed_10m,
+        cloud: data.current.cloud_cover,
+      },
+      hourly,
+    };
+
+    weatherCache[cacheKey] = { fetchedAt: now, data: result };
+    return res.json({ success: true, data: result, cached: false });
+  } catch (error) {
+    console.error("Forecast error:", error.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Forecast fetch failed" });
   }
 });
 
@@ -873,15 +1081,15 @@ app.post("/api/readings", authenticateToken, async (req, res) => {
   }
 });
 
-// Get latest rich readings for dashboard (Power, SOC, voltages, etc.)
 app.get("/api/readings/latest", authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       SELECT 
-        u.username,
         i.id as inverter_id,
         i.name as inverter_name,
         i.type,
+        i.profile,
         rr.power_w,
         rr.dc_voltage,
         rr.dc_current,
@@ -913,12 +1121,14 @@ app.get("/api/readings/latest", authenticateToken, async (req, res) => {
         ORDER BY recorded_at DESC 
         LIMIT 1
       ) br ON true
+      WHERE u.id = $1
       ORDER BY i.type, i.name;
-    `);
+    `,
+      [req.user.id],
+    );
 
     const solar = result.rows.filter((r) => r.type === "solar");
     const wind = result.rows.filter((r) => r.type === "wind");
-
     const totalPower = result.rows.reduce(
       (sum, r) => sum + (parseFloat(r.power_w) || 0),
       0,
@@ -937,10 +1147,54 @@ app.get("/api/readings/latest", authenticateToken, async (req, res) => {
     });
   } catch (error) {
     console.error("Dashboard readings error:", error.message);
-    return res.status(500).json({
-      success: false,
-      message: "Error fetching live readings",
-    });
+    return res
+      .status(500)
+      .json({ success: false, message: "Error fetching live readings" });
+  }
+});
+
+// Get last N raw readings per inverter for chart pre-population
+app.get("/api/readings/history", authenticateToken, async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit) || 20, 100); // max 100
+
+    const result = await pool.query(
+      `
+      SELECT
+        i.id as inverter_id,
+        i.type,
+        i.profile,
+        rr.power_w,
+        rr.wind_speed,
+        rr.rotor_rpm,
+        rr.pitch_angle,
+        rr.dc_voltage,
+        rr.ac_voltage,
+        rr.energy_kwh,
+        rr.recorded_at
+      FROM inverters i
+      JOIN users u ON i.user_id = u.id
+      JOIN LATERAL (
+        SELECT * FROM raw_readings
+        WHERE inverter_id = i.id
+        ORDER BY recorded_at DESC
+        LIMIT $2
+      ) rr ON true
+      WHERE u.id = $1
+      ORDER BY i.type, rr.recorded_at ASC
+    `,
+      [req.user.id, limit],
+    );
+
+    const solar = result.rows.filter((r) => r.type === "solar");
+    const wind = result.rows.filter((r) => r.type === "wind");
+
+    return res.status(200).json({ success: true, data: { solar, wind } });
+  } catch (error) {
+    console.error("History error:", error.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error fetching history" });
   }
 });
 
@@ -965,4 +1219,8 @@ app.use((error, req, res, next) => {
 // Start the server
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
+
+  setTimeout(() => {
+    launcher.startAllSimulators();
+  }, 3000);
 });
