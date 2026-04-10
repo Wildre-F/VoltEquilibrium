@@ -13,6 +13,7 @@
   const API_BASE = "http://localhost:3000";
 
   const CONFIG = {
+    minPasswordLength: 8,
     apiEndpoints: {
       login: `${API_BASE}/api/login`,
       register: `${API_BASE}/api/register`,

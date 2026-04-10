@@ -37,7 +37,12 @@ window.addEventListener("pageshow", async () => {
 
   const API_BASE = "http://localhost:3000";
   const POLL_MS = 30000;
-  const MAX_HISTORY = 20; // rolling window of chart points
+  const MAX_HISTORY = 20; // rolling window for Live filter
+
+  // Tracks the active range (number of points) for each chart.
+  // Live = 20, 1h = 120, 1d = 2880, Max = 5000.
+  // pushToChart uses this so the trim limit matches the selected filter.
+  const activeRange = { solar: MAX_HISTORY, wind: MAX_HISTORY };
 
   const token = localStorage.getItem("authToken");
 
@@ -147,11 +152,11 @@ window.addEventListener("pageshow", async () => {
   const solarChart = makeChart("solar-chart", "#005147");
   const windChart = makeChart("wind-chart", "#005db6");
 
-  function pushToChart(chart, timeLabel, value) {
+  function pushToChart(chart, timeLabel, value, maxPoints) {
     if (!chart) return;
     chart.data.labels.push(timeLabel);
     chart.data.datasets[0].data.push(value || 0);
-    if (chart.data.labels.length > MAX_HISTORY) {
+    if (chart.data.labels.length > maxPoints) {
       chart.data.labels.shift();
       chart.data.datasets[0].data.shift();
     }
@@ -209,9 +214,7 @@ window.addEventListener("pageshow", async () => {
     // ── Solar ──────────────────────────────────────────────────────────────
     if (solar) {
       const pw = parseFloat(solar.power_w) || 0;
-      const maxW = (solar.inverter_name || "").toLowerCase().includes("large")
-        ? 10000
-        : 3000;
+      const maxW = (solar.profile || "").includes("large") ? 10000 : 3000;
 
       setDial(
         "solar-power-arc",
@@ -263,20 +266,15 @@ window.addEventListener("pageshow", async () => {
         solar.cloud_cover != null ? `${solar.cloud_cover}%` : "—",
       );
 
-      pushToChart(solarChart, now, pw);
+      pushToChart(solarChart, now, pw, activeRange.solar);
     }
 
     // ── Wind ───────────────────────────────────────────────────────────────
-    const windBattery = data.all.find((r) => r.state_of_charge != null) || wind;
 
     if (wind) {
       const pw = parseFloat(wind.power_w) || 0;
-      const maxW = (wind.inverter_name || "").toLowerCase().includes("large")
-        ? 15000
-        : 2000;
-      const maxRPM = (wind.inverter_name || "").toLowerCase().includes("large")
-        ? 25
-        : 600;
+      const maxW = (wind.profile || "").includes("large") ? 15000 : 2000;
+      const maxRPM = (wind.profile || "").includes("large") ? 25 : 600;
 
       setDial(
         "wind-power-arc",
@@ -328,7 +326,7 @@ window.addEventListener("pageshow", async () => {
         wind.frequency != null ? `${(+wind.frequency).toFixed(2)} Hz` : "—",
       );
 
-      pushToChart(windChart, now, pw);
+      pushToChart(windChart, now, pw, activeRange.wind);
     }
 
     showActivePanel();
@@ -378,7 +376,7 @@ window.addEventListener("pageshow", async () => {
           minute: "2-digit",
           second: "2-digit",
         });
-        pushToChart(solarChart, t, parseFloat(row.power_w) || 0);
+        pushToChart(solarChart, t, parseFloat(row.power_w) || 0, MAX_HISTORY);
       });
 
       // Safe handling for wind data
@@ -388,7 +386,7 @@ window.addEventListener("pageshow", async () => {
           minute: "2-digit",
           second: "2-digit",
         });
-        pushToChart(windChart, t, parseFloat(row.power_w) || 0);
+        pushToChart(windChart, t, parseFloat(row.power_w) || 0, MAX_HISTORY);
       });
     } catch (err) {
       console.warn("[dashboard] History load failed:", err.message);
@@ -472,12 +470,9 @@ window.addEventListener("pageshow", async () => {
         const chart = chartType === "solar" ? solarChart : windChart;
         if (!chart) return;
 
-        if (range === 20) {
-          // "Live" — just reload history with 20 points (same as boot)
-          await reloadChart(chart, chartType, 20);
-        } else {
-          await reloadChart(chart, chartType, range);
-        }
+        // Update the active range so pushToChart trims to the right window
+        activeRange[chartType] = range;
+        await reloadChart(chart, chartType, range);
       });
     });
   }

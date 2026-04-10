@@ -3,7 +3,10 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const jwt = require('jsonwebtoken');
 const pool = require('./db');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey';
+if (!process.env.JWT_SECRET) {
+    throw new Error('JWT_SECRET environment variable is required');
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 async function findOrCreateUser(email, username) {
     const existing = await pool.query(
@@ -17,7 +20,7 @@ async function findOrCreateUser(email, username) {
         `INSERT INTO users (username, email, password)
          VALUES ($1, $2, $3)
          RETURNING id, username, email`,
-        [username, email, 'OAUTH_USER']
+        [username, email, '!']
     );
 
     return result.rows[0];

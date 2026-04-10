@@ -79,6 +79,7 @@ function startSimulator({ apiKey, profile, lat, lng, token, deviceId }) {
       SIM_LNG: String(lng),
       SIM_TOKEN: token || "",
       MQTT_BROKER: process.env.MQTT_BROKER || "mqtt://mqtt:1883",
+      BACKEND_URL: process.env.BACKEND_URL || "http://localhost:3000",
     },
     // "pipe" means we capture stdout/stderr ourselves (so we can prefix log lines)
     stdio: ["ignore", "pipe", "pipe"],
@@ -204,7 +205,7 @@ async function startAllSimulators() {
       const jwt = require("jsonwebtoken");
       const INTERNAL_TOKEN = jwt.sign(
         { id: 0, role: "internal", purpose: "simulator-weather" },
-        process.env.JWT_SECRET || "mysecretkey",
+        process.env.JWT_SECRET,
         { expiresIn: "30d" },
       );
 

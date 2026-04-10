@@ -46,7 +46,7 @@ async function getWeather() {
   }
   try {
     const res = await fetch(
-      `http://localhost:3000/api/weather?lat=${LAT}&lng=${LNG}`,
+      `${process.env.BACKEND_URL || "http://localhost:3000"}/api/weather?lat=${LAT}&lng=${LNG}`,
       {
         headers: { Authorization: `Bearer ${process.env.SIM_TOKEN}` },
       },

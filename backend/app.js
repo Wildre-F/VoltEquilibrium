@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
 const fetch = require("node-fetch");
 const mqtt = require("mqtt");
+const rateLimit = require("express-rate-limit");
 
 // ===== Internal Modules =====
 const pool = require("./db");
@@ -18,12 +19,25 @@ const app = express();
 
 // ===== Constants =====
 const PORT = process.env.PORT || 3000;
-const JWT_SECRET = process.env.JWT_SECRET || "mysecretkey";
+
+if (!process.env.JWT_SECRET) {
+  throw new Error("JWT_SECRET environment variable is required");
+}
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // ===== Middleware =====
 app.use(cors({ origin: process.env.FRONTEND_URL }));
 app.use(express.json());
 app.use(passport.initialize());
+
+// ===== Rate Limiting =====
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: "Too many attempts, please try again later" },
+});
 
 // ===== MQTT Setup =====
 const mqttClient = mqtt.connect("mqtt://mqtt:1883");
@@ -181,7 +195,7 @@ app.get("/api/test", (req, res) => {
 });
 
 // Registration endpoint
-app.post("/api/register", async (req, res) => {
+app.post("/api/register", authLimiter, async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
@@ -232,7 +246,7 @@ app.post("/api/register", async (req, res) => {
 });
 
 // Login endpoint
-app.post("/api/login", async (req, res, next) => {
+app.post("/api/login", authLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -246,7 +260,7 @@ app.post("/api/login", async (req, res, next) => {
     }
 
     const result = await pool.query(
-      "SELECT id, username, email, password FROM users WHERE email = $1",
+      "SELECT id, username, email, password, role FROM users WHERE email = $1",
       [cleanEmail],
     );
 
@@ -273,6 +287,7 @@ app.post("/api/login", async (req, res, next) => {
         id: user.id,
         email: user.email,
         username: user.username,
+        role: user.role,
       },
       JWT_SECRET,
       { expiresIn: "1h" },
@@ -643,7 +658,7 @@ app.post("/api/setup/inverter", authenticateToken, async (req, res) => {
       JWT_SECRET,
       { expiresIn: "30d" },
     );
-    if (profile && lat && lng) {
+    if (profile && lat != null && lng != null) {
       launcher.startSimulator({
         apiKey,
         profile,
@@ -788,7 +803,7 @@ app.put("/api/profile/location", authenticateToken, async (req, res) => {
   try {
     const { location, lat, lng } = req.body;
 
-    if (!lat || !lng) {
+    if (lat == null || lng == null) {
       return res
         .status(400)
         .json({ success: false, message: "lat and lng are required" });
@@ -897,6 +912,35 @@ app.delete("/api/account/data", authenticateToken, async (req, res) => {
     return res
       .status(500)
       .json({ success: false, message: "Error deleting data" });
+  }
+});
+
+// Delete entire account (user + all data)
+app.delete("/api/account", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Stop all running simulators for this user
+    const userKeyRow = await pool.query(
+      "SELECT api_key FROM users WHERE id = $1",
+      [userId],
+    );
+    if (userKeyRow.rows[0]?.api_key) {
+      launcher.stopAllForUser(userKeyRow.rows[0].api_key);
+    }
+
+    // Deleting the user cascades to inverters, batteries, and all readings
+    // via ON DELETE CASCADE defined in schema.sql
+    await pool.query("DELETE FROM users WHERE id = $1", [userId]);
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Delete account error:", error.message);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error deleting account" });
   }
 });
 
@@ -1060,6 +1104,18 @@ app.post("/api/readings", authenticateToken, async (req, res) => {
       });
     }
 
+    const ownerCheck = await pool.query(
+      "SELECT id FROM inverters WHERE id = $1 AND user_id = $2",
+      [inverter_id, req.user.id],
+    );
+
+    if (ownerCheck.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        message: "Inverter not found or does not belong to you",
+      });
+    }
+
     const result = await pool.query(
       `INSERT INTO energy_readings (inverter_id, kwh)
              VALUES ($1, $2)
@@ -1116,9 +1172,9 @@ app.get("/api/readings/latest", authenticateToken, async (req, res) => {
         LIMIT 1
       ) rr ON true
       LEFT JOIN LATERAL (
-        SELECT * FROM battery_readings 
-        WHERE battery_id = (SELECT id FROM batteries WHERE user_id = u.id LIMIT 1)
-        ORDER BY recorded_at DESC 
+        SELECT * FROM battery_readings
+        WHERE battery_id = (SELECT id FROM batteries WHERE user_id = u.id ORDER BY id ASC LIMIT 1)
+        ORDER BY recorded_at DESC
         LIMIT 1
       ) br ON true
       WHERE u.id = $1
@@ -1156,7 +1212,7 @@ app.get("/api/readings/latest", authenticateToken, async (req, res) => {
 // Get last N raw readings per inverter for chart pre-population
 app.get("/api/readings/history", authenticateToken, async (req, res) => {
   try {
-    const limit = Math.min(parseInt(req.query.limit) || 20, 100); // max 100
+    const limit = Math.min(parseInt(req.query.limit) || 20, 5000); // max 5000 (~1.7 days at 30s intervals)
 
     const result = await pool.query(
       `

@@ -62,7 +62,8 @@ CREATE TABLE IF NOT EXISTS batteries (
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     name VARCHAR(255),
     capacity_kwh DECIMAL(8,2) DEFAULT 10.0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id)
 );
 
 -- ── Battery readings ──────────────────────────────────────────────────────────
@@ -92,3 +93,4 @@ ALTER TABLE raw_readings ADD CONSTRAINT raw_readings_inverter_id_fkey
 ALTER TABLE users ADD COLUMN IF NOT EXISTS api_key VARCHAR(255) UNIQUE;
 ALTER TABLE inverters ADD COLUMN IF NOT EXISTS profile VARCHAR(50);
 ALTER TABLE batteries ALTER COLUMN name DROP NOT NULL;
+ALTER TABLE batteries ADD CONSTRAINT IF NOT EXISTS batteries_user_id_unique UNIQUE (user_id);
