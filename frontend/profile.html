@@ -485,10 +485,13 @@
 
     <script>
       const API_BASE = "http://localhost:3000";
+      // DEV_MODE: bypasses login redirects so frontend can be edited without Docker auth.
+      // This branch (dev/frontend-no-auth) only — never merge this flag as true.
+      const DEV_MODE = true;
       const token = localStorage.getItem("authToken");
       let inverterIds = { solar: null, wind: null };
 
-      if (!token) window.location.href = "../frontend/login.html";
+      if (!DEV_MODE && !token) window.location.href = "../frontend/login.html";
 
       const profileDescriptions = {
         "solar-small": "Peak ~3 kW at midday. Output scales with cloud cover.",

@@ -6,9 +6,15 @@
 //   • Solar / Wind source toggle
 
 // ── Auth guard ────────────────────────────────────────────────────────────────
-document.documentElement.style.visibility = "hidden";
+// DEV_MODE: bypasses login redirects so frontend can be edited without Docker auth.
+// This branch (dev/frontend-no-auth) only — never merge this flag as true.
+const DEV_MODE = true;
+
+if (!DEV_MODE) document.documentElement.style.visibility = "hidden";
 
 window.addEventListener("pageshow", async () => {
+  if (DEV_MODE) return;
+
   const token = localStorage.getItem("authToken");
   if (!token) {
     window.location.replace("../frontend/login.html");
@@ -19,6 +25,14 @@ window.addEventListener("pageshow", async () => {
     const res = await fetch("http://localhost:3000/api/setup/status", {
       headers: { Authorization: `Bearer ${token}` },
     });
+
+    // Token expired or invalid — clear it and send to login
+    if (res.status === 401 || res.status === 403) {
+      localStorage.removeItem("authToken");
+      window.location.replace("../frontend/login.html");
+      return;
+    }
+
     const data = await res.json();
     localStorage.setItem("userRole", data.role);
     if (!data.hasSetup && data.role !== "consumer") {
@@ -26,7 +40,7 @@ window.addEventListener("pageshow", async () => {
       return;
     }
   } catch {
-    /* show page anyway if status check fails */
+    /* network failure — show the page and let individual API calls handle auth */
   }
 
   document.documentElement.style.visibility = "visible";
@@ -52,6 +66,31 @@ window.addEventListener("pageshow", async () => {
     localStorage.setItem("authToken", oauthToken);
     window.history.replaceState({}, "", window.location.pathname);
   }
+
+  // ── Dark mode ──────────────────────────────────────────────────────────────
+  (function applyTheme() {
+    const saved = localStorage.getItem("voltequilibrium-theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    if (saved === "dark" || (!saved && prefersDark)) {
+      document.documentElement.classList.add("dark");
+      document.documentElement.classList.remove("light");
+      const icon = document.getElementById("theme-icon");
+      if (icon) icon.textContent = "light_mode";
+    }
+  })();
+
+  document.getElementById("theme-toggle")?.addEventListener("click", () => {
+    const isDark = document.documentElement.classList.contains("dark");
+    if (isDark) {
+      document.documentElement.classList.replace("dark", "light");
+      document.getElementById("theme-icon").textContent = "dark_mode";
+      localStorage.setItem("voltequilibrium-theme", "light");
+    } else {
+      document.documentElement.classList.replace("light", "dark");
+      document.getElementById("theme-icon").textContent = "light_mode";
+      localStorage.setItem("voltequilibrium-theme", "dark");
+    }
+  });
 
   // ── Sign out ───────────────────────────────────────────────────────────────
   // The HTML uses id="sign-out" (not "sign-out-btn") so we target that directly.
@@ -427,15 +466,23 @@ window.addEventListener("pageshow", async () => {
 
       container.innerHTML = d.hourly
         .map((h) => {
-          // Pick icon based on cloud cover
+          // Pick icon based on cloud cover AND time of day
+          const hour    = parseInt(h.time.split(":")[0], 10);
+          const isNight = hour < 6 || hour >= 20;
+
           const icon =
             h.cloud > 70
               ? "cloud"
               : h.cloud > 30
-                ? "partly_cloudy_day"
-                : "sunny";
+                ? isNight ? "nights_stay" : "partly_cloudy_day"
+                : isNight ? "bedtime"     : "sunny";
+
           const iconColor =
-            h.cloud > 70 ? "#6e7976" : h.cloud > 30 ? "#005db6" : "#374e00";
+            h.cloud > 70
+              ? "#6e7976"
+              : h.cloud > 30
+                ? "#005db6"
+                : isNight ? "#3d3a6b" : "#374e00";
           return `
           <div class="bg-surface-container-low rounded-xl p-3 text-center">
             <div class="text-xs font-bold font-label text-on-surface-variant/60 mb-1">${h.time}</div>
@@ -511,14 +558,115 @@ window.addEventListener("pageshow", async () => {
     }
   }
 
+  // ── CO2 & Savings widget ───────────────────────────────────────────────────
+  let co2ChartInstance = null;
+  let co2Payload = null; // cached for filter switching without re-fetching
+
+  async function loadCo2() {
+    try {
+      const res = await fetch(`${API_BASE}/api/co2`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const json = await res.json();
+      if (!json.success) return;
+      co2Payload = json.data;
+
+      setText("co2-today-kg", co2Payload.todayCo2Kg.toFixed(3));
+      setText("co2-today-rands", `R ${co2Payload.todayRands.toFixed(2)}`);
+      setText("co2-lifetime-kg", co2Payload.lifetimeCo2Kg.toFixed(3));
+      setText("co2-lifetime-rands", `R ${co2Payload.lifetimeRands.toFixed(2)}`);
+
+      // Keep the currently active filter when refreshing
+      const active = document.querySelector("[data-co2].active");
+      renderCo2Chart(active ? active.dataset.co2 : "co2");
+    } catch (err) {
+      console.warn("[dashboard] CO2 load failed:", err.message);
+    }
+  }
+
+  function renderCo2Chart(metric) {
+    if (!co2Payload) return;
+
+    const labels = co2Payload.history.map((d) => {
+      const dt = new Date(d.date);
+      return `${dt.getDate()}/${dt.getMonth() + 1}`;
+    });
+
+    let values, label, color;
+    if (metric === "kwh") {
+      values = co2Payload.history.map((d) => d.kwh);
+      label = "Energy (kWh)";
+      color = "#005db6";
+    } else if (metric === "rands") {
+      values = co2Payload.history.map((d) => d.randsSaved);
+      label = "Savings (ZAR)";
+      color = "#374e00";
+    } else {
+      values = co2Payload.history.map((d) => d.co2Kg);
+      label = "CO₂ Offset (kg)";
+      color = "#005147";
+    }
+
+    const ctx = document.getElementById("co2-chart")?.getContext("2d");
+    if (!ctx) return;
+    if (co2ChartInstance) co2ChartInstance.destroy();
+
+    co2ChartInstance = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          {
+            label,
+            data: values,
+            backgroundColor: color + "33",
+            borderColor: color,
+            borderWidth: 1.5,
+            borderRadius: 4,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 10 }, color: "#6e7976" },
+          },
+          y: {
+            beginAtZero: true,
+            grid: { color: "#e0e3e2" },
+            ticks: { font: { size: 10 }, color: "#6e7976" },
+          },
+        },
+      },
+    });
+  }
+
+  function initCo2Filters() {
+    document.querySelectorAll("[data-co2]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document
+          .querySelectorAll("[data-co2]")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderCo2Chart(btn.dataset.co2);
+      });
+    });
+  }
+
   // ── Boot ───────────────────────────────────────────────────────────────────
   async function init() {
     initChartFilters(); // wire up filter buttons
+    initCo2Filters(); // wire up CO2 filter buttons
     await loadHistory(); // pre-fill charts from DB
     await fetchAndRender(); // get latest live readings
     await loadForecast(); // load weather widget
+    await loadCo2(); // load CO2 & savings widget
     setInterval(fetchAndRender, POLL_MS);
     setInterval(loadForecast, 15 * 60 * 1000); // refresh forecast every 15 min
+    setInterval(loadCo2, 5 * 60 * 1000); // refresh CO2 every 5 min
     setTimeout(() => toast.show("Welcome to VoltEquilibrium", "success"), 600);
   }
 
