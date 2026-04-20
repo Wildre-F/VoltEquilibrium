@@ -4,3 +4,4 @@ mosquitto/data/
 
 # Logs
 *.log
+.claude
