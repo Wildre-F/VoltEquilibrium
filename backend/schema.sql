@@ -30,7 +30,7 @@ CREATE TABLE IF NOT EXISTS inverters (
     UNIQUE (user_id, type)
 );
 
--- ── Energy readings (daily kWh summary) ───────────────────────────────────────
+-- ── Energy readings (per-reading kWh snapshot from simulator) ─────────────────
 CREATE TABLE IF NOT EXISTS energy_readings (
     id SERIAL PRIMARY KEY,
     inverter_id INTEGER REFERENCES inverters(id) ON DELETE CASCADE,
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS energy_readings (
     recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- ── Raw readings (full telemetry from inverter) ───────────────────────────────
+-- ── Raw readings (full telemetry from inverter every 30s) ─────────────────────
 CREATE TABLE IF NOT EXISTS raw_readings (
     id SERIAL PRIMARY KEY,
     inverter_id INTEGER REFERENCES inverters(id) ON DELETE CASCADE,
@@ -78,6 +78,43 @@ CREATE TABLE IF NOT EXISTS battery_readings (
     recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ── CO2 savings (daily snapshot per user) ─────────────────────────────────────
+-- Each row represents one day's CO2 offset and money saved for a user.
+-- This is a pre-calculated summary so the frontend can quickly fetch
+-- historical CO2 data without summing thousands of raw readings every time.
+--
+-- How it works:
+--   A background job (or the /api/co2 endpoint on first call) calculates
+--   total kWh generated in a day, multiplies by 0.928 to get kg CO2 offset,
+--   and multiplies by 2.50 to get Rands saved (Eskom rate).
+CREATE TABLE IF NOT EXISTS co2_savings (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    kwh_generated DECIMAL(10,4) NOT NULL DEFAULT 0,  -- total kWh that day
+    co2_kg DECIMAL(10,4) NOT NULL DEFAULT 0,          -- kg CO2 offset (kwh * 0.928)
+    rands_saved DECIMAL(10,2) NOT NULL DEFAULT 0,     -- money saved (kwh * 2.50)
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (user_id, date)  -- one row per user per day
+);
+
+-- ── Analytics daily summary (per inverter per day) ────────────────────────────
+-- Pre-aggregated daily stats per inverter so analytics queries are fast.
+-- Instead of scanning thousands of raw_readings rows each time the dashboard
+-- loads, this table stores the already-calculated totals for each past day.
+-- Today's data is always calculated live from raw_readings.
+CREATE TABLE IF NOT EXISTS analytics_daily (
+    id SERIAL PRIMARY KEY,
+    inverter_id INTEGER REFERENCES inverters(id) ON DELETE CASCADE,
+    date DATE NOT NULL,
+    total_kwh DECIMAL(10,4) NOT NULL DEFAULT 0,   -- total energy generated that day
+    peak_power_w DECIMAL(10,2) NOT NULL DEFAULT 0, -- highest watt reading that day
+    avg_power_w DECIMAL(10,2) NOT NULL DEFAULT 0,  -- average watt reading that day
+    reading_count INTEGER NOT NULL DEFAULT 0,       -- how many raw readings existed
+    recorded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (inverter_id, date)  -- one row per inverter per day
+);
+
 -- ── Fix foreign key constraints to use ON DELETE CASCADE ──────────────────────
 -- energy_readings
 ALTER TABLE energy_readings DROP CONSTRAINT IF EXISTS energy_readings_inverter_id_fkey;
@@ -89,8 +126,26 @@ ALTER TABLE raw_readings DROP CONSTRAINT IF EXISTS raw_readings_inverter_id_fkey
 ALTER TABLE raw_readings ADD CONSTRAINT raw_readings_inverter_id_fkey
     FOREIGN KEY (inverter_id) REFERENCES inverters(id) ON DELETE CASCADE;
 
+-- co2_savings
+ALTER TABLE co2_savings DROP CONSTRAINT IF EXISTS co2_savings_user_id_fkey;
+ALTER TABLE co2_savings ADD CONSTRAINT co2_savings_user_id_fkey
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+-- analytics_daily
+ALTER TABLE analytics_daily DROP CONSTRAINT IF EXISTS analytics_daily_inverter_id_fkey;
+ALTER TABLE analytics_daily ADD CONSTRAINT analytics_daily_inverter_id_fkey
+    FOREIGN KEY (inverter_id) REFERENCES inverters(id) ON DELETE CASCADE;
+
 -- ── Add columns to existing tables if missing (safe to re-run) ────────────────
 ALTER TABLE users ADD COLUMN IF NOT EXISTS api_key VARCHAR(255) UNIQUE;
 ALTER TABLE inverters ADD COLUMN IF NOT EXISTS profile VARCHAR(50);
 ALTER TABLE batteries ALTER COLUMN name DROP NOT NULL;
 ALTER TABLE batteries ADD CONSTRAINT IF NOT EXISTS batteries_user_id_unique UNIQUE (user_id);
+
+-- ── Inverter page additions ────────────────────────────────────────────────────
+ALTER TABLE inverters ADD COLUMN IF NOT EXISTS serial_number VARCHAR(50);
+ALTER TABLE inverters ADD COLUMN IF NOT EXISTS firmware_version VARCHAR(20);
+ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS load_watts DECIMAL(10,2);
+ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS load_kwh  DECIMAL(10,4);
+ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS grid_watts DECIMAL(10,2);
+ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS grid_kwh  DECIMAL(10,4);
