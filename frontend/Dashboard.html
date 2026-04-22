@@ -144,10 +144,10 @@
     </style>
   </head>
 
-  <body class="bg-background text-on-surface antialiased">
-    <!-- TopNavBar (unchanged) -->
+  <body class="bg-background dark:bg-slate-900 text-on-surface dark:text-white antialiased">
+    <!-- TopNavBar -->
     <nav
-      class="fixed top-0 w-full z-30 bg-white/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto border-none"
+      class="fixed top-0 w-full z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto border-none"
     >
       <div class="flex items-center gap-8">
         <span
@@ -162,38 +162,41 @@
           >
           <a
             class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight"
-            href="#"
-            >Analytics</a
+            href="Analytics.html"
+            >Analytics</
           >
           <a
             class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight"
-            href="#"
-            >Assets</a
+            href="Inverter.html"
+            >Inverter</a
           >
         </div>
       </div>
       <div class="flex items-center gap-4">
-        <button
-          class="p-2 hover:bg-surface-container-low rounded-full transition-all duration-300"
-        >
-          <span class="material-symbols-outlined text-primary"
-            >notifications</span
-          >
+        <button id="theme-toggle" class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300" aria-label="Toggle theme">
+          <span id="theme-icon" class="material-symbols-outlined text-primary">dark_mode</span>
         </button>
-        <button
-          class="p-2 hover:bg-surface-container-low rounded-full transition-all duration-300"
-        >
-          <span class="material-symbols-outlined text-primary">settings</span>
-        </button>
+        <a href="Notifications.html">
+          <button class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300">
+            <span class="material-symbols-outlined text-primary">notifications</span>
+          </button>
+        </a>
+        <a href="Wallet.html">
+          <button class="flex items-center gap-1.5 px-3 py-1.5 bg-primary-fixed hover:bg-primary-fixed/70 rounded-full transition-colors">
+            <span class="material-symbols-outlined text-primary" style="font-size:1.1rem;font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+            <span id="nav-balance" class="text-xs font-bold text-primary font-label">R—</span>
+          </button>
+        </a>
         <a href="../frontend/profile.html">
-          <div
-            class="h-8 w-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-          >
-            <span class="material-symbols-outlined text-primary text-lg"
-              >person</span
-            >
+          <div id="nav-avatar" class="h-8 w-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+            <span class="material-symbols-outlined text-primary text-lg">person</span>
           </div>
         </a>
+        <script>(function(){
+          var c=localStorage.getItem('avatarColor');if(c)document.getElementById('nav-avatar').style.background=c;
+          var t=sessionStorage.getItem('authToken')||localStorage.getItem('authToken');
+          if(t)fetch('http://localhost:3000/api/wallet',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(d=>{if(d.success)document.getElementById('nav-balance').textContent='R'+parseFloat(d.data.balance).toFixed(2);}).catch(()=>{});
+        })();</script>
       </div>
     </nav>
 
@@ -209,13 +212,20 @@
           Community Grid
         </p>
       </div>
-      <nav class="flex-1 flex flex-col gap-y-1">
+      <nav class="flex-1 flex flex-col gap-y-1 overflow-y-auto overflow-x-hidden min-h-0">
         <a
           class="flex items-center gap-3 px-4 py-3 bg-white text-primary rounded-xl shadow-sm font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
           href="Dashboard.html"
         >
           <span class="material-symbols-outlined">dashboard</span
           ><span>Dashboard</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
+          href="Analytics.html"
+        >
+          <span class="material-symbols-outlined">bar_chart</span
+          ><span>Analytics</span>
         </a>
         <a
           class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
@@ -226,17 +236,17 @@
         </a>
         <a
           class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
-          href="Energy_request.html"
-        >
-          <span class="material-symbols-outlined">electric_bolt</span
-          ><span>Energy Requests</span>
-        </a>
-        <a
-          class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
           href="Recommendations.html"
         >
           <span class="material-symbols-outlined">auto_awesome</span
           ><span>Recommendations</span>
+        </a>
+        <a
+          class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
+          href="Inverter.html"
+        >
+          <span class="material-symbols-outlined">developer_board</span
+          ><span>Inverter</span>
         </a>
         <a
           class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
@@ -249,17 +259,9 @@
       <div
         class="mt-auto flex flex-col gap-y-1 border-t border-outline-variant/20 pt-4"
       >
-        <button
-          class="w-full bg-gradient-to-br from-primary to-primary-container text-white py-3 rounded-full font-headline font-bold text-xs tracking-widest uppercase mb-4 shadow-lg shadow-primary/20"
-        >
-          New Request
-        </button>
-        <a
-          class="flex items-center gap-3 px-4 py-2 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm"
-          href="#"
-        >
-          <span class="material-symbols-outlined">help</span
-          ><span>Support</span>
+        <a href="Support.html"
+          class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-white py-3 rounded-full font-headline font-bold text-xs tracking-widest uppercase mb-4 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
+        ><span class="material-symbols-outlined text-sm">contact_support</span>Contact Support
         </a>
         <a
           id="sign-out"
@@ -467,7 +469,7 @@
             <div
               class="text-xs font-bold text-on-surface-variant/60 uppercase mb-1 font-label"
             >
-              Frequency
+              Inverter Frequency
             </div>
             <div
               class="text-xl font-bold text-primary font-headline"
@@ -733,7 +735,7 @@
             <div
               class="text-xs font-bold text-on-surface-variant/60 uppercase mb-1 font-label"
             >
-              Frequency
+              Inverter Frequency
             </div>
             <div
               class="text-xl font-bold text-primary font-headline"
@@ -897,6 +899,57 @@
               Loading forecast...
             </div>
           </div>
+        </div>
+      </div>
+      <!-- CO2 & Savings Widget -->
+      <div class="mt-6 bg-surface-container-lowest rounded-2xl p-6 shadow-sm" id="co2-widget">
+        <div class="flex justify-between items-center mb-6">
+          <div>
+            <h3 class="text-base font-bold font-headline text-primary flex items-center gap-2">
+              <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1">eco</span>
+              CO₂ Savings &amp; Impact
+            </h3>
+            <p class="text-xs text-on-surface-variant/60 font-label mt-0.5">
+              SA grid factor · 0.928 kg CO₂ per kWh · R2.50 per kWh saved
+            </p>
+          </div>
+        </div>
+
+        <!-- 4 stat tiles -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div class="bg-surface-container-low rounded-xl p-4">
+            <div class="text-xs font-bold text-on-surface-variant/60 uppercase mb-1 font-label tracking-wider">Today CO₂ Offset</div>
+            <div class="text-2xl font-bold text-primary font-headline" id="co2-today-kg">—</div>
+            <div class="text-xs text-on-surface-variant/40 font-label mt-0.5">kg avoided</div>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-4">
+            <div class="text-xs font-bold text-on-surface-variant/60 uppercase mb-1 font-label tracking-wider">Today Savings</div>
+            <div class="text-2xl font-bold text-tertiary font-headline" id="co2-today-rands">—</div>
+            <div class="text-xs text-on-surface-variant/40 font-label mt-0.5">ZAR saved</div>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-4">
+            <div class="text-xs font-bold text-on-surface-variant/60 uppercase mb-1 font-label tracking-wider">Lifetime CO₂ Offset</div>
+            <div class="text-2xl font-bold text-primary font-headline" id="co2-lifetime-kg">—</div>
+            <div class="text-xs text-on-surface-variant/40 font-label mt-0.5">kg total</div>
+          </div>
+          <div class="bg-surface-container-low rounded-xl p-4">
+            <div class="text-xs font-bold text-on-surface-variant/60 uppercase mb-1 font-label tracking-wider">Lifetime Savings</div>
+            <div class="text-2xl font-bold text-tertiary font-headline" id="co2-lifetime-rands">—</div>
+            <div class="text-xs text-on-surface-variant/40 font-label mt-0.5">ZAR total</div>
+          </div>
+        </div>
+
+        <!-- 30-day chart -->
+        <div>
+          <div class="flex justify-between items-center mb-4">
+            <h4 class="text-sm font-bold font-headline text-primary">30-Day History</h4>
+            <div class="flex gap-1" id="co2-chart-filters">
+              <button class="chart-filter-btn active" data-co2="co2">CO₂ kg</button>
+              <button class="chart-filter-btn" data-co2="kwh">kWh</button>
+              <button class="chart-filter-btn" data-co2="rands">Rands</button>
+            </div>
+          </div>
+          <canvas id="co2-chart" style="max-height: 200px"></canvas>
         </div>
       </div>
     </main>

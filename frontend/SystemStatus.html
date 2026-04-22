@@ -1,0 +1,261 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>VoltEquilibrium | System Status</title>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#005147",
+              "primary-fixed": "#9ff2e1",
+              "surface-container-low": "#f1f4f3",
+              "surface-container": "#ebeeed",
+              "on-surface": "#181c1c",
+              "on-surface-variant": "#3e4946",
+              "outline-variant": "#bec9c5",
+              background: "#f7faf9",
+              tertiary: "#374e00",
+              "tertiary-fixed": "#bdf447",
+              error: "#ba1a1a",
+            },
+            fontFamily: { headline: ["Manrope"], body: ["Plus Jakarta Sans"], label: ["Inter"] },
+          },
+        },
+      };
+      const saved = localStorage.getItem("voltequilibrium-theme");
+      if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+        document.documentElement.classList.replace("light", "dark");
+      }
+    </script>
+    <style>
+      .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+      .dot-checking  { background: #bec9c5; }
+      .dot-online    { background: #4caf50; box-shadow: 0 0 6px #4caf5066; animation: pulse-green 2s infinite; }
+      .dot-degraded  { background: #ff9800; box-shadow: 0 0 6px #ff980066; }
+      .dot-offline   { background: #ba1a1a; box-shadow: 0 0 6px #ba1a1a66; }
+      @keyframes pulse-green {
+        0%, 100% { box-shadow: 0 0 4px #4caf5066; }
+        50%       { box-shadow: 0 0 10px #4caf5099; }
+      }
+    </style>
+  </head>
+  <body class="bg-background dark:bg-slate-900 text-on-surface dark:text-white font-body min-h-screen">
+    <div class="max-w-2xl mx-auto px-6 py-16">
+      <a href="login.html" class="inline-flex items-center gap-2 text-sm font-semibold font-label text-primary hover:underline mb-10">
+        <span class="material-symbols-outlined text-base">arrow_back</span>Back to Login
+      </a>
+
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-8">
+        <div>
+          <div class="flex items-center gap-3 mb-2">
+            <span class="material-symbols-outlined text-primary text-3xl">monitor_heart</span>
+            <h1 class="text-3xl font-extrabold font-headline text-primary">System Status</h1>
+          </div>
+          <p class="text-sm text-on-surface-variant dark:text-slate-400 font-label">Live health of all VoltEquilibrium services</p>
+        </div>
+        <div id="overall-badge" class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container dark:bg-slate-700 text-sm font-bold font-label">
+          <span class="status-dot dot-checking" id="overall-dot"></span>
+          <span id="overall-label">Checking…</span>
+        </div>
+      </div>
+
+      <!-- Service rows -->
+      <div class="flex flex-col gap-3 mb-8">
+
+        <!-- API / Backend -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">cloud</span>
+            <div>
+              <p class="font-bold font-label text-sm text-on-surface dark:text-white">API Server</p>
+              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">REST endpoints · Auth · Data ingestion</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="status-dot dot-checking" id="api-dot"></span>
+            <span class="text-xs font-bold font-label" id="api-label">Checking…</span>
+            <span class="text-xs text-on-surface-variant/50 dark:text-slate-500 font-label ml-2" id="api-latency"></span>
+          </div>
+        </div>
+
+        <!-- Database -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">storage</span>
+            <div>
+              <p class="font-bold font-label text-sm text-on-surface dark:text-white">Database</p>
+              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">PostgreSQL · Readings · User data</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="status-dot dot-checking" id="db-dot"></span>
+            <span class="text-xs font-bold font-label" id="db-label">Checking…</span>
+          </div>
+        </div>
+
+        <!-- MQTT Broker -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">hub</span>
+            <div>
+              <p class="font-bold font-label text-sm text-on-surface dark:text-white">MQTT Broker</p>
+              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">Mosquitto · Device telemetry ingestion</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="status-dot dot-checking" id="mqtt-dot"></span>
+            <span class="text-xs font-bold font-label" id="mqtt-label">Checking…</span>
+          </div>
+        </div>
+
+        <!-- Simulator Pipeline -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">precision_manufacturing</span>
+            <div>
+              <p class="font-bold font-label text-sm text-on-surface dark:text-white">Simulator Pipeline</p>
+              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">Live data feed · 30 s update interval</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="status-dot dot-checking" id="sim-dot"></span>
+            <span class="text-xs font-bold font-label" id="sim-label">Checking…</span>
+            <span class="text-xs text-on-surface-variant/50 dark:text-slate-500 font-label ml-2" id="sim-age"></span>
+          </div>
+        </div>
+
+        <!-- Weather Service -->
+        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-primary">partly_cloudy_day</span>
+            <div>
+              <p class="font-bold font-label text-sm text-on-surface dark:text-white">Weather Service</p>
+              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">Open-Meteo · Forecast &amp; current conditions</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="status-dot dot-checking" id="weather-dot"></span>
+            <span class="text-xs font-bold font-label" id="weather-label">Checking…</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Last checked + auto-refresh -->
+      <div class="flex items-center justify-between text-xs font-label text-on-surface-variant/50 dark:text-slate-500">
+        <span id="checked-at">Checking all services…</span>
+        <button id="refresh-btn" class="flex items-center gap-1 hover:text-primary transition-colors">
+          <span class="material-symbols-outlined text-sm">refresh</span>Refresh
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+        ? "http://localhost:3000" : "";
+
+      function setStatus(dotId, labelId, state, text) {
+        const dot   = document.getElementById(dotId);
+        const label = document.getElementById(labelId);
+        dot.className   = "status-dot dot-" + state;
+        label.textContent = text;
+        label.style.color = state === "online" ? "#4caf50" : state === "offline" ? "#ba1a1a" : state === "degraded" ? "#ff9800" : "#6e7976";
+      }
+
+      async function checkAll() {
+        document.getElementById("checked-at").textContent = "Checking…";
+
+        // 1. API health (GET /)
+        let apiOk = false;
+        let apiMs = null;
+        try {
+          const t0  = Date.now();
+          const res = await fetch(`${API}/`, { signal: AbortSignal.timeout(5000) });
+          apiMs  = Date.now() - t0;
+          apiOk  = res.ok;
+        } catch {}
+        setStatus("api-dot", "api-label", apiOk ? "online" : "offline", apiOk ? "Operational" : "Unreachable");
+        document.getElementById("api-latency").textContent = apiMs != null ? apiMs + " ms" : "";
+
+        // 2. DB health — inferred from /api/test
+        let dbOk = false;
+        try {
+          const res  = await fetch(`${API}/api/test`, { signal: AbortSignal.timeout(5000) });
+          const data = await res.json();
+          dbOk = res.ok && !!data;
+        } catch {}
+        setStatus("db-dot", "db-label", dbOk ? "online" : "offline", dbOk ? "Operational" : "Unreachable");
+
+        // 3. MQTT — check via status endpoint if it exists, otherwise infer from sim data freshness
+        // We use the readings endpoint (requires auth) — if no token just skip to "Unknown"
+        const token = localStorage.getItem("authToken");
+
+        // 4. Simulator pipeline — check freshness of latest raw reading
+        let simOk = false;
+        let simAge = null;
+        if (token) {
+          try {
+            const res  = await fetch(`${API}/api/readings/latest`, {
+              headers: { Authorization: `Bearer ${token}` },
+              signal: AbortSignal.timeout(5000),
+            });
+            if (res.ok) {
+              const data = await res.json();
+              const src  = data.data?.solar || data.data?.wind;
+              if (src?.timestamp) {
+                const ageMs = Date.now() - new Date(src.timestamp).getTime();
+                simAge = Math.round(ageMs / 1000);
+                simOk  = ageMs < 120000; // within 2 minutes = live
+              }
+            }
+          } catch {}
+        }
+        setStatus("sim-dot", "sim-label",
+          !token ? "degraded" : simOk ? "online" : "degraded",
+          !token ? "Sign in to check" : simOk ? "Live" : "Stale / Stopped",
+        );
+        document.getElementById("sim-age").textContent =
+          simAge != null ? `last reading ${simAge}s ago` : "";
+
+        // MQTT — infer from sim: if sim is live, MQTT is live
+        setStatus("mqtt-dot", "mqtt-label",
+          !token ? "degraded" : simOk ? "online" : "degraded",
+          !token ? "Sign in to check" : simOk ? "Operational" : "Possible issue",
+        );
+
+        // 5. Weather service
+        let weatherOk = false;
+        try {
+          const res = await fetch("https://api.open-meteo.com/v1/forecast?latitude=0&longitude=0&current=temperature_2m", {
+            signal: AbortSignal.timeout(6000),
+          });
+          weatherOk = res.ok;
+        } catch {}
+        setStatus("weather-dot", "weather-label", weatherOk ? "online" : "offline", weatherOk ? "Operational" : "Unreachable");
+
+        // Overall badge
+        const allCritical = [apiOk, dbOk];
+        const allOk = allCritical.every(Boolean) && (weatherOk);
+        const anyDown = allCritical.some((v) => !v);
+        const overallState = anyDown ? "offline" : !allOk ? "degraded" : "online";
+        const overallText  = anyDown ? "Partial Outage" : !allOk ? "Degraded" : "All Systems Operational";
+        setStatus("overall-dot", "overall-label", overallState, overallText);
+
+        document.getElementById("checked-at").textContent =
+          "Last checked: " + new Date().toLocaleTimeString();
+      }
+
+      document.getElementById("refresh-btn").addEventListener("click", checkAll);
+      checkAll();
+      setInterval(checkAll, 60000); // auto-refresh every 60s
+    </script>
+  </body>
+</html>

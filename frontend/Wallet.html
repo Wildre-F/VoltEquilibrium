@@ -1,0 +1,330 @@
+<!doctype html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>VoltEquilibrium | Wallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-on-surface": "#eef1f0", primary: "#005147",
+            "secondary-fixed": "#d6e3ff", "on-secondary-fixed-variant": "#00468c",
+            "on-surface": "#181c1c", error: "#ba1a1a", "tertiary-fixed": "#bdf447",
+            "on-background": "#181c1c", "surface-variant": "#e0e3e2",
+            "surface-container": "#ebeeed", "tertiary-container": "#4b6800",
+            "primary-fixed-dim": "#83d5c5", "surface-bright": "#f7faf9",
+            "inverse-primary": "#83d5c5", "surface-dim": "#d7dbda",
+            "on-primary-fixed": "#00201b", "error-container": "#ffdad6",
+            "on-error": "#ffffff", "on-primary": "#ffffff", tertiary: "#374e00",
+            "on-surface-variant": "#3e4946", background: "#f7faf9", surface: "#f7faf9",
+            "primary-fixed": "#9ff2e1", "surface-container-low": "#f1f4f3",
+            "on-secondary-fixed": "#001b3d", "on-tertiary": "#ffffff",
+            "on-error-container": "#93000a", "on-primary-fixed-variant": "#005046",
+            "secondary-fixed-dim": "#a9c7ff", "on-secondary": "#ffffff",
+            "primary-container": "#006b5e", "on-primary-container": "#95e8d8",
+            "surface-container-high": "#e6e9e8", "secondary-container": "#63a1ff",
+            "surface-container-lowest": "#ffffff", "outline-variant": "#bec9c5",
+            outline: "#6e7976", "surface-container-highest": "#e0e3e2",
+            "inverse-surface": "#2d3131", secondary: "#005db6",
+            "on-secondary-container": "#00376f",
+          },
+          fontFamily: { headline: ["Manrope"], body: ["Plus Jakarta Sans"], label: ["Inter"] },
+          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "1.5rem", full: "9999px" },
+        },
+      },
+    };
+  </script>
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; line-height: 1; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface">
+
+  <!-- TopNavBar -->
+  <nav class="fixed top-0 w-full z-30 bg-white/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto">
+    <div class="flex items-center gap-8">
+      <span class="text-2xl font-extrabold tracking-tighter text-primary font-headline">VoltEquilibrium</span>
+      <div class="hidden md:flex items-center gap-6">
+        <a class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Dashboard.html">Overview</a>
+        <a class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Analytics.html">Analytics</a>
+        <a class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Community_sharing.html">Community</a>
+      </div>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="Notifications.html">
+        <button class="p-2 hover:bg-surface-container-low rounded-full transition-all duration-300">
+          <span class="material-symbols-outlined text-primary">notifications</span>
+        </button>
+      </a>
+      <a href="Wallet.html">
+        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-primary-fixed hover:bg-primary-fixed/70 rounded-full transition-colors">
+          <span class="material-symbols-outlined text-primary" style="font-size:1.1rem;font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+          <span id="nav-balance" class="text-xs font-bold text-primary font-label">R—</span>
+        </button>
+      </a>
+      <a href="profile.html">
+        <div id="nav-avatar" class="h-8 w-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+          <span class="material-symbols-outlined text-primary text-lg">person</span>
+        </div>
+      </a>
+      <script>(function(){var c=localStorage.getItem('avatarColor');if(c)document.getElementById('nav-avatar').style.background=c;})();</script>
+    </div>
+  </nav>
+
+  <div class="flex pt-16">
+    <!-- SideNavBar -->
+    <aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-surface-container-low flex flex-col p-6 gap-y-2 hidden md:flex z-20">
+      <div class="mb-8">
+        <h3 class="text-lg font-bold text-primary font-headline">Renewable Hub</h3>
+        <p class="text-xs font-semibold text-on-surface-variant/60 font-body">Community Grid</p>
+      </div>
+      <nav class="flex-1 flex flex-col gap-y-1 overflow-y-auto overflow-x-hidden min-h-0">
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Dashboard.html">
+          <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Analytics.html">
+          <span class="material-symbols-outlined">bar_chart</span><span>Analytics</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Notifications.html">
+          <span class="material-symbols-outlined">notifications</span><span>Notifications</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Recommendations.html">
+          <span class="material-symbols-outlined">auto_awesome</span><span>Recommendations</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Inverter.html">
+          <span class="material-symbols-outlined">developer_board</span><span>Inverter</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Community_sharing.html">
+          <span class="material-symbols-outlined">groups</span><span>Community Sharing</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 bg-white text-primary rounded-xl shadow-sm font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Wallet.html">
+          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">account_balance_wallet</span><span>Wallet</span>
+        </a>
+      </nav>
+      <div class="mt-auto flex flex-col gap-y-1 border-t border-outline-variant/20 pt-4">
+        <a href="Support.html" class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-white py-3 rounded-full font-headline font-bold text-xs tracking-widest uppercase mb-4 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+          <span class="material-symbols-outlined text-sm">contact_support</span>Contact Support
+        </a>
+        <a id="sign-out" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm" href="#">
+          <span class="material-symbols-outlined">logout</span><span>Sign Out</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-64 p-8 min-h-screen">
+      <div class="max-w-2xl mx-auto">
+
+        <!-- Toast -->
+        <div id="toast" class="hidden fixed top-20 right-6 z-50 px-5 py-3 rounded-xl font-semibold text-sm shadow-lg font-body"></div>
+
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-4xl font-extrabold font-headline tracking-tight text-on-surface">Wallet</h1>
+          <p class="text-on-surface-variant mt-2 font-body text-sm">Your escrow balance for community energy transactions.</p>
+        </div>
+
+        <!-- Balance card -->
+        <div class="bg-gradient-to-br from-primary to-primary-container rounded-2xl p-8 mb-6 text-white relative overflow-hidden shadow-xl shadow-primary/20">
+          <div class="absolute right-6 top-6 opacity-10">
+            <span class="material-symbols-outlined" style="font-size:8rem;font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+          </div>
+          <p class="text-white/70 text-xs font-bold uppercase tracking-widest font-label mb-2">Available Balance</p>
+          <p id="balance-display" class="text-5xl font-extrabold font-headline tracking-tight">R—</p>
+          <p class="text-white/60 text-xs font-label mt-3">Used for buying and selling community energy</p>
+        </div>
+
+        <!-- Add Funds -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm mb-6">
+          <h2 class="text-base font-bold font-headline text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1;">add_card</span>Add Funds
+          </h2>
+          <div class="flex gap-3 flex-wrap mb-3">
+            <button onclick="setAmount(100)"  class="quick-amt px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R100</button>
+            <button onclick="setAmount(250)"  class="quick-amt px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R250</button>
+            <button onclick="setAmount(500)"  class="quick-amt px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R500</button>
+            <button onclick="setAmount(1000)" class="quick-amt px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R1,000</button>
+          </div>
+          <div class="flex gap-3">
+            <div class="relative flex-1">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold font-label text-sm">R</span>
+              <input id="topup-amount" type="number" min="1" max="10000" step="1" placeholder="Custom amount"
+                class="w-full pl-8 pr-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+            </div>
+            <button onclick="addFunds()" class="px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl font-label hover:opacity-90 transition-opacity whitespace-nowrap">
+              Add Funds
+            </button>
+          </div>
+        </div>
+
+        <!-- Withdraw Funds -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm mb-6">
+          <h2 class="text-base font-bold font-headline text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-error text-base" style="font-variation-settings:'FILL' 1;">payments</span>Withdraw Funds
+          </h2>
+          <div class="flex gap-3 flex-wrap mb-3">
+            <button onclick="setWithdrawAmount(100)"  class="quick-wd px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R100</button>
+            <button onclick="setWithdrawAmount(250)"  class="quick-wd px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R250</button>
+            <button onclick="setWithdrawAmount(500)"  class="quick-wd px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R500</button>
+            <button onclick="setWithdrawAmount(1000)" class="quick-wd px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R1,000</button>
+          </div>
+          <div class="flex gap-3">
+            <div class="relative flex-1">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold font-label text-sm">R</span>
+              <input id="withdraw-amount" type="number" min="1" max="10000" step="1" placeholder="Custom amount"
+                class="w-full pl-8 pr-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-error transition-colors" />
+            </div>
+            <button onclick="withdrawFunds()" class="px-6 py-3 bg-error text-white font-bold text-sm rounded-xl font-label hover:opacity-90 transition-opacity whitespace-nowrap">
+              Withdraw
+            </button>
+          </div>
+        </div>
+
+        <!-- Transaction History -->
+        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
+          <h2 class="text-base font-bold font-headline text-on-surface mb-4 flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-base">receipt_long</span>Transaction History
+          </h2>
+          <div id="tx-list" class="space-y-2">
+            <p class="text-on-surface-variant text-sm text-center py-8">Loading transactions…</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API   = "http://localhost:3000";
+    const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+    if (token && !sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
+    if (!token) window.location.href = "login.html";
+
+    document.getElementById("sign-out").addEventListener("click", (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem("authToken");
+      localStorage.removeItem("authToken");
+      window.location.href = "login.html";
+    });
+
+    function showToast(msg, type) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      const base = "fixed top-20 right-6 z-50 px-5 py-3 rounded-xl font-semibold text-sm shadow-lg font-body";
+      t.className = base + (type === "success" ? " bg-primary-fixed text-primary" : " bg-error-container text-error");
+      clearTimeout(t._t);
+      t._t = setTimeout(() => t.className = "hidden", 3000);
+    }
+
+    function setAmount(n) {
+      document.getElementById("topup-amount").value = n;
+    }
+
+    function setWithdrawAmount(n) {
+      document.getElementById("withdraw-amount").value = n;
+    }
+
+    async function withdrawFunds() {
+      const amount = parseFloat(document.getElementById("withdraw-amount").value);
+      if (!amount || amount <= 0) { showToast("Enter a valid amount.", "error"); return; }
+      try {
+        const res  = await fetch(`${API}/api/wallet/withdraw`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ amount }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        document.getElementById("withdraw-amount").value = "";
+        showToast(`R${parseFloat(amount).toFixed(2)} withdrawn successfully!`, "success");
+        loadWallet();
+        loadTransactions();
+      } catch (err) { showToast(err.message, "error"); }
+    }
+
+    async function loadWallet() {
+      try {
+        const res  = await fetch(`${API}/api/wallet`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (data.success) {
+          const bal = parseFloat(data.data.balance).toFixed(2);
+          document.getElementById("balance-display").textContent = `R${bal}`;
+          document.getElementById("nav-balance").textContent = `R${bal}`;
+        }
+      } catch {}
+    }
+
+    async function addFunds() {
+      const amount = parseFloat(document.getElementById("topup-amount").value);
+      if (!amount || amount <= 0) { showToast("Enter a valid amount.", "error"); return; }
+      try {
+        const res  = await fetch(`${API}/api/wallet/topup`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ amount }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message);
+        document.getElementById("topup-amount").value = "";
+        showToast(`R${parseFloat(amount).toFixed(2)} added successfully!`, "success");
+        loadWallet();
+        loadTransactions();
+      } catch (err) { showToast(err.message, "error"); }
+    }
+
+    async function loadTransactions() {
+      const list = document.getElementById("tx-list");
+      try {
+        const res  = await fetch(`${API}/api/wallet/transactions`, { headers: { Authorization: `Bearer ${token}` } });
+        const data = await res.json();
+        if (!data.success || !data.data.length) {
+          list.innerHTML = `<div class="text-center py-10">
+            <span class="material-symbols-outlined text-4xl text-on-surface-variant/30 block mb-2">receipt_long</span>
+            <p class="text-on-surface-variant text-sm">No transactions yet.</p>
+            <p class="text-on-surface-variant/50 text-xs mt-1">Your energy purchases and sales will appear here.</p>
+          </div>`;
+          return;
+        }
+        const TYPE_CFG = {
+          top_up:   { icon: "add_card",              label: "Top Up",    cls: "bg-primary-fixed text-primary" },
+          withdraw: { icon: "payments",               label: "Withdraw",  cls: "bg-error-container text-error" },
+          transfer: { icon: "swap_horiz",             label: "Transfer",  cls: "bg-secondary-fixed text-on-secondary-fixed-variant" },
+        };
+        list.innerHTML = data.data.map(tx => {
+          const cfg       = TYPE_CFG[tx.type] || TYPE_CFG.transfer;
+          const isCredit  = tx.direction === "credit";
+          const sign      = isCredit ? "+" : "−";
+          const amtColor  = isCredit ? "text-primary" : "text-error";
+          const when      = new Date(tx.created_at).toLocaleString("en-ZA", { dateStyle:"medium", timeStyle:"short" });
+          const party     = tx.counter_party_name ? `· ${tx.counter_party_name}` : "";
+          return `
+            <div class="flex items-center gap-4 p-4 bg-surface-container-low rounded-xl hover:bg-surface-container transition-colors">
+              <div class="w-10 h-10 rounded-xl ${cfg.cls} flex items-center justify-center flex-shrink-0">
+                <span class="material-symbols-outlined text-base" style="font-variation-settings:'FILL' 1;">${cfg.icon}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-on-surface font-body truncate">${tx.description || cfg.label} <span class="text-on-surface-variant/60 font-normal">${party}</span></p>
+                <p class="text-xs text-on-surface-variant/60 font-label mt-0.5">${when}</p>
+              </div>
+              <div class="text-right flex-shrink-0">
+                <p class="text-sm font-bold font-label ${amtColor}">${sign}R${parseFloat(tx.amount).toFixed(2)}</p>
+                <p class="text-xs text-on-surface-variant/60 font-label">Bal: R${parseFloat(tx.balance_after).toFixed(2)}</p>
+              </div>
+            </div>`;
+        }).join("");
+      } catch {
+        list.innerHTML = `<p class="text-center text-on-surface-variant text-sm py-8">Could not load transactions.</p>`;
+      }
+    }
+
+    loadWallet();
+    loadTransactions();
+  </script>
+</body>
+</html>

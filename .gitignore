@@ -1,6 +1,14 @@
-﻿# Mosquitto runtime files
+﻿# Claude Code
+.claude/
+
+# Mosquitto runtime files
 mosquitto/log/
 mosquitto/data/
 
 # Logs
+<<<<<<< Updated upstream
 *.log
+.claude
+=======
+*.log
+>>>>>>> Stashed changes

@@ -333,6 +333,7 @@
       });
 
       localStorage.setItem("authToken", result.token);
+      sessionStorage.setItem("authToken", result.token);
 
       showToast("Welcome back! Redirecting...", "success");
 

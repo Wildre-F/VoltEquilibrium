@@ -1,0 +1,296 @@
+<!doctype html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>VoltEquilibrium | Inverter</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8/hammer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.css" />
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.3.1/dist/driver.js.iife.js"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-on-surface": "#eef1f0",
+              primary: "#005147",
+              "secondary-fixed": "#d6e3ff",
+              "on-secondary-fixed-variant": "#00468c",
+              "on-tertiary-container": "#b5eb3e",
+              "on-surface": "#181c1c",
+              error: "#ba1a1a",
+              "tertiary-fixed": "#bdf447",
+              "on-background": "#181c1c",
+              "surface-variant": "#e0e3e2",
+              "surface-container": "#ebeeed",
+              "tertiary-container": "#4b6800",
+              "primary-fixed-dim": "#83d5c5",
+              "surface-bright": "#f7faf9",
+              "inverse-primary": "#83d5c5",
+              "surface-dim": "#d7dbda",
+              "on-primary-fixed": "#00201b",
+              "error-container": "#ffdad6",
+              "on-error": "#ffffff",
+              "on-primary": "#ffffff",
+              tertiary: "#374e00",
+              "on-surface-variant": "#3e4946",
+              background: "#f7faf9",
+              surface: "#f7faf9",
+              "on-tertiary-fixed-variant": "#374e00",
+              "primary-fixed": "#9ff2e1",
+              "surface-container-low": "#f1f4f3",
+              "on-secondary-fixed": "#001b3d",
+              "on-tertiary": "#ffffff",
+              "on-error-container": "#93000a",
+              "on-primary-fixed-variant": "#005046",
+              "secondary-fixed-dim": "#a9c7ff",
+              "on-secondary": "#ffffff",
+              "primary-container": "#006b5e",
+              "on-primary-container": "#95e8d8",
+              "surface-container-high": "#e6e9e8",
+              "secondary-container": "#63a1ff",
+              "on-tertiary-fixed": "#141f00",
+              "surface-tint": "#006b5e",
+              "surface-container-lowest": "#ffffff",
+              "outline-variant": "#bec9c5",
+              outline: "#6e7976",
+              "surface-container-highest": "#e0e3e2",
+              "inverse-surface": "#2d3131",
+              secondary: "#005db6",
+              "tertiary-fixed-dim": "#a2d729",
+              "on-secondary-container": "#00376f",
+            },
+            fontFamily: {
+              headline: ["Manrope"],
+              body: ["Plus Jakarta Sans"],
+              label: ["Inter"],
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "1.5rem",
+              full: "9999px",
+            },
+          },
+        },
+      };
+    </script>
+    <link rel="stylesheet" href="../CSS/dashboard.css" />
+    <style>
+      .detail-btn {
+        padding: 3px 12px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid #bec9c5;
+        background: transparent;
+        color: #6e7976;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-family: "Inter", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .detail-btn:hover { background: #f1f4f3; color: #005147; }
+      .detail-btn.active {
+        background: #005147;
+        color: #fff;
+        border-color: #005147;
+      }
+      .legend-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        border-radius: 999px;
+        border: 1px solid #bec9c5;
+        background: transparent;
+        color: #6e7976;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        font-family: "Inter", sans-serif;
+      }
+      .legend-btn .dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .legend-btn.hidden-series { opacity: 0.4; }
+      canvas { max-height: 260px; }
+
+      /* Driver.js popover theming */
+      .ve-tour-popover { font-family: "Plus Jakarta Sans", sans-serif; border-radius: 1rem; }
+      .ve-tour-popover .driver-popover-title { font-family: "Manrope", sans-serif; font-weight: 800; color: #005147; font-size: 1rem; }
+      .ve-tour-popover .driver-popover-description { font-size: 0.82rem; color: #3e4946; line-height: 1.6; }
+      .ve-tour-popover .driver-popover-footer button { font-family: "Inter", sans-serif; font-weight: 700; font-size: 0.75rem; }
+      .ve-tour-popover .driver-popover-next-btn { background: #005147; border-color: #005147; }
+      .ve-tour-popover .driver-popover-next-btn:hover { background: #006b5e; border-color: #006b5e; }
+      .ve-tour-popover .driver-popover-progress-text { font-family: "Inter", sans-serif; font-size: 0.7rem; color: #6e7976; }
+    </style>
+  </head>
+
+  <body class="bg-background dark:bg-slate-900 text-on-surface dark:text-white antialiased">
+    <!-- Help Modal -->
+    <div id="help-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+        <div class="flex items-center justify-between p-5 border-b border-outline-variant/20">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary">help</span>
+            <h2 class="font-bold font-headline text-on-surface dark:text-white">Inverter Metrics Explained</h2>
+          </div>
+          <button id="help-close" class="p-1.5 hover:bg-surface-container rounded-full transition-colors">
+            <span class="material-symbols-outlined text-on-surface-variant dark:text-slate-400">close</span>
+          </button>
+        </div>
+        <div id="help-content" class="overflow-y-auto p-5 flex flex-col gap-3"></div>
+        <div class="p-4 border-t border-outline-variant/20 flex justify-end">
+          <button id="help-close-bottom" onclick="document.getElementById('help-modal').classList.add('hidden');document.body.style.overflow=''"
+            class="px-5 py-2 bg-primary text-white rounded-full font-bold font-label text-sm hover:opacity-90 transition-opacity">
+            Got it
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TopNavBar -->
+    <nav class="fixed top-0 w-full z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto border-none">
+      <div class="flex items-center gap-8">
+        <span class="text-2xl font-extrabold tracking-tighter text-primary font-headline">VoltEquilibrium</span>
+        <div class="hidden md:flex items-center gap-6">
+          <a class="text-on-surface-variant/70 dark:text-slate-400 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Dashboard.html">Overview</a>
+          <a class="text-on-surface-variant/70 dark:text-slate-400 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Analytics.html">Analytics</a>
+          <a class="text-primary border-b-2 border-primary pb-1 font-headline font-bold tracking-tight" href="Inverter.html">Inverter</a>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <button id="tour-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors" title="Guided tour">
+          <span class="material-symbols-outlined text-primary text-base">explore</span>
+          <span class="text-xs font-bold font-label text-primary hidden sm:inline">Tour</span>
+        </button>
+        <button id="help-btn" class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300" title="Metric explanations">
+          <span class="material-symbols-outlined text-primary">help</span>
+        </button>
+        <button id="theme-toggle" class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300" aria-label="Toggle theme">
+          <span id="theme-icon" class="material-symbols-outlined text-primary">dark_mode</span>
+        </button>
+        <a href="Notifications.html">
+          <button class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300">
+            <span class="material-symbols-outlined text-primary">notifications</span>
+          </button>
+        </a>
+        <a href="Wallet.html">
+          <button class="flex items-center gap-1.5 px-3 py-1.5 bg-primary-fixed hover:bg-primary-fixed/70 rounded-full transition-colors">
+            <span class="material-symbols-outlined text-primary" style="font-size:1.1rem;font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+            <span id="nav-balance" class="text-xs font-bold text-primary font-label">R—</span>
+          </button>
+        </a>
+        <a href="../frontend/profile.html">
+          <div id="nav-avatar" class="h-8 w-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+            <span class="material-symbols-outlined text-primary text-lg">person</span>
+          </div>
+        </a>
+        <script>(function(){
+          var c=localStorage.getItem('avatarColor');if(c)document.getElementById('nav-avatar').style.background=c;
+          var t=sessionStorage.getItem('authToken')||localStorage.getItem('authToken');
+          if(t)fetch('http://localhost:3000/api/wallet',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(d=>{if(d.success)document.getElementById('nav-balance').textContent='R'+parseFloat(d.data.balance).toFixed(2);}).catch(()=>{});
+        })();</script>
+      </div>
+    </nav>
+
+    <!-- SideNavBar -->
+    <aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-surface-container-low flex flex-col p-6 gap-y-2 border-none hidden md:flex z-20">
+      <div class="mb-8">
+        <h3 class="text-lg font-bold text-primary font-headline">Renewable Hub</h3>
+        <p class="text-xs font-semibold text-on-surface-variant/60 font-body">Community Grid</p>
+      </div>
+      <nav class="flex-1 flex flex-col gap-y-1 overflow-y-auto overflow-x-hidden min-h-0">
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Dashboard.html">
+          <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Analytics.html">
+          <span class="material-symbols-outlined">bar_chart</span><span>Analytics</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Notifications.html">
+          <span class="material-symbols-outlined">notifications</span><span>Notifications</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Recommendations.html">
+          <span class="material-symbols-outlined">auto_awesome</span><span>Recommendations</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 bg-white text-primary rounded-xl shadow-sm font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Inverter.html">
+          <span class="material-symbols-outlined">developer_board</span><span>Inverter</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Community_sharing.html">
+          <span class="material-symbols-outlined">groups</span><span>Community Sharing</span>
+        </a>
+      </nav>
+      <div class="mt-auto flex flex-col gap-y-1 border-t border-outline-variant/20 pt-4">
+        <a href="Support.html"
+          class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-white py-3 rounded-full font-headline font-bold text-xs tracking-widest uppercase mb-4 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+          <span class="material-symbols-outlined text-sm">contact_support</span>Contact Support
+        </a>
+        <a id="sign-out" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm" href="#">
+          <span class="material-symbols-outlined">logout</span><span>Sign Out</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ────────────────────────────────────────────────────── -->
+    <main class="md:ml-64 pt-24 px-6 pb-16">
+
+      <!-- Page header -->
+      <header class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-extrabold tracking-tight font-headline text-primary mb-1">Inverter</h1>
+          <p class="text-sm text-on-surface-variant font-body">Device details, live telemetry &amp; analytics</p>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-full">
+            <span class="w-2 h-2 rounded-full bg-tertiary-fixed animate-pulse shadow-[0_0_6px_#bdf447]"></span>
+            <span class="text-xs font-bold font-label uppercase text-on-surface">Live</span>
+          </div>
+          <span class="text-xs text-on-surface-variant/50 font-label" id="last-updated">—</span>
+        </div>
+      </header>
+
+      <!-- ════════════════════════════════════════════════════════════════
+           SECTION 1 — Inverter Totals (12 tiles, 3 per row)
+      ═══════════════════════════════════════════════════════════════════ -->
+      <section class="mb-10" id="section-totals">
+        <h2 class="text-lg font-bold font-headline text-primary mb-5">Inverter Totals</h2>
+        <div id="totals-grid" class="flex flex-col gap-5">
+          <!-- rows injected by JS -->
+          <div class="flex items-center justify-center h-24 text-on-surface-variant/40 text-sm font-label">Loading totals…</div>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════════════════════════
+           SECTION 2 — Inverter Details (per-device cards)
+      ═══════════════════════════════════════════════════════════════════ -->
+      <section class="mb-10" id="section-devices">
+        <h2 class="text-lg font-bold font-headline text-primary mb-4">Inverter Details</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="inverter-cards">
+          <div class="flex items-center justify-center h-40 bg-white rounded-2xl shadow-sm text-on-surface-variant/40 text-sm font-label" id="cards-loading">
+            Loading devices…
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <script src="../Javascript/inverter.js"></script>
+  </body>
+</html>
