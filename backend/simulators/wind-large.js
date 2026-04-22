@@ -147,7 +147,7 @@ async function runSimulation() {
 
   if (netPower >= 0) {
     if (batterySOC >= 99.9) {
-      grid_watts      = -netPower;
+      grid_watts      = 0;
       batteryNetPower = 0;
     }
   } else {

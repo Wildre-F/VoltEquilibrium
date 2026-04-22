@@ -9,11 +9,12 @@
 document.documentElement.style.visibility = "hidden";
 
 window.addEventListener("pageshow", async () => {
-  const token = localStorage.getItem("authToken");
+  let token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
   if (!token) {
     window.location.replace("../frontend/login.html");
     return;
   }
+  if (!sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
 
   try {
     const res = await fetch("http://localhost:3000/api/setup/status", {
@@ -44,12 +45,15 @@ window.addEventListener("pageshow", async () => {
   // pushToChart uses this so the trim limit matches the selected filter.
   const activeRange = { solar: MAX_HISTORY, wind: MAX_HISTORY };
 
-  const token = localStorage.getItem("authToken");
+  let token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+  if (token && !sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
 
   // Handle OAuth token in URL
   const oauthToken = new URLSearchParams(window.location.search).get("token");
   if (oauthToken) {
     localStorage.setItem("authToken", oauthToken);
+    sessionStorage.setItem("authToken", oauthToken);
+    token = oauthToken;
     window.history.replaceState({}, "", window.location.pathname);
   }
 
@@ -57,6 +61,7 @@ window.addEventListener("pageshow", async () => {
   // The HTML uses id="sign-out" (not "sign-out-btn") so we target that directly.
   document.getElementById("sign-out")?.addEventListener("click", (e) => {
     e.preventDefault();
+    sessionStorage.removeItem("authToken");
     localStorage.removeItem("authToken");
     window.location.href = "../frontend/login.html";
   });
@@ -393,6 +398,72 @@ window.addEventListener("pageshow", async () => {
     }
   }
 
+  // ── CO2 & Savings Widget ───────────────────────────────────────────────────
+  let co2Chart = null;
+  let co2Data = null; // cached history rows keyed by metric
+
+  function initCo2Chart() {
+    const ctx = document.getElementById("co2-chart");
+    if (!ctx) return;
+    co2Chart = new Chart(ctx, {
+      type: "bar",
+      data: { labels: [], datasets: [{ data: [], backgroundColor: "#00513740", borderColor: "#005147", borderWidth: 1.5, borderRadius: 4 }] },
+      options: {
+        responsive: true,
+        animation: { duration: 400 },
+        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (c) => `${c.parsed.y.toFixed(3)}` } } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 9 }, maxTicksLimit: 10, color: "#6e7976" } },
+          y: { beginAtZero: true, ticks: { font: { size: 9 }, color: "#6e7976" }, grid: { color: "#e0e3e240" } },
+        },
+      },
+    });
+
+    // Wire filter buttons
+    document.querySelectorAll("#co2-chart-filters .chart-filter-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("#co2-chart-filters .chart-filter-btn").forEach((b) => b.classList.toggle("active", b === btn));
+        renderCo2Chart(btn.dataset.co2);
+      });
+    });
+  }
+
+  function renderCo2Chart(metric) {
+    if (!co2Chart || !co2Data) return;
+    const labels = co2Data.map((r) => {
+      const d = new Date(r.date);
+      return `${d.getMonth() + 1}/${d.getDate()}`;
+    });
+    const values = co2Data.map((r) =>
+      metric === "kwh" ? r.kwh : metric === "rands" ? r.randsSaved : r.co2Kg
+    );
+    co2Chart.data.labels = labels;
+    co2Chart.data.datasets[0].data = values;
+    co2Chart.update();
+  }
+
+  async function loadCo2() {
+    try {
+      const res = await fetch(`${API_BASE}/api/co2`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) return;
+      const json = await res.json();
+      if (!json.success) return;
+
+      const d = json.data;
+      setText("co2-today-kg",       `${d.todayCo2Kg.toFixed(3)} kg`);
+      setText("co2-today-rands",    `R ${d.todayRands.toFixed(2)}`);
+      setText("co2-lifetime-kg",    `${d.lifetimeCo2Kg.toFixed(3)} kg`);
+      setText("co2-lifetime-rands", `R ${d.lifetimeRands.toFixed(2)}`);
+
+      co2Data = d.history;
+      renderCo2Chart("co2"); // default metric
+    } catch (err) {
+      console.warn("[dashboard] CO2 load failed:", err.message);
+    }
+  }
+
   // ── Weather forecast widget ────────────────────────────────────────────────
   async function loadForecast() {
     try {
@@ -514,10 +585,13 @@ window.addEventListener("pageshow", async () => {
   // ── Boot ───────────────────────────────────────────────────────────────────
   async function init() {
     initChartFilters(); // wire up filter buttons
+    initCo2Chart();     // set up CO2 bar chart
     await loadHistory(); // pre-fill charts from DB
     await fetchAndRender(); // get latest live readings
     await loadForecast(); // load weather widget
+    await loadCo2();    // load CO2 & savings data
     setInterval(fetchAndRender, POLL_MS);
+    setInterval(loadCo2, 5 * 60 * 1000); // refresh CO2 every 5 min
     setInterval(loadForecast, 15 * 60 * 1000); // refresh forecast every 15 min
     setTimeout(() => toast.show("Welcome to VoltEquilibrium", "success"), 600);
   }

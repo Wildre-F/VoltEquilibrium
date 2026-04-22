@@ -145,7 +145,60 @@ ALTER TABLE batteries ADD CONSTRAINT IF NOT EXISTS batteries_user_id_unique UNIQ
 -- ── Inverter page additions ────────────────────────────────────────────────────
 ALTER TABLE inverters ADD COLUMN IF NOT EXISTS serial_number VARCHAR(50);
 ALTER TABLE inverters ADD COLUMN IF NOT EXISTS firmware_version VARCHAR(20);
-ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS load_watts DECIMAL(10,2);
-ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS load_kwh  DECIMAL(10,4);
-ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS grid_watts DECIMAL(10,2);
-ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS grid_kwh  DECIMAL(10,4);
+ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS load_watts   DECIMAL(10,2);
+ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS load_kwh    DECIMAL(10,4);
+ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS grid_watts  DECIMAL(10,2);
+ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS grid_kwh    DECIMAL(10,4);
+ALTER TABLE raw_readings ADD COLUMN IF NOT EXISTS cloud_cover DECIMAL(5,2);
+ALTER TABLE energy_sales    ADD COLUMN IF NOT EXISTS comment        VARCHAR(500);
+ALTER TABLE energy_requests ADD COLUMN IF NOT EXISTS comment        VARCHAR(500);
+ALTER TABLE energy_requests ADD COLUMN IF NOT EXISTS donor_comment  VARCHAR(500);
+
+-- ── Wallets ────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS wallets (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+    balance    DECIMAL(10,2) NOT NULL DEFAULT 1000.00,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+CREATE TABLE IF NOT EXISTS wallet_transactions (
+    id               SERIAL PRIMARY KEY,
+    user_id          INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    type             VARCHAR(30) NOT NULL,
+    direction        VARCHAR(10) NOT NULL,
+    amount           DECIMAL(10,2) NOT NULL,
+    balance_after    DECIMAL(10,2) NOT NULL,
+    description      TEXT,
+    counter_party_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ── Community Energy Sharing ──────────────────────────────────────────────────
+
+CREATE TABLE IF NOT EXISTS donations (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    amount_kwh DECIMAL(8,2) NOT NULL CHECK (amount_kwh > 0),
+    is_filled BOOLEAN DEFAULT FALSE,
+    filled_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS energy_sales (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    amount_kwh DECIMAL(8,2) NOT NULL CHECK (amount_kwh > 0),
+    price_per_kwh DECIMAL(8,2) NOT NULL CHECK (price_per_kwh > 0),
+    is_filled BOOLEAN DEFAULT FALSE,
+    filled_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS energy_requests (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    amount_kwh DECIMAL(8,2) NOT NULL CHECK (amount_kwh > 0),
+    is_filled BOOLEAN DEFAULT FALSE,
+    filled_by_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

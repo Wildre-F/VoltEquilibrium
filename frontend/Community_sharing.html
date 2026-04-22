@@ -1,22 +1,11 @@
-<!DOCTYPE html>
-
+<!doctype html>
 <html class="light" lang="en">
-
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-  <title>VoltEquilibrium - Community Energy Sharing</title>
-  <!-- Fonts -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;display=swap"
-    rel="stylesheet" />
-  <!-- Material Symbols -->
-  <link
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-    rel="stylesheet" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-    rel="stylesheet" />
+  <title>VoltEquilibrium | Community Sharing</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script id="tailwind-config">
     tailwind.config = {
@@ -25,12 +14,12 @@
         extend: {
           colors: {
             "inverse-on-surface": "#eef1f0",
-            "primary": "#005147",
+            primary: "#005147",
             "secondary-fixed": "#d6e3ff",
             "on-secondary-fixed-variant": "#00468c",
             "on-tertiary-container": "#b5eb3e",
             "on-surface": "#181c1c",
-            "error": "#ba1a1a",
+            error: "#ba1a1a",
             "tertiary-fixed": "#bdf447",
             "on-background": "#181c1c",
             "surface-variant": "#e0e3e2",
@@ -44,10 +33,10 @@
             "error-container": "#ffdad6",
             "on-error": "#ffffff",
             "on-primary": "#ffffff",
-            "tertiary": "#374e00",
+            tertiary: "#374e00",
             "on-surface-variant": "#3e4946",
-            "background": "#f7faf9",
-            "surface": "#f7faf9",
+            background: "#f7faf9",
+            surface: "#f7faf9",
             "on-tertiary-fixed-variant": "#374e00",
             "primary-fixed": "#9ff2e1",
             "surface-container-low": "#f1f4f3",
@@ -65,350 +54,896 @@
             "surface-tint": "#006b5e",
             "surface-container-lowest": "#ffffff",
             "outline-variant": "#bec9c5",
-            "outline": "#6e7976",
+            outline: "#6e7976",
             "surface-container-highest": "#e0e3e2",
             "inverse-surface": "#2d3131",
-            "secondary": "#005db6",
+            secondary: "#005db6",
             "tertiary-fixed-dim": "#a2d729",
-            "on-secondary-container": "#00376f"
+            "on-secondary-container": "#00376f",
           },
-          fontFamily: {
-            "headline": ["Manrope"],
-            "body": ["Plus Jakarta Sans"],
-            "label": ["Inter"]
-          },
-          borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1.5rem", "full": "9999px" },
+          fontFamily: { headline: ["Manrope"], body: ["Plus Jakarta Sans"], label: ["Inter"] },
+          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "1.5rem", full: "9999px" },
         },
       },
-    }
+    };
   </script>
   <style>
-    .material-symbols-outlined {
-      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-      display: inline-block;
-      line-height: 1;
-    }
-
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-    }
-
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.8);
-      backdrop-filter: blur(20px);
-    }
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; line-height: 1; }
+    .tab-btn { transition: all 0.15s ease; }
+    .tab-btn.active { background: #005147; color: #fff; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
   </style>
 </head>
+<body class="bg-surface text-on-surface antialiased">
 
-<body class="bg-surface text-on-surface">
   <!-- TopNavBar -->
-  <nav
-    class="fixed top-0 w-full z-50 bg-white/80 dark:bg-emerald-950/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto">
+  <nav class="fixed top-0 w-full z-30 bg-white/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto">
     <div class="flex items-center gap-8">
-      <span
-        class="text-2xl font-extrabold tracking-tighter text-emerald-900 dark:text-emerald-50 font-headline">VoltEquilibrium</span>
+      <span class="text-2xl font-extrabold tracking-tighter text-primary font-headline">VoltEquilibrium</span>
       <div class="hidden md:flex items-center gap-6">
-        <a class="text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-900 font-headline font-bold"
-          href="#">Insights</a>
-        <a class="text-emerald-700 dark:text-emerald-300 border-b-2 border-emerald-700 dark:border-emerald-300 pb-1 font-headline font-bold"
-          href="#">Community</a>
-        <a class="text-emerald-600/70 dark:text-emerald-400/70 hover:text-emerald-900 font-headline font-bold"
-          href="#">Grid Stats</a>
+        <a class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Dashboard.html">Overview</a>
+        <a class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Analytics.html">Analytics</a>
+        <a class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Inverter.html">Inverter</a>
       </div>
     </div>
     <div class="flex items-center gap-4">
-      <button class="p-2 hover:bg-emerald-50/50 rounded-full transition-all">
-        <span class="material-symbols-outlined text-emerald-900">notifications</span>
-      </button>
-      <button class="p-2 hover:bg-emerald-50/50 rounded-full transition-all">
-        <span class="material-symbols-outlined text-emerald-900">settings</span>
-      </button>
-      <div class="h-8 w-8 rounded-full bg-primary-fixed overflow-hidden">
-        <img alt="User profile avatar" data-alt="User profile avatar circle"
-          src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfnnr9zFzpi0fNFsvN79m3ZGy_QsxnY-IBZ76HeHAyrttvjaaEslcBR665FJeQmR5H55bI0K6OqEKSI9ar62KE-0L1BSaZLX6Eg7k0kgNcpCYrpN3NRgMTba9hI0LoCvuixVvUXZmMAuwuDv3Rt2rp9rCnivzi9L1IdrUXamKL5MBGpEUvyASwK4Y6X0vN0RzW8pfxGSOzNdaxBootunIaWJ_6q5ETsJtREw1HkvjbpPc6TlMszgdnb6UOoTPUNjRdrTsnWo6rzr0" />
-      </div>
+      <a href="Notifications.html">
+        <button class="p-2 hover:bg-surface-container-low rounded-full transition-all duration-300">
+          <span class="material-symbols-outlined text-primary">notifications</span>
+        </button>
+      </a>
+      <a href="Wallet.html">
+        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-primary-fixed hover:bg-primary-fixed/70 rounded-full transition-colors">
+          <span class="material-symbols-outlined text-primary" style="font-size:1.1rem;font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+          <span id="nav-balance" class="text-xs font-bold text-primary font-label">R—</span>
+        </button>
+      </a>
+      <a href="profile.html">
+        <div id="nav-avatar" class="h-8 w-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+          <span class="material-symbols-outlined text-primary text-lg">person</span>
+        </div>
+      </a>
+      <script>(function(){
+        var c=localStorage.getItem('avatarColor');if(c)document.getElementById('nav-avatar').style.background=c;
+        var t=sessionStorage.getItem('authToken')||localStorage.getItem('authToken');
+        if(t)fetch('http://localhost:3000/api/wallet',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(d=>{if(d.success)document.getElementById('nav-balance').textContent='R'+parseFloat(d.data.balance).toFixed(2);}).catch(()=>{});
+      })();</script>
     </div>
   </nav>
+
   <div class="flex pt-16">
     <!-- SideNavBar -->
-    <aside
-      class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-emerald-50 dark:bg-emerald-950 flex flex-col p-6 gap-y-2 font-['Plus_Jakarta_Sans'] text-sm font-semibold hidden lg:flex">
+    <aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-surface-container-low flex flex-col p-6 gap-y-2 border-none hidden md:flex z-20">
       <div class="mb-8">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white">
-            <span class="material-symbols-outlined">hub</span>
-          </div>
-          <div>
-            <p class="text-lg font-bold text-emerald-900 dark:text-emerald-100">Renewable Hub</p>
-            <p class="text-xs text-emerald-700/60">Community Grid</p>
-          </div>
-        </div>
+        <h3 class="text-lg font-bold text-primary font-headline">Renewable Hub</h3>
+        <p class="text-xs font-semibold text-on-surface-variant/60 font-body">Community Grid</p>
       </div>
-      <nav class="flex-1 space-y-1">
-        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1"
-          href="Dashboard.html">
-          <span class="material-symbols-outlined">dashboard</span>
-          <span>Dashboard</span>
+      <nav class="flex-1 flex flex-col gap-y-1 overflow-y-auto overflow-x-hidden min-h-0">
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Dashboard.html">
+          <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
         </a>
-        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1"
-          href="Notifications.html">
-          <span class="material-symbols-outlined">notifications</span>
-          <span>Notifications</span>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Analytics.html">
+          <span class="material-symbols-outlined">bar_chart</span><span>Analytics</span>
         </a>
-        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1"
-          href="Energy_request.html">
-          <span class="material-symbols-outlined">electric_bolt</span>
-          <span>Energy Requests</span>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Notifications.html">
+          <span class="material-symbols-outlined">notifications</span><span>Notifications</span>
         </a>
-        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-transform hover:translate-x-1"
-          href="Recommendations.html">
-          <span class="material-symbols-outlined">auto_awesome</span>
-          <span>Recommendations</span>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Recommendations.html">
+          <span class="material-symbols-outlined">auto_awesome</span><span>Recommendations</span>
         </a>
-        <a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-emerald-800/50 text-emerald-900 dark:text-emerald-50 rounded-xl shadow-sm"
-          href="Community_sharing.html">
-          <span class="material-symbols-outlined" data-weight="fill"
-            style="font-variation-settings: 'FILL' 1;">groups</span>
-          <span>Community Sharing</span>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Inverter.html">
+          <span class="material-symbols-outlined">developer_board</span><span>Inverter</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 bg-white text-primary rounded-xl shadow-sm font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Community_sharing.html">
+          <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">groups</span><span>Community Sharing</span>
         </a>
       </nav>
-      <button
-        class="mt-4 bg-gradient-to-br from-primary to-primary-container text-white py-3 px-4 rounded-full font-headline font-bold text-xs tracking-wider uppercase shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-        New Request
-      </button>
-      <div class="mt-auto space-y-1">
-        <a class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 rounded-xl transition-transform hover:translate-x-1"
-          href="#">
-          <span class="material-symbols-outlined">help</span>
-          <span>Support</span>
+      <div class="mt-auto flex flex-col gap-y-1 border-t border-outline-variant/20 pt-4">
+        <a href="Support.html" class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-white py-3 rounded-full font-headline font-bold text-xs tracking-widest uppercase mb-4 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+          <span class="material-symbols-outlined text-sm">contact_support</span>Contact Support
         </a>
-        <a  id="sign-out" class="flex items-center gap-3 px-4 py-3 text-emerald-700/60 dark:text-emerald-400/60 hover:bg-emerald-100 rounded-xl transition-transform hover:translate-x-1"
-          href="#">
-          <span class="material-symbols-outlined">logout</span>
-          <span>Sign Out</span>
+        <a id="sign-out" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm" href="#">
+          <span class="material-symbols-outlined">logout</span><span>Sign Out</span>
         </a>
       </div>
     </aside>
-    <!-- Main Content Area -->
-    <main class="flex-1 lg:ml-64 p-8 min-h-screen bg-surface">
-      <!-- Header Section with Bento Elements -->
-      <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
-        <div class="max-w-2xl">
-          <h1 class="text-4xl font-extrabold font-headline text-on-surface tracking-tight mb-2">Kinetic Equilibrium</h1>
-          <p class="text-on-surface-variant font-body text-lg">Visualizing the real-time energy flow of your local
-            collective. Every watt shared strengthens the whole.</p>
-        </div>
-        <div class="flex gap-4">
-          <div class="bg-surface-container-low p-4 rounded-2xl flex items-center gap-4">
-            <div class="w-12 h-12 rounded-full bg-tertiary-fixed flex items-center justify-center text-primary">
-              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">eco</span>
-            </div>
-            <div>
-              <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant">Grid Health</p>
-              <p class="text-xl font-bold font-headline">98.4% Optimal</p>
-            </div>
+
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-64 p-8 min-h-screen">
+
+      <!-- Page Title -->
+      <div class="mb-8">
+        <h1 class="text-4xl font-extrabold font-headline text-on-surface tracking-tight">Community Sharing</h1>
+      </div>
+
+      <!-- ── Status Bar ──────────────────────────────────────────────────────── -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <!-- Battery SOC -->
+        <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex items-center gap-3">
+          <div id="soc-icon" class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1;">battery_charging_full</span>
+          </div>
+          <div>
+            <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant/60">Battery SOC</p>
+            <p id="soc-val" class="text-xl font-bold font-headline text-on-surface">—</p>
           </div>
         </div>
-      </header>
-      <!-- Bento Grid Layout -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- Large Visual Map/Grid (8 cols) -->
-        <div class="lg:col-span-8 space-y-6">
-          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm overflow-hidden relative min-h-[500px]">
-            <div class="absolute inset-0 z-0 opacity-20">
-              <!-- Abstract Map Background Representation -->
-              <img class="w-full h-full object-cover grayscale brightness-50"
-                data-alt="Topographic abstract map of a city grid" data-location="Berlin"
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuBbRUPtYnD-7p3b0Ui4vrQ__DeH3raMpBNZDtyATQ9gmRTi0NyP9jeyY7aYVO-LTQyJyc5dlFl9k0CyL_mHiS9Msx202dtlusBftTG4YIxxGldGA9Uc1lRkE6KpMm6uF4owbBEMVT4LsX1b6gf83PBRcJq7AFG5F77MliJVF3DCa_VKfOMZzyZ2coNpL5f8bnTJmZwd854Q0LS_cGaXYnTUW7AVpdBmoj-SJSdNCSXGoaZAww538adh1LjJ4FH8Evbfo_X2IX4gb0w" />
-            </div>
-            <div class="relative z-10 h-full flex flex-col">
-              <div class="flex justify-between items-start mb-6">
-                <h3 class="text-xl font-bold font-headline">Live Network Pulse</h3>
-                <div class="flex gap-2">
-                  <span class="px-3 py-1 bg-primary text-white text-xs font-bold rounded-full">LIVE MAP</span>
-                  <span class="px-3 py-1 bg-surface-container text-on-surface text-xs font-bold rounded-full">ACTIVE
-                    FLOWS: 24</span>
-                </div>
-              </div>
-              <!-- Visual Connection Elements (Simulated) -->
-              <div class="flex-1 relative flex items-center justify-center">
-                <!-- Node: Giver -->
-                <div class="absolute top-1/4 left-1/4 group cursor-pointer">
-                  <div
-                    class="relative w-16 h-16 rounded-full bg-tertiary/20 flex items-center justify-center animate-pulse">
-                    <div
-                      class="w-10 h-10 rounded-full bg-tertiary flex items-center justify-center text-white shadow-lg shadow-tertiary/40">
-                      <span class="material-symbols-outlined">bolt</span>
-                    </div>
-                  </div>
-                  <div
-                    class="absolute -top-12 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-lg shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p class="text-xs font-bold">Solar House #4</p>
-                    <p class="text-[10px] text-tertiary font-bold">+4.2 kWh surplus</p>
-                  </div>
-                </div>
-                <!-- Node: Receiver -->
-                <div class="absolute bottom-1/3 right-1/4 group cursor-pointer">
-                  <div class="relative w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
-                    <div
-                      class="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-white shadow-lg shadow-secondary/40">
-                      <span class="material-symbols-outlined">home</span>
-                    </div>
-                  </div>
-                  <div
-                    class="absolute -bottom-12 left-1/2 -translate-x-1/2 bg-white px-3 py-1 rounded-lg shadow-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p class="text-xs font-bold">The Green Bakery</p>
-                    <p class="text-[10px] text-error font-bold">-2.1 kWh requested</p>
-                  </div>
-                </div>
-                <!-- Connection Line (SVG) -->
-                <svg class="absolute inset-0 w-full h-full pointer-events-none" viewbox="0 0 800 400">
-                  <path class="opacity-60" d="M 220 120 Q 400 200 600 260" fill="transparent" stroke="#bdf447"
-                    stroke-dasharray="10,5" stroke-width="2"></path>
-                  <circle cx="220" cy="120" fill="#374e00" r="4"></circle>
-                  <circle cx="600" cy="260" fill="#005db6" r="4"></circle>
-                </svg>
-              </div>
-              <div
-                class="mt-auto flex justify-center gap-8 bg-surface-container-low/80 backdrop-blur-md p-4 rounded-xl">
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full bg-tertiary"></div>
-                  <span class="text-xs font-semibold text-on-surface-variant">Surplus Provider</span>
-                </div>
-                <div class="flex items-center gap-2">
-                  <div class="w-3 h-3 rounded-full bg-secondary"></div>
-                  <span class="text-xs font-semibold text-on-surface-variant">Energy Request</span>
-                </div>
-              </div>
-            </div>
+        <!-- Today kWh -->
+        <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1;">solar_power</span>
+          </div>
+          <div>
+            <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant/60">Today Generated</p>
+            <p id="today-kwh" class="text-xl font-bold font-headline text-on-surface">—</p>
           </div>
         </div>
-        <!-- Side Action Column (4 cols) -->
-        <div class="lg:col-span-4 space-y-6">
-          <!-- Offer Excess Card -->
-          <div
-            class="bg-gradient-to-br from-primary to-primary-container rounded-2xl p-6 text-white shadow-xl shadow-primary/10 group cursor-pointer overflow-hidden relative">
-            <div
-              class="absolute -right-4 -top-4 w-32 h-32 bg-white/10 rounded-full blur-3xl group-hover:scale-125 transition-transform duration-500">
-            </div>
-            <div class="relative z-10">
-              <div class="flex items-center justify-between mb-4">
-                <span class="material-symbols-outlined text-4xl">solar_power</span>
-                <span class="text-xs font-bold tracking-widest bg-white/20 px-2 py-1 rounded">FAST MATCH</span>
-              </div>
-              <h4 class="text-xl font-extrabold font-headline mb-2">Offer Excess Energy</h4>
-              <p class="text-primary-fixed/80 text-sm mb-6">Convert your surplus battery storage into community credits.
-              </p>
-              <div class="flex items-end justify-between">
-                <div>
-                  <p class="text-xs opacity-60 uppercase font-label">Available Surplus</p>
-                  <p class="text-2xl font-headline font-bold">12.8 <span class="text-sm font-normal">kWh</span></p>
-                </div>
-                <button
-                  class="bg-white text-primary px-4 py-2 rounded-full font-bold text-sm shadow-lg hover:bg-primary-fixed transition-colors">Start
-                  Offering</button>
-              </div>
-            </div>
+        <!-- Load Shedding -->
+        <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex items-center gap-3">
+          <div id="ls-icon" class="w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0">
+            <span class="material-symbols-outlined text-primary text-lg" style="font-variation-settings:'FILL' 1;">bolt</span>
           </div>
-          <!-- Request Energy Card -->
-          <div
-            class="bg-surface-container-low rounded-2xl p-6 shadow-sm border border-outline-variant/20 hover:border-outline-variant/50 transition-all group">
-            <div class="flex items-center justify-between mb-4">
-              <span class="material-symbols-outlined text-secondary text-4xl">ev_station</span>
-              <span
-                class="text-xs font-bold tracking-widest bg-secondary-container/20 text-secondary px-2 py-1 rounded uppercase">Priority</span>
-            </div>
-            <h4 class="text-xl font-extrabold font-headline mb-2 text-on-surface">Request Energy</h4>
-            <p class="text-on-surface-variant text-sm mb-6">Need an extra boost? Request renewable energy from
-              neighbors.</p>
-            <div class="flex items-end justify-between">
-              <div>
-                <p class="text-xs text-on-surface-variant uppercase font-label">Open Requests</p>
-                <p class="text-2xl font-headline font-bold text-on-surface">8 <span
-                    class="text-sm font-normal text-on-surface-variant">Active</span></p>
-              </div>
-              <button
-                class="bg-secondary text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg hover:opacity-90 transition-opacity">Post
-                Request</button>
-            </div>
+          <div>
+            <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant/60">Load Shedding</p>
+            <p id="ls-val" class="text-xl font-bold font-headline text-on-surface">…</p>
           </div>
         </div>
-        <!-- Bottom Horizontal Section - Participant Feed -->
-        <div class="lg:col-span-12">
-          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
-            <div class="flex justify-between items-center mb-6">
-              <h3 class="text-xl font-bold font-headline">Recent Exchanges</h3>
-              <button class="text-secondary text-sm font-bold flex items-center gap-1">View Full History <span
-                  class="material-symbols-outlined text-sm">arrow_forward</span></button>
-            </div>
-            <!-- List without Dividers (using spacing per instructions) -->
-            <div class="space-y-4">
-              <!-- Exchange Item 1 -->
-              <div
-                class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:translate-x-1 transition-transform cursor-pointer">
-                <div class="flex items-center gap-4">
-                  <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
-                    <img alt="Marcus S." data-alt="User portrait for exchange feed"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuDQ_gjyV76nAFWTDRXO_elJRsPWLexHY48aFAXiulBIwHD05efMKdUGZdZxz9cQnBXf5oR9ipnG8Q5Hc4RfChFOixZ-ooJiCwtMzSvWtDVR-ZukaKQOHoXiomm1wCjasl7LhYElQnH7YFDClD6JrlMRyRrPSKmy5N-HDI1qZbNOwWMeIrd8h5wv1iY6Et4wR3Kcdi_rSPsSq78Rd-H7yPbC3vqkDk3Hua3PzZc-T9f0_XwdDZB4d6nJTwXJdFh9t-5_tS5ee_I7Mso" />
-                  </div>
-                  <div>
-                    <p class="font-bold text-on-surface">Marcus S. <span
-                        class="font-normal text-on-surface-variant">shared to</span> Village Hall</p>
-                    <p class="text-xs text-on-surface-variant">2 mins ago • Clean Solar</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-lg font-bold text-tertiary">+5.5 kWh</p>
-                  <p class="text-[10px] uppercase tracking-tighter text-on-surface-variant font-label">Transaction ID:
-                    88219</p>
-                </div>
-              </div>
-              <!-- Exchange Item 2 -->
-              <div
-                class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:translate-x-1 transition-transform cursor-pointer">
-                <div class="flex items-center gap-4">
-                  <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
-                    <img alt="Elena D." data-alt="User portrait for exchange feed"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAHy0cgAT6CDa_3EHxqobeEdkC57xNpK5IDutV2fmpAOCsHDle5VwPEoGc-70ubWBFHJW-hWV_Oh8lbojFY8cm26j_faS4hL8njgliuBfbok68UUaS_LQPdnVT0uqec2S1y7prFXc5M7wznctC2F5l88K8UI1_F7ylnSqoGqUr54s-zwtfiZNcCIvmLTZK0PT6FEcNU8JHDKGUIIA8u7NiBow8L9Ff6iGdOcW4N6GMbmEi8YrdHLO6W83dTKWcgHT6TKEgjzsgGJoY" />
-                  </div>
-                  <div>
-                    <p class="font-bold text-on-surface">Elena D. <span
-                        class="font-normal text-on-surface-variant">requested from</span> Community Pool</p>
-                    <p class="text-xs text-on-surface-variant">15 mins ago • Priority: Low</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-lg font-bold text-secondary">-2.1 kWh</p>
-                  <p class="text-[10px] uppercase tracking-tighter text-on-surface-variant font-label">Transaction ID:
-                    88215</p>
-                </div>
-              </div>
-              <!-- Exchange Item 3 -->
-              <div
-                class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:translate-x-1 transition-transform cursor-pointer">
-                <div class="flex items-center gap-4">
-                  <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-white">
-                    <img alt="John R." data-alt="User portrait for exchange feed"
-                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_RuJgJY1sANPkcUYyyH4sDTC6bRsdSXcBB0PK76IlnrRKpnOiNMz11dPMtY80CwCFX8GmL_JdTW_RhDXCCKS80dSQptn7aTtbHlx27LsiUic-3W-Uvt9o6CjdJe_YdeAgZF7whHiAI_IKUvZ73MOPOuwenfLJaKfXkxYJW1FXp9ikK2Fxf3FgywW6flNwEJaSWtph8pAgOQijFMbLrmk5LR25yOW7n9IwOjeSG2FwbrEyC0OPOsZfPoHrJUvnc_84E6fFMgR1mZM" />
-                  </div>
-                  <div>
-                    <p class="font-bold text-on-surface">John R. <span
-                        class="font-normal text-on-surface-variant">donated to</span> Emergency Shelter</p>
-                    <p class="text-xs text-on-surface-variant">1 hour ago • Wind Origin</p>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <p class="text-lg font-bold text-tertiary">+12.0 kWh</p>
-                  <p class="text-[10px] uppercase tracking-tighter text-on-surface-variant font-label">Transaction ID:
-                    88201</p>
-                </div>
-              </div>
-            </div>
+        <!-- Share eligibility -->
+        <div id="eligibility-card" class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex items-center gap-3">
+          <div id="elig-icon" class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center shrink-0">
+            <span id="elig-sym" class="material-symbols-outlined text-on-surface-variant text-lg">hourglass_empty</span>
+          </div>
+          <div>
+            <p class="text-xs font-label uppercase tracking-widest text-on-surface-variant/60">Share Status</p>
+            <p id="elig-val" class="text-xl font-bold font-headline text-on-surface">…</p>
           </div>
         </div>
       </div>
+
+      <!-- ── Community Board ─────────────────────────────────────────────────── -->
+      <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden mb-8">
+        <!-- Tab bar -->
+        <div class="flex border-b border-outline-variant/20 px-6 pt-4 gap-2">
+          <button class="tab-btn active px-5 py-2 rounded-full text-sm font-bold font-label uppercase tracking-wider" data-tab="sales">
+            Sales
+          </button>
+          <button class="tab-btn px-5 py-2 rounded-full text-sm font-bold font-label uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-low" data-tab="requests">
+            Requests
+          </button>
+        </div>
+
+        <div class="p-6">
+
+          <!-- ── Sales Tab ── -->
+          <div id="tab-sales" class="tab-panel active">
+            <div class="flex justify-end mb-4">
+              <button id="open-sale-modal"
+                class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm font-label uppercase tracking-widest hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-base">add</span>List for Sale
+              </button>
+            </div>
+            <div id="sales-list" class="space-y-3">
+              <p class="text-on-surface-variant text-sm text-center py-8">Loading sales…</p>
+            </div>
+          </div>
+
+          <!-- ── Requests Tab ── -->
+          <div id="tab-requests" class="tab-panel">
+            <div class="flex items-center justify-between mb-4">
+              <p class="text-xs text-on-surface-variant/60 font-label">Post a request for energy, or donate to a neighbour in need.</p>
+              <button id="open-request-modal"
+                class="flex items-center gap-2 bg-secondary text-white px-5 py-2.5 rounded-full font-bold text-sm font-label uppercase tracking-widest hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-base">add</span>Post Request
+              </button>
+            </div>
+            <div id="requests-list" class="space-y-3">
+              <p class="text-on-surface-variant text-sm text-center py-8">Loading requests…</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── My Listings ─────────────────────────────────────────────────────── -->
+      <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6">
+        <h3 class="text-base font-bold font-headline text-on-surface mb-4 flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">manage_accounts</span>
+          My Active Listings
+        </h3>
+        <div id="my-listings" class="space-y-3">
+          <p class="text-on-surface-variant text-sm text-center py-6">Loading your listings…</p>
+        </div>
+      </div>
+
     </main>
   </div>
-</body>
 
+  <!-- ── Modal ──────────────────────────────────────────────────────────────── -->
+  <div id="modal-backdrop" class="hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+      <!-- Header -->
+      <div class="flex items-center justify-between mb-6">
+        <div class="flex items-center gap-3">
+          <div id="modal-icon-wrap" class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center">
+            <span id="modal-icon" class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">solar_power</span>
+          </div>
+          <h3 id="modal-title" class="text-lg font-bold font-headline text-on-surface">Donate Energy</h3>
+        </div>
+        <button id="modal-close" class="p-1.5 hover:bg-surface-container-high rounded-full transition-colors">
+          <span class="material-symbols-outlined text-on-surface-variant">close</span>
+        </button>
+      </div>
+
+      <!-- SOC warning (shown for donate/sale when SOC too low) -->
+      <div id="modal-soc-warn" class="hidden mb-4 flex items-start gap-2 bg-error-container text-on-error-container px-4 py-3 rounded-xl text-sm font-semibold">
+        <span class="material-symbols-outlined text-sm mt-0.5">warning</span>
+        <span>Battery SOC is at or below 30% — you cannot share energy until it charges further.</span>
+      </div>
+
+      <!-- Fields -->
+      <div class="space-y-4 mb-6">
+        <!-- kWh field (all types) -->
+        <div>
+          <div class="flex justify-between items-baseline mb-1.5">
+            <label class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant">Amount (kWh)</label>
+            <span id="modal-kwh-hint" class="text-xs text-on-surface-variant/60 font-label"></span>
+          </div>
+          <input id="modal-kwh" type="number" min="0.1" step="0.01" placeholder="e.g. 5.0"
+            class="w-full bg-surface-container-low border border-outline-variant/40 rounded-xl px-4 py-3 text-sm font-body focus:outline-none focus:border-primary" />
+        </div>
+        <!-- Price field (sales only) -->
+        <div id="modal-price-wrap" class="hidden">
+          <div class="flex justify-between items-baseline mb-1.5">
+            <label class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant">Price per kWh (R)</label>
+            <span id="modal-eskom-hint" class="text-xs font-semibold text-secondary font-label"></span>
+          </div>
+          <input id="modal-price" type="number" min="0.01" step="0.01" placeholder="e.g. 2.50"
+            class="w-full bg-surface-container-low border border-outline-variant/40 rounded-xl px-4 py-3 text-sm font-body focus:outline-none focus:border-primary" />
+        </div>
+        <!-- Optional comment (all types) -->
+        <div>
+          <label class="block text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant mb-1.5">Comment <span class="normal-case font-normal text-on-surface-variant/50">(optional)</span></label>
+          <textarea id="modal-comment" rows="2" placeholder="Add a note for the community…"
+            class="w-full bg-surface-container-low border border-outline-variant/40 rounded-xl px-4 py-3 text-sm font-body focus:outline-none focus:border-primary resize-none"></textarea>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex gap-3">
+        <button id="modal-cancel" class="flex-1 bg-surface-container-high text-on-surface py-3 rounded-xl font-bold text-sm hover:bg-surface-container-highest transition-colors">
+          Cancel
+        </button>
+        <button id="modal-confirm" class="flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">
+          Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Details Modal ──────────────────────────────────────────────────────── -->
+  <div id="details-backdrop" class="hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-sm p-6 relative">
+      <div class="flex items-center justify-between mb-5">
+        <div class="flex items-center gap-3">
+          <div id="det-icon-wrap" class="w-9 h-9 rounded-xl flex items-center justify-center">
+            <span id="det-icon" class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;font-size:1.2rem;"></span>
+          </div>
+          <h3 id="det-title" class="text-lg font-bold font-headline text-on-surface">Details</h3>
+        </div>
+        <button id="details-close" class="p-1.5 hover:bg-surface-container-high rounded-full transition-colors">
+          <span class="material-symbols-outlined text-on-surface-variant">close</span>
+        </button>
+      </div>
+      <div class="space-y-0 mb-5">
+        <div class="flex justify-between items-center py-2.5 border-b border-outline-variant/20">
+          <span id="det-user-label" class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant">Seller</span>
+          <span id="det-username" class="text-sm font-semibold text-on-surface">—</span>
+        </div>
+        <div class="flex justify-between items-center py-2.5 border-b border-outline-variant/20">
+          <span class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant">Amount</span>
+          <span id="det-amount" class="text-sm font-semibold text-on-surface">—</span>
+        </div>
+        <div id="det-price-row" class="flex justify-between items-center py-2.5 border-b border-outline-variant/20">
+          <span class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant">Price / kWh</span>
+          <span id="det-price" class="text-sm font-semibold text-on-surface">—</span>
+        </div>
+        <div id="det-total-row" class="flex justify-between items-center py-2.5 border-b border-outline-variant/20">
+          <span class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant">Total</span>
+          <span id="det-total" class="text-sm font-bold text-secondary">—</span>
+        </div>
+        <div id="det-comment-row" class="hidden py-2.5 border-b border-outline-variant/20">
+          <span class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant block mb-1">Their Note</span>
+          <p id="det-comment" class="text-sm text-on-surface font-body italic"></p>
+        </div>
+        <div class="flex justify-between items-center py-2.5">
+          <span class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant">Posted</span>
+          <span id="det-time" class="text-sm text-on-surface-variant font-label">—</span>
+        </div>
+      </div>
+      <!-- Donor comment (requests only) -->
+      <div id="det-donor-comment-wrap" class="hidden mb-4">
+        <label class="block text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant mb-1.5">Your Message <span class="normal-case font-normal text-on-surface-variant/50">(optional)</span></label>
+        <textarea id="det-donor-comment" rows="2" placeholder="Add an encouraging note…"
+          class="w-full bg-surface-container-low border border-outline-variant/40 rounded-xl px-4 py-2.5 text-sm font-body focus:outline-none focus:border-primary resize-none"></textarea>
+      </div>
+      <div class="flex gap-3">
+        <button id="details-cancel" class="flex-1 bg-surface-container-high text-on-surface py-3 rounded-xl font-bold text-sm hover:bg-surface-container-highest transition-colors">
+          Cancel
+        </button>
+        <button id="details-buy" class="flex-1 bg-secondary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity">
+          Buy Now
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2"></div>
+
+  <script>
+  (function () {
+    const API   = "http://localhost:3000";
+    const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+    if (!token) { window.location.replace("login.html"); return; }
+    if (!sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
+
+    // Decode JWT to get current user id
+    function myId() {
+      try { return JSON.parse(atob(token.split(".")[1])).id; } catch { return null; }
+    }
+
+    // ── Sign out ───────────────────────────────────────────────────────────────
+    document.getElementById("sign-out").addEventListener("click", (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem("authToken");
+      localStorage.removeItem("authToken");
+      window.location.href = "login.html";
+    });
+
+    // ── Toast ──────────────────────────────────────────────────────────────────
+    function toast(msg, type = "info") {
+      const colors = { info: "bg-primary text-white", success: "bg-tertiary-container text-white",
+                       error: "bg-error text-white", warning: "bg-secondary text-white" };
+      const el = document.createElement("div");
+      el.className = `${colors[type]} px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 min-w-[220px] translate-x-full transition-transform duration-300 text-sm font-semibold`;
+      el.innerHTML = `<span class="material-symbols-outlined text-sm">${type === "error" ? "error" : type === "success" ? "check_circle" : "info"}</span>${msg}`;
+      document.getElementById("toast-container").appendChild(el);
+      requestAnimationFrame(() => el.classList.remove("translate-x-full"));
+      setTimeout(() => { el.classList.add("translate-x-full"); setTimeout(() => el.remove(), 300); }, 3500);
+    }
+
+    // ── State ──────────────────────────────────────────────────────────────────
+    let currentSoc      = null;
+    let canShare        = false;
+    let activeTab       = "sales";
+    let batteryCapacity = null; // kWh
+    let eskomRate       = null; // R per kWh
+
+    // ── Status Bar ─────────────────────────────────────────────────────────────
+    async function loadStatus() {
+      // Load shedding (no auth needed)
+      fetch(`${API}/api/loadshedding`)
+        .then(r => r.json())
+        .then(json => {
+          const stage = json.success ? json.stage : null;
+          const lsVal  = document.getElementById("ls-val");
+          const lsIcon = document.getElementById("ls-icon");
+          if (stage === null) { lsVal.textContent = "N/A"; return; }
+          if (stage === 0) {
+            lsVal.textContent = "None";
+            lsIcon.className = "w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0";
+            lsIcon.querySelector("span").className = "material-symbols-outlined text-primary text-lg";
+          } else if (stage <= 2) {
+            lsVal.textContent = `Stage ${stage}`;
+            lsIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#fef9c3;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
+            lsIcon.querySelector("span").style.color = "#854d0e";
+          } else if (stage <= 4) {
+            lsVal.textContent = `Stage ${stage}`;
+            lsIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#ffedd5;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
+            lsIcon.querySelector("span").style.color = "#9a3412";
+          } else {
+            lsVal.textContent = `Stage ${stage}`;
+            lsIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#ffdad6;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
+            lsIcon.querySelector("span").style.color = "#ba1a1a";
+          }
+        }).catch(() => { document.getElementById("ls-val").textContent = "N/A"; });
+
+      // Power stats (auth required)
+      try {
+        const [rRes, cRes] = await Promise.all([
+          fetch(`${API}/api/readings/latest`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API}/api/co2`,             { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        const rJson = await rRes.json();
+        const cJson = await cRes.json();
+
+        if (rJson.success) {
+          const all     = rJson.data?.all || [];
+          const battRow = all.find(r => r.state_of_charge != null);
+          if (battRow) {
+            currentSoc = parseFloat(battRow.state_of_charge);
+            const socEl   = document.getElementById("soc-val");
+            const socIcon = document.getElementById("soc-icon");
+            socEl.textContent = `${currentSoc.toFixed(1)}%`;
+            if (currentSoc > 60) {
+              socIcon.style.cssText = "";
+              socIcon.className = "w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0";
+              socIcon.querySelector("span").className = "material-symbols-outlined text-primary text-lg";
+            } else if (currentSoc > 30) {
+              socIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#fef9c3;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
+              socIcon.querySelector("span").style.color = "#854d0e";
+            } else {
+              socIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#ffdad6;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
+              socIcon.querySelector("span").style.color = "#ba1a1a";
+            }
+            updateEligibility();
+          }
+        }
+        if (cJson.success) {
+          document.getElementById("today-kwh").textContent = `${cJson.data.todayKwh.toFixed(2)} kWh`;
+        }
+      } catch { /* silent */ }
+    }
+
+    function updateEligibility() {
+      canShare = currentSoc !== null && currentSoc > 30;
+      const icon = document.getElementById("elig-icon");
+      const sym  = document.getElementById("elig-sym");
+      const val  = document.getElementById("elig-val");
+      if (currentSoc === null) { val.textContent = "…"; return; }
+      if (canShare) {
+        icon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#bdf447;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
+        sym.className = "material-symbols-outlined text-lg";
+        sym.style.color = "#374e00";
+        sym.textContent = "check_circle";
+        val.textContent = "Can Share";
+        val.style.color = "#374e00";
+      } else {
+        icon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#ffdad6;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
+        sym.className = "material-symbols-outlined text-lg";
+        sym.style.color = "#ba1a1a";
+        sym.textContent = "block";
+        val.textContent = "SOC Too Low";
+        val.style.color = "#ba1a1a";
+      }
+    }
+
+    // ── Modal ──────────────────────────────────────────────────────────────────
+    let modalType = null; // "donations" | "sales" | "requests"
+
+    const backdrop    = document.getElementById("modal-backdrop");
+    const modalTitle  = document.getElementById("modal-title");
+    const modalIcon   = document.getElementById("modal-icon");
+    const modalIconWrap = document.getElementById("modal-icon-wrap");
+    const modalSocWarn  = document.getElementById("modal-soc-warn");
+    const modalPriceWrap = document.getElementById("modal-price-wrap");
+    const modalConfirm  = document.getElementById("modal-confirm");
+    const modalKwh    = document.getElementById("modal-kwh");
+    const modalPrice  = document.getElementById("modal-price");
+
+    function openModal(type) {
+      modalType = type;
+      modalKwh.value   = "";
+      modalPrice.value = "";
+
+      const needsShare = type !== "requests";
+      modalSocWarn.classList.toggle("hidden", !needsShare || canShare);
+      modalPriceWrap.classList.toggle("hidden", type !== "sales");
+
+      // ── Compute kWh max & hint ─────────────────────────────────────────────
+      const kwhHint = document.getElementById("modal-kwh-hint");
+      let maxKwh = null;
+
+      if (type === "requests" && batteryCapacity === null) {
+        // No-battery user: community cap applies
+        maxKwh = 2;
+        modalKwh.max = maxKwh;
+        kwhHint.textContent = `Max ${maxKwh} kWh per request (community allowance, up to 10 kWh total outstanding)`;
+      } else if (batteryCapacity !== null && currentSoc !== null) {
+        if (type === "requests") {
+          // Max requestable = empty space in battery
+          maxKwh = parseFloat((batteryCapacity * (1 - currentSoc / 100)).toFixed(2));
+          kwhHint.textContent = `Max: ${maxKwh} kWh (battery space available)`;
+        } else {
+          // Max shareable = energy currently stored
+          maxKwh = parseFloat((batteryCapacity * (currentSoc / 100)).toFixed(2));
+          kwhHint.textContent = `Max: ${maxKwh} kWh (current charge)`;
+        }
+        modalKwh.max = maxKwh;
+      } else {
+        kwhHint.textContent = "";
+        modalKwh.removeAttribute("max");
+      }
+
+      // ── Eskom rate hint for sales ──────────────────────────────────────────
+      const eskomHint = document.getElementById("modal-eskom-hint");
+      if (type === "sales" && eskomRate !== null) {
+        eskomHint.textContent = `Eskom rate: R${eskomRate.toFixed(2)}/kWh`;
+      } else {
+        eskomHint.textContent = "";
+      }
+
+      if (type === "donations") {
+        modalTitle.textContent = "Donate Energy";
+        modalIcon.textContent  = "solar_power";
+        modalIcon.style.color  = "";
+        modalIconWrap.style.background = "#9ff2e1";
+        modalConfirm.className = "flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity";
+        modalConfirm.textContent = "Confirm Donation";
+      } else if (type === "sales") {
+        modalTitle.textContent = "List Energy for Sale";
+        modalIcon.textContent  = "sell";
+        modalIcon.style.color  = "";
+        modalIconWrap.style.background = "#9ff2e1";
+        modalConfirm.className = "flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity";
+        modalConfirm.textContent = "List for Sale";
+      } else {
+        modalTitle.textContent = "Post Energy Request";
+        modalIcon.textContent  = "electric_bolt";
+        modalIconWrap.style.background = "#d6e3ff";
+        modalIcon.style.color  = "#005db6";
+        modalConfirm.className = "flex-1 bg-secondary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity";
+        modalConfirm.textContent = "Post Request";
+      }
+
+      backdrop.classList.remove("hidden");
+      setTimeout(() => modalKwh.focus(), 50);
+    }
+
+    function closeModal() {
+      backdrop.classList.add("hidden");
+      modalType = null;
+      document.getElementById("modal-comment").value = "";
+    }
+
+    document.getElementById("modal-close").addEventListener("click", closeModal);
+    document.getElementById("modal-cancel").addEventListener("click", closeModal);
+    backdrop.addEventListener("click", (e) => { if (e.target === backdrop) closeModal(); });
+
+    document.getElementById("open-sale-modal").addEventListener("click",    () => openModal("sales"));
+    document.getElementById("open-request-modal").addEventListener("click", () => openModal("requests"));
+
+    modalConfirm.addEventListener("click", async () => {
+      const kwh   = parseFloat(modalKwh.value);
+      const price = parseFloat(modalPrice.value);
+
+      if (!kwh || kwh <= 0) { toast("Enter a valid kWh amount.", "warning"); return; }
+      const maxAllowed = modalKwh.max ? parseFloat(modalKwh.max) : null;
+      if (maxAllowed !== null && kwh > maxAllowed) {
+        toast(`Maximum allowed is ${maxAllowed} kWh.`, "warning"); return;
+      }
+      if (modalType === "sales" && (!price || price <= 0)) { toast("Enter a valid price.", "warning"); return; }
+      if (modalType !== "requests" && !canShare) { toast("Battery SOC too low to share energy.", "error"); return; }
+
+      const comment = document.getElementById("modal-comment").value.trim();
+      const body = modalType === "sales"
+        ? { amount_kwh: kwh, price_per_kwh: price, comment: comment || undefined }
+        : { amount_kwh: kwh, comment: comment || undefined };
+
+      try {
+        const res  = await authFetch(`${API}/api/community/${modalType}`, { method: "POST", body: JSON.stringify(body) });
+        const json = await res.json();
+        if (!json.success) throw new Error(json.message);
+        const labels = { sales: "Sale listed!", requests: "Request posted!" };
+        toast(labels[modalType] || "Done!", "success");
+        closeModal();
+        loadTab(modalType);
+        loadMyListings();
+      } catch (err) { toast(err.message, "error"); }
+    });
+
+    // ── Tabs ───────────────────────────────────────────────────────────────────
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        activeTab = btn.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach(b => {
+          const isActive = b.dataset.tab === activeTab;
+          b.classList.toggle("active", isActive);
+          if (!isActive) {
+            b.classList.add("text-on-surface-variant", "hover:bg-surface-container-low");
+            b.classList.remove("text-white");
+          } else {
+            b.classList.remove("text-on-surface-variant", "hover:bg-surface-container-low");
+          }
+        });
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("active", p.id === `tab-${activeTab}`));
+        loadTab(activeTab);
+      });
+    });
+
+    // ── Helpers ────────────────────────────────────────────────────────────────
+    function relTime(iso) {
+      const diff = Date.now() - new Date(iso).getTime();
+      const m = Math.floor(diff / 60000);
+      if (m < 1)  return "just now";
+      if (m < 60) return `${m}m ago`;
+      const h = Math.floor(m / 60);
+      if (h < 24) return `${h}h ago`;
+      return `${Math.floor(h / 24)}d ago`;
+    }
+
+    function authFetch(url, opts = {}) {
+      return fetch(url, { ...opts, headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...(opts.headers || {}) } });
+    }
+
+    // ── Render listing rows ────────────────────────────────────────────────────
+    function renderRow(item, type) {
+      const mine    = Number(item.user_id) === Number(myId());
+      const isSale  = type === "sales";
+
+      let actionBtn;
+      if (mine) {
+        actionBtn = `<button data-action="delete" data-type="${type}" data-id="${item.id}"
+             class="text-error hover:bg-error-container rounded-full p-1 transition-colors" title="Cancel">
+             <span class="material-symbols-outlined text-base">close</span></button>`;
+      } else {
+        // Both sales and requests open a Details modal first
+        actionBtn = `<button data-action="details" data-type="${type}" data-id="${item.id}"
+             data-username="${(item.username || '').replace(/"/g,'&quot;')}"
+             data-amount="${item.amount_kwh}"
+             data-price="${item.price_per_kwh || ''}"
+             data-comment="${(item.comment || '').replace(/"/g,'&quot;')}"
+             data-created="${item.created_at}"
+             class="bg-surface-container-high text-on-surface text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full hover:bg-surface-container-highest transition-colors whitespace-nowrap flex items-center gap-1">
+             <span class="material-symbols-outlined text-sm">info</span>Details</button>`;
+      }
+
+      const displayUser = item.username || "Unknown";
+      const sub = isSale
+        ? `<span class="text-xs text-on-surface-variant font-label">${item.amount_kwh} kWh &nbsp;·&nbsp; R${parseFloat(item.price_per_kwh).toFixed(2)}/kWh</span>`
+        : `<span class="text-xs text-on-surface-variant font-label">${item.amount_kwh} kWh needed${mine ? "" : " — donate for free"}</span>`;
+
+      const rowLabel = isSale ? "Energy Sale" : "Energy Request";
+
+      const badge = mine
+        ? `<span class="text-[10px] font-bold bg-primary-fixed text-primary px-2 py-0.5 rounded-full font-label uppercase">Mine</span>`
+        : "";
+
+      return `
+        <div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:bg-surface-container transition-colors" data-row-id="${item.id}">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-full ${mine ? "bg-primary-fixed" : "bg-surface-container-highest"} flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-base ${mine ? "text-primary" : "text-on-surface-variant"}">person</span>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-semibold text-on-surface">${rowLabel}</p>
+                ${badge}
+              </div>
+              <p class="text-xs text-on-surface-variant/70 font-label">${mine ? "You" : displayUser}</p>
+              ${sub}
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-xs text-on-surface-variant/60 font-label hidden sm:block">${relTime(item.created_at)}</span>
+            ${actionBtn}
+          </div>
+        </div>`;
+    }
+
+    // ── Load tab listings ──────────────────────────────────────────────────────
+    async function loadTab(type) {
+      const listEl = document.getElementById(`${type}-list`);
+      listEl.innerHTML = `<p class="text-on-surface-variant text-sm text-center py-8">Loading…</p>`;
+
+      // Donations tab shows others' open requests (donate to someone who needs it)
+      const fetchType = type === "donations" ? "requests" : type;
+
+      try {
+        const res  = await authFetch(`${API}/api/community/${fetchType}`);
+        const json = await res.json();
+        if (!json.success) {
+          listEl.innerHTML = `<div class="text-center py-8">
+            <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">inbox</span>
+            <p class="text-on-surface-variant text-sm">No ${type} available right now.</p>
+            <p class="text-on-surface-variant/50 text-xs mt-1">Make sure your location is set in your profile.</p>
+          </div>`;
+          return;
+        }
+
+        let rows = json.data;
+
+        // For requests tab, show all (own ones will render with delete, others with Details)
+
+        if (!rows.length) {
+          const emptyMsg = type === "donations"
+            ? "No neighbours need energy right now."
+            : `No open ${type} in your area yet.`;
+          const emptyHint = type === "donations"
+            ? "Check back later — when someone posts a request you can donate to them here."
+            : "Be the first to post one above.";
+          listEl.innerHTML = `<div class="text-center py-8">
+            <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">inbox</span>
+            <p class="text-on-surface-variant text-sm">${emptyMsg}</p>
+            <p class="text-on-surface-variant/50 text-xs mt-1">${emptyHint}</p>
+          </div>`;
+          return;
+        }
+        listEl.innerHTML = rows.map(r => renderRow(r, type)).join("");
+        listEl.querySelectorAll("button[data-action]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            if (btn.dataset.action === "details") openDetails(btn);
+            else handleAction(btn.dataset.action, btn.dataset.type, btn.dataset.id);
+          });
+        });
+      } catch {
+        listEl.innerHTML = `<div class="text-center py-8">
+          <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">wifi_off</span>
+          <p class="text-on-surface-variant text-sm">Could not reach the server.</p>
+        </div>`;
+      }
+    }
+
+    // ── Details modal ──────────────────────────────────────────────────────────
+    let detailsItemId   = null;
+    let detailsItemType = null;
+
+    const detailsBackdrop = document.getElementById("details-backdrop");
+    document.getElementById("details-close").addEventListener("click",  () => detailsBackdrop.classList.add("hidden"));
+    document.getElementById("details-cancel").addEventListener("click", () => detailsBackdrop.classList.add("hidden"));
+    detailsBackdrop.addEventListener("click", (e) => { if (e.target === detailsBackdrop) detailsBackdrop.classList.add("hidden"); });
+
+    document.getElementById("details-buy").addEventListener("click", async () => {
+      if (!detailsItemId) return;
+      const donorComment = document.getElementById("det-donor-comment").value.trim();
+      detailsBackdrop.classList.add("hidden");
+      await handleAction("fill", detailsItemType, detailsItemId, donorComment || null);
+    });
+
+    function openDetails(btn) {
+      const username  = btn.dataset.username || "Unknown";
+      const amount    = parseFloat(btn.dataset.amount);
+      const price     = btn.dataset.price ? parseFloat(btn.dataset.price) : null;
+      const comment   = btn.dataset.comment || "";
+      const createdAt = btn.dataset.created;
+      const isSale    = btn.dataset.type === "sales";
+      detailsItemId   = btn.dataset.id;
+      detailsItemType = btn.dataset.type;
+
+      // Icon + title
+      document.getElementById("det-title").textContent        = isSale ? "Sale Details" : "Request Details";
+      document.getElementById("det-icon").textContent         = isSale ? "sell" : "electric_bolt";
+      document.getElementById("det-icon-wrap").style.background = isSale ? "#9ff2e1" : "#d6e3ff";
+      document.getElementById("det-icon").style.color          = isSale ? "#005147" : "#005db6";
+      document.getElementById("det-user-label").textContent    = isSale ? "Seller" : "Requester";
+
+      document.getElementById("det-username").textContent = username;
+      document.getElementById("det-amount").textContent   = `${amount} kWh`;
+      document.getElementById("det-time").textContent     = relTime(createdAt);
+
+      // Price / total (sales only)
+      document.getElementById("det-price-row").classList.toggle("hidden", !isSale);
+      document.getElementById("det-total-row").classList.toggle("hidden", !isSale);
+      if (isSale && price !== null) {
+        document.getElementById("det-price").textContent = `R${price.toFixed(2)}`;
+        document.getElementById("det-total").textContent = `R${(amount * price).toFixed(2)}`;
+      }
+
+      // Their comment
+      const commentRow = document.getElementById("det-comment-row");
+      if (comment) {
+        document.getElementById("det-comment").textContent = comment;
+        commentRow.classList.remove("hidden");
+      } else {
+        commentRow.classList.add("hidden");
+      }
+
+      // Donor comment field (requests only)
+      const donorWrap = document.getElementById("det-donor-comment-wrap");
+      donorWrap.classList.toggle("hidden", isSale);
+      document.getElementById("det-donor-comment").value = "";
+
+      // Action button label
+      document.getElementById("details-buy").textContent = isSale ? "Buy Now" : "Donate";
+      document.getElementById("details-buy").className   = isSale
+        ? "flex-1 bg-secondary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity"
+        : "flex-1 bg-tertiary-container text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity";
+
+      detailsBackdrop.classList.remove("hidden");
+    }
+
+    // ── Handle fill / delete ───────────────────────────────────────────────────
+    async function handleAction(action, type, id, comment = null) {
+      // Check SOC before donating/selling (not needed for requests — buyer is receiver)
+      if (action === "fill" && type === "sales" && !canShare) {
+        toast("Battery SOC too low to share energy.", "error"); return;
+      }
+      try {
+        let res;
+        if (action === "fill") {
+          const body = comment ? { comment } : {};
+          res = await authFetch(`${API}/api/community/${type}/${id}/fill`, { method: "POST", body: JSON.stringify(body) });
+        } else {
+          res = await authFetch(`${API}/api/community/${type}/${id}`, { method: "DELETE" });
+        }
+        const json = await res.json();
+        if (!json.success) throw new Error(json.message);
+        const successMsg = action === "fill"
+          ? (type === "requests" ? "Donation sent! Thank you." : "Purchase complete!")
+          : "Listing removed.";
+        toast(successMsg, "success");
+        loadTab(activeTab);
+        loadMyListings();
+        loadStatus();
+      } catch (err) {
+        toast(err.message, "error");
+      }
+    }
+
+
+    // ── My Listings ────────────────────────────────────────────────────────────
+    async function loadMyListings() {
+      const el = document.getElementById("my-listings");
+      try {
+        const [sRes, rRes] = await Promise.all([
+          authFetch(`${API}/api/community/sales`),
+          authFetch(`${API}/api/community/requests`),
+        ]);
+        const [sJson, rJson] = await Promise.all([sRes.json(), rRes.json()]);
+        const uid  = Number(myId());
+        const mine = [
+          ...(sJson.data || []).filter(r => Number(r.user_id) === uid).map(r => ({ ...r, _type: "sales" })),
+          ...(rJson.data || []).filter(r => Number(r.user_id) === uid).map(r => ({ ...r, _type: "requests" })),
+        ];
+        if (!mine.length) {
+          el.innerHTML = `<p class="text-on-surface-variant text-sm text-center py-6">You have no active listings.</p>`;
+          return;
+        }
+        el.innerHTML = mine.map(item => {
+          const typeLabel = item._type === "donations" ? "Donation" : item._type === "sales" ? "Sale" : "Request";
+          const detail    = item._type === "sales"
+            ? `${item.amount_kwh} kWh @ R${parseFloat(item.price_per_kwh).toFixed(2)}/kWh`
+            : `${item.amount_kwh} kWh`;
+          return `
+            <div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl" data-row-id="${item.id}">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-primary text-base">${item._type === "requests" ? "electric_bolt" : "solar_power"}</span>
+                </div>
+                <div>
+                  <p class="text-sm font-semibold text-on-surface">${typeLabel}</p>
+                  <p class="text-xs text-on-surface-variant font-label">${detail} &nbsp;·&nbsp; ${relTime(item.created_at)}</p>
+                </div>
+              </div>
+              <button data-action="delete" data-type="${item._type}" data-id="${item.id}"
+                class="text-error hover:bg-error-container rounded-full p-1 transition-colors" title="Cancel">
+                <span class="material-symbols-outlined text-base">close</span>
+              </button>
+            </div>`;
+        }).join("");
+        el.querySelectorAll("button[data-action]").forEach(btn => {
+          btn.addEventListener("click", () => handleAction("delete", btn.dataset.type, btn.dataset.id));
+        });
+      } catch {
+        el.innerHTML = `<div class="text-center py-6">
+          <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">wifi_off</span>
+          <p class="text-on-surface-variant text-sm">Could not load your listings.</p>
+        </div>`;
+      }
+    }
+
+    // ── Fetch battery capacity + Eskom rate once on load ──────────────────────
+    async function loadBatteryMeta() {
+      try {
+        const [bRes, cRes] = await Promise.all([
+          authFetch(`${API}/api/battery`),
+          authFetch(`${API}/api/co2`),
+        ]);
+        const bJson = await bRes.json();
+        const cJson = await cRes.json();
+        if (bJson.success) batteryCapacity = bJson.data.capacityKwh;
+        if (cJson.success) eskomRate = cJson.data.constants.randsPerKwh;
+      } catch { /* silent */ }
+    }
+
+    // ── Boot ───────────────────────────────────────────────────────────────────
+    loadBatteryMeta();
+    loadStatus();
+    loadTab("donations");
+    loadMyListings();
+    setInterval(loadStatus, 60000); // refresh status every minute
+  })();
+  </script>
+</body>
 </html>

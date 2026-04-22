@@ -119,11 +119,13 @@ async function runSimulation() {
 
   if (netPower >= 0) {
     if (batterySOC >= 99.9) {
-      grid_watts      = -netPower;
+      // Battery full — curtail excess, no grid export
+      grid_watts      = 0;
       batteryNetPower = 0;
     }
   } else {
     if (batterySOC <= 0.1) {
+      // Battery empty — import from grid (positive = import)
       grid_watts      = -netPower;
       batteryNetPower = 0;
     }

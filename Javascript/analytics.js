@@ -1,6 +1,7 @@
 // ── Auth guard ─────────────────────────────────────────────────────────────
-const token = localStorage.getItem("authToken");
+const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
 if (!token) window.location.replace("../frontend/login.html");
+else if (!sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
 
 // ── Dark mode ──────────────────────────────────────────────────────────────
 (function applyTheme() {
@@ -41,6 +42,7 @@ async function apiFetch(path) {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (res.status === 401 || res.status === 403) {
+    sessionStorage.removeItem("authToken");
     localStorage.removeItem("authToken");
     window.location.replace("../frontend/login.html");
     return null;
@@ -271,6 +273,7 @@ document.getElementById("theme-toggle")?.addEventListener("click", () => {
 // ── Sign out ───────────────────────────────────────────────────────────────
 document.getElementById("sign-out").addEventListener("click", (e) => {
   e.preventDefault();
+  sessionStorage.removeItem("authToken");
   localStorage.removeItem("authToken");
   window.location.replace("../frontend/login.html");
 });

@@ -42,6 +42,41 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const CO2_KG_PER_KWH = 0.928;
 const RANDS_PER_KWH  = 2.5;
 
+// ── Create notifications table if it doesn't exist yet ───────────────────────
+pool.query(`
+  CREATE TABLE IF NOT EXISTS notifications (
+    id           SERIAL PRIMARY KEY,
+    user_id      INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    type         VARCHAR(50)  NOT NULL,
+    title        VARCHAR(255) NOT NULL,
+    message      TEXT         NOT NULL,
+    is_read      BOOLEAN      DEFAULT FALSE,
+    metadata     JSONB,
+    created_at   TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  )
+`).catch(err => console.error("[startup] notifications table:", err.message));
+
+// ── Create wallet tables if they don't exist yet ─────────────────────────────
+pool.query(`
+  CREATE TABLE IF NOT EXISTS wallets (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
+    balance    DECIMAL(10,2) NOT NULL DEFAULT 1000.00,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  );
+  CREATE TABLE IF NOT EXISTS wallet_transactions (
+    id               SERIAL PRIMARY KEY,
+    user_id          INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    type             VARCHAR(30) NOT NULL,
+    direction        VARCHAR(10) NOT NULL,
+    amount           DECIMAL(10,2) NOT NULL,
+    balance_after    DECIMAL(10,2) NOT NULL,
+    description      TEXT,
+    counter_party_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  );
+`).catch(err => console.error("[startup] wallet tables:", err.message));
+
 // In-memory cache for Open-Meteo weather responses (current + forecast).
 // Keyed by "lat,lng" for current weather and "forecast:lat,lng" for forecasts.
 // Each entry: { fetchedAt: <epoch ms>, data: <response object> }
@@ -142,8 +177,8 @@ mqttClient.on("message", async (topic, message) => {
         `INSERT INTO raw_readings
           (inverter_id, dc_voltage, dc_current, ac_voltage, ac_current,
            frequency, temperature, power_w, energy_kwh, wind_speed, rotor_rpm, pitch_angle,
-           load_watts, load_kwh, grid_watts, grid_kwh)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+           load_watts, load_kwh, grid_watts, grid_kwh, cloud_cover)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)`,
         [
           inverterId,
           data.dc_voltage    ?? null,
@@ -161,6 +196,7 @@ mqttClient.on("message", async (topic, message) => {
           data.load_kwh      ?? null,
           data.grid_watts    ?? null,
           data.grid_kwh      ?? null,
+          data.cloud_cover   ?? null,
         ],
       );
 
@@ -938,6 +974,7 @@ app.get("/api/readings/latest", authenticateToken, async (req, res) => {
         rr.wind_speed,
         rr.rotor_rpm,
         rr.pitch_angle,
+        rr.cloud_cover,
         br.state_of_charge,
         br.voltage       AS battery_voltage,
         br.current       AS battery_current,
@@ -1028,6 +1065,41 @@ app.get("/api/readings/history", authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/battery — battery capacity + latest SOC for the logged-in user
+app.get("/api/battery", authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT b.capacity_kwh,
+              br.state_of_charge
+       FROM   batteries b
+       LEFT JOIN LATERAL (
+         SELECT state_of_charge
+         FROM   battery_readings
+         WHERE  battery_id = b.id
+         ORDER  BY recorded_at DESC
+         LIMIT  1
+       ) br ON true
+       WHERE b.user_id = $1
+       LIMIT 1`,
+      [req.user.id]
+    );
+    if (!result.rows[0]) {
+      return res.status(404).json({ success: false, message: "No battery found" });
+    }
+    const { capacity_kwh, state_of_charge } = result.rows[0];
+    return res.status(200).json({
+      success: true,
+      data: {
+        capacityKwh: parseFloat(capacity_kwh) || 10,
+        soc:         parseFloat(state_of_charge) || 0,
+      },
+    });
+  } catch (error) {
+    console.error("Battery endpoint error:", error.message);
+    return res.status(500).json({ success: false, message: "Error fetching battery data" });
+  }
+});
+
 // ═══════════════════════════════════════════════════════════════════════════
 // CO2 & Analytics Routes
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1051,19 +1123,19 @@ app.get("/api/co2", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Today's kWh — latest running total per inverter, summed
+    // Today's kWh — MAX running total per inverter today, summed.
+    // Using MAX rather than the latest reading means a simulator restart
+    // (which resets energyToday to 0) won't wipe out the day's accumulated value.
     const todayResult = await pool.query(
       `
-      SELECT COALESCE(SUM(latest_kwh), 0) AS today_kwh
+      SELECT COALESCE(SUM(max_kwh), 0) AS today_kwh
       FROM (
-        SELECT DISTINCT ON (inverter_id)
-          inverter_id,
-          energy_kwh AS latest_kwh
+        SELECT inverter_id, MAX(energy_kwh) AS max_kwh
         FROM raw_readings
         WHERE inverter_id IN (SELECT id FROM inverters WHERE user_id = $1)
           AND recorded_at >= DATE_TRUNC('day', NOW())
-        ORDER BY inverter_id, recorded_at DESC
-      ) AS latest_per_inverter
+        GROUP BY inverter_id
+      ) AS max_per_inverter
       `,
       [userId],
     );
@@ -1659,6 +1731,773 @@ app.get("/api/inverter/analytics/export", authenticateToken, async (req, res) =>
   } catch (error) {
     console.error("Inverter export error:", error.message);
     return res.status(500).json({ success: false, message: "Error exporting inverter data" });
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// Community Energy Sharing
+// ═══════════════════════════════════════════════════════════════════════════
+
+// ── Notification helper ───────────────────────────────────────────────────────
+async function createNotification(userId, type, title, message, metadata = {}) {
+  try {
+    await pool.query(
+      `INSERT INTO notifications (user_id, type, title, message, metadata)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [userId, type, title, message, JSON.stringify(metadata)]
+    );
+  } catch (err) {
+    console.error("[notification] create error:", err.message);
+  }
+}
+
+// ── Energy transfer: adjusts SOC for both parties & records grid export ───────
+// sellerUserId — the user sending energy
+// buyerUserId  — the user receiving energy
+// amountKwh    — kWh being transferred
+async function applyEnergyTransfer(sellerUserId, buyerUserId, amountKwh) {
+  const INTERVAL_HOURS = 30 / 3600; // simulators run every 30 s
+
+  // Helper to adjust a user's battery SOC
+  async function adjustSoc(userId, deltaKwh) {
+    const r = await pool.query(
+      `SELECT b.id, b.capacity_kwh, br.state_of_charge, br.voltage, br.current, br.temperature, br.power_w
+       FROM batteries b
+       LEFT JOIN LATERAL (
+         SELECT state_of_charge, voltage, current, temperature, power_w
+         FROM battery_readings WHERE battery_id = b.id ORDER BY recorded_at DESC LIMIT 1
+       ) br ON true
+       WHERE b.user_id = $1 LIMIT 1`,
+      [userId]
+    );
+    if (!r.rows[0]) return;
+    const { id: battId, capacity_kwh, state_of_charge, voltage, current, temperature, power_w } = r.rows[0];
+    const cap    = parseFloat(capacity_kwh) || 10;
+    const soc    = parseFloat(state_of_charge) || 0;
+    const newSoc = Math.min(100, Math.max(0, soc + (deltaKwh / cap) * 100));
+    await pool.query(
+      `INSERT INTO battery_readings (battery_id, state_of_charge, voltage, current, temperature, power_w, recorded_at)
+       VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+      [battId, newSoc.toFixed(2), voltage, current, temperature, power_w]
+    );
+  }
+
+  // Seller loses energy, buyer gains it
+  await adjustSoc(sellerUserId, -amountKwh);
+  await adjustSoc(buyerUserId,  +amountKwh);
+
+  // Insert a grid export reading for the seller (negative = exporting)
+  const exportWatts = -(amountKwh / INTERVAL_HOURS);
+  try {
+    const inv = await pool.query(
+      `SELECT id FROM inverters WHERE user_id = $1 ORDER BY id LIMIT 1`,
+      [sellerUserId]
+    );
+    if (inv.rows[0]) {
+      const invId = inv.rows[0].id;
+      await pool.query(
+        `INSERT INTO raw_readings
+           (inverter_id, power_w, dc_voltage, dc_current, ac_voltage, ac_current,
+            frequency, temperature, energy_kwh, load_watts, load_kwh, grid_watts, grid_kwh, recorded_at)
+         SELECT inverter_id, power_w, dc_voltage, dc_current, ac_voltage, ac_current,
+                frequency, temperature, energy_kwh, load_watts, load_kwh,
+                $2,
+                COALESCE(grid_kwh, 0) + $3,
+                NOW()
+         FROM raw_readings WHERE inverter_id = $1 ORDER BY recorded_at DESC LIMIT 1`,
+        [invId, exportWatts, amountKwh]
+      );
+    }
+  } catch (err) {
+    console.error("[transfer] grid reading insert:", err.message);
+  }
+}
+
+function isSameArea(user1, user2) {
+  if (!user1.location || !user2.location) return false;
+  return user1.location.trim().toLowerCase() === user2.location.trim().toLowerCase();
+}
+
+async function getUserSoc(userId) {
+  const result = await pool.query(
+    `SELECT br.state_of_charge
+     FROM batteries b
+     JOIN battery_readings br ON br.battery_id = b.id
+     WHERE b.user_id = $1
+     ORDER BY br.recorded_at DESC
+     LIMIT 1`,
+    [userId]
+  );
+  return result.rows[0]?.state_of_charge ?? null;
+}
+
+// Returns { soc, capacityKwh, availableKwh } for sharing validation.
+// availableKwh = stored energy minus already-listed (unfilled) sales/donations.
+async function getUserShareableKwh(userId) {
+  const battResult = await pool.query(
+    `SELECT b.capacity_kwh, br.state_of_charge
+     FROM batteries b
+     LEFT JOIN LATERAL (
+       SELECT state_of_charge FROM battery_readings
+       WHERE battery_id = b.id ORDER BY recorded_at DESC LIMIT 1
+     ) br ON true
+     WHERE b.user_id = $1 LIMIT 1`,
+    [userId]
+  );
+  if (!battResult.rows[0]) return null;
+  const { capacity_kwh, state_of_charge } = battResult.rows[0];
+  const soc          = parseFloat(state_of_charge) || 0;
+  const capacityKwh  = parseFloat(capacity_kwh)    || 10;
+  const storedKwh    = capacityKwh * (soc / 100);
+
+  // Sum all unfilled outgoing listings (sales) already posted by this user
+  const listedResult = await pool.query(
+    `SELECT COALESCE(SUM(amount_kwh), 0) AS total
+     FROM energy_sales
+     WHERE user_id = $1 AND is_filled = FALSE`,
+    [userId]
+  );
+  const alreadyListed = parseFloat(listedResult.rows[0].total) || 0;
+  const availableKwh  = Math.max(0, storedKwh - alreadyListed);
+  return { soc, capacityKwh, availableKwh };
+}
+
+// Returns available space for requests: battery empty space minus already-posted unfilled requests.
+// For users with no battery, returns { noBattery: true, remaining } where remaining = 10 - already requested.
+const NO_BATTERY_MAX_PER_REQUEST  = 2;   // kWh cap per single request
+const NO_BATTERY_MAX_OUTSTANDING  = 10;  // kWh cap on total unfilled requests
+
+async function getUserRequestableKwh(userId) {
+  const battResult = await pool.query(
+    `SELECT b.capacity_kwh, br.state_of_charge
+     FROM batteries b
+     LEFT JOIN LATERAL (
+       SELECT state_of_charge FROM battery_readings
+       WHERE battery_id = b.id ORDER BY recorded_at DESC LIMIT 1
+     ) br ON true
+     WHERE b.user_id = $1 LIMIT 1`,
+    [userId]
+  );
+
+  if (!battResult.rows[0]) {
+    // No battery — apply community cap
+    const reqResult = await pool.query(
+      `SELECT COALESCE(SUM(amount_kwh), 0) AS total
+       FROM energy_requests
+       WHERE user_id = $1 AND is_filled = FALSE`,
+      [userId]
+    );
+    const alreadyRequested = parseFloat(reqResult.rows[0].total) || 0;
+    return { noBattery: true, remaining: Math.max(0, NO_BATTERY_MAX_OUTSTANDING - alreadyRequested) };
+  }
+
+  const { capacity_kwh, state_of_charge } = battResult.rows[0];
+  const soc         = parseFloat(state_of_charge) || 0;
+  const capacityKwh = parseFloat(capacity_kwh)    || 10;
+  const emptyKwh    = capacityKwh * ((100 - soc) / 100);
+
+  const reqResult = await pool.query(
+    `SELECT COALESCE(SUM(amount_kwh), 0) AS total
+     FROM energy_requests
+     WHERE user_id = $1 AND is_filled = FALSE`,
+    [userId]
+  );
+  const alreadyRequested = parseFloat(reqResult.rows[0].total) || 0;
+  return Math.max(0, emptyKwh - alreadyRequested);
+}
+
+// ── Wallet helpers ────────────────────────────────────────────────────────────
+
+async function getOrCreateWallet(userId) {
+  await pool.query(
+    `INSERT INTO wallets (user_id, balance) VALUES ($1, 1000.00) ON CONFLICT (user_id) DO NOTHING`,
+    [userId]
+  );
+  const result = await pool.query(`SELECT * FROM wallets WHERE user_id = $1`, [userId]);
+  return result.rows[0];
+}
+
+async function transferWallet(fromUserId, toUserId, amount, description) {
+  const from = await getOrCreateWallet(fromUserId);
+  if (parseFloat(from.balance) < amount) {
+    throw new Error(`Insufficient wallet balance (R${parseFloat(from.balance).toFixed(2)} available, R${amount.toFixed(2)} required)`);
+  }
+  const newFromBal = parseFloat(from.balance) - amount;
+  await pool.query(`UPDATE wallets SET balance = $1 WHERE user_id = $2`, [newFromBal.toFixed(2), fromUserId]);
+  await pool.query(
+    `INSERT INTO wallet_transactions (user_id, type, direction, amount, balance_after, description, counter_party_id)
+     VALUES ($1,'transfer','debit',$2,$3,$4,$5)`,
+    [fromUserId, amount.toFixed(2), newFromBal.toFixed(2), description, toUserId]
+  );
+
+  const to = await getOrCreateWallet(toUserId);
+  const newToBal = parseFloat(to.balance) + amount;
+  await pool.query(`UPDATE wallets SET balance = $1 WHERE user_id = $2`, [newToBal.toFixed(2), toUserId]);
+  await pool.query(
+    `INSERT INTO wallet_transactions (user_id, type, direction, amount, balance_after, description, counter_party_id)
+     VALUES ($1,'transfer','credit',$2,$3,$4,$5)`,
+    [toUserId, amount.toFixed(2), newToBal.toFixed(2), description, fromUserId]
+  );
+}
+
+// ── Wallet endpoints ──────────────────────────────────────────────────────────
+
+app.get("/api/wallet", authenticateToken, async (req, res) => {
+  try {
+    const wallet = await getOrCreateWallet(req.user.id);
+    return res.status(200).json({ success: true, data: wallet });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Error fetching wallet" });
+  }
+});
+
+app.get("/api/wallet/transactions", authenticateToken, async (req, res) => {
+  try {
+    await getOrCreateWallet(req.user.id);
+    const result = await pool.query(
+      `SELECT wt.*, u.username AS counter_party_name
+       FROM wallet_transactions wt
+       LEFT JOIN users u ON u.id = wt.counter_party_id
+       WHERE wt.user_id = $1
+       ORDER BY wt.created_at DESC
+       LIMIT 50`,
+      [req.user.id]
+    );
+    return res.status(200).json({ success: true, data: result.rows });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Error fetching transactions" });
+  }
+});
+
+app.post("/api/wallet/topup", authenticateToken, async (req, res) => {
+  try {
+    const amount = parseFloat(req.body.amount);
+    if (!amount || amount <= 0 || amount > 10000) {
+      return res.status(400).json({ success: false, message: "Amount must be between R0.01 and R10,000" });
+    }
+    const wallet = await getOrCreateWallet(req.user.id);
+    const newBal = parseFloat(wallet.balance) + amount;
+    await pool.query(`UPDATE wallets SET balance = $1 WHERE user_id = $2`, [newBal.toFixed(2), req.user.id]);
+    await pool.query(
+      `INSERT INTO wallet_transactions (user_id, type, direction, amount, balance_after, description)
+       VALUES ($1,'top_up','credit',$2,$3,'Funds added')`,
+      [req.user.id, amount.toFixed(2), newBal.toFixed(2)]
+    );
+    return res.status(200).json({ success: true, data: { balance: newBal.toFixed(2) } });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Error adding funds" });
+  }
+});
+
+app.post("/api/wallet/withdraw", authenticateToken, async (req, res) => {
+  try {
+    const amount = parseFloat(req.body.amount);
+    if (!amount || amount <= 0 || amount > 10000) {
+      return res.status(400).json({ success: false, message: "Amount must be between R0.01 and R10,000" });
+    }
+    const wallet = await getOrCreateWallet(req.user.id);
+    const currentBal = parseFloat(wallet.balance);
+    if (currentBal < amount) {
+      return res.status(400).json({ success: false, message: `Insufficient balance (R${currentBal.toFixed(2)} available)` });
+    }
+    const newBal = currentBal - amount;
+    await pool.query(`UPDATE wallets SET balance = $1 WHERE user_id = $2`, [newBal.toFixed(2), req.user.id]);
+    await pool.query(
+      `INSERT INTO wallet_transactions (user_id, type, direction, amount, balance_after, description)
+       VALUES ($1,'withdraw','debit',$2,$3,'Funds withdrawn')`,
+      [req.user.id, amount.toFixed(2), newBal.toFixed(2)]
+    );
+    return res.status(200).json({ success: true, data: { balance: newBal.toFixed(2) } });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Error withdrawing funds" });
+  }
+});
+
+// ── Notifications endpoints ───────────────────────────────────────────────────
+
+app.get("/api/notifications", authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`,
+      [req.user.id]
+    );
+    return res.status(200).json({ success: true, data: result.rows });
+  } catch (err) {
+    console.error("Get notifications error:", err.message);
+    return res.status(500).json({ success: false, message: "Error fetching notifications" });
+  }
+});
+
+app.post("/api/notifications/:id/read", authenticateToken, async (req, res) => {
+  try {
+    await pool.query(
+      `UPDATE notifications SET is_read = TRUE WHERE id = $1 AND user_id = $2`,
+      [req.params.id, req.user.id]
+    );
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Error marking notification read" });
+  }
+});
+
+app.post("/api/notifications/read-all", authenticateToken, async (req, res) => {
+  try {
+    await pool.query(
+      `UPDATE notifications SET is_read = TRUE WHERE user_id = $1`,
+      [req.user.id]
+    );
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Error marking all notifications read" });
+  }
+});
+
+// ── Donations ─────────────────────────────────────────────────────────────────
+
+app.get("/api/community/donations", authenticateToken, async (req, res) => {
+  try {
+    const meResult = await pool.query(
+      "SELECT location FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    const me = meResult.rows[0];
+
+    const result = await pool.query(
+      `SELECT d.*, u.username, u.location
+       FROM donations d
+       JOIN users u ON d.user_id = u.id
+       WHERE d.is_filled = FALSE
+       ORDER BY d.created_at DESC`,
+      []
+    );
+
+    return res.status(200).json({ success: true, data: result.rows.filter((row) => row.user_id === req.user.id || isSameArea(me, row)) });
+  } catch (error) {
+    console.error("Get donations error:", error.message);
+    return res.status(500).json({ success: false, message: "Error fetching donations" });
+  }
+});
+
+app.post("/api/community/donations", authenticateToken, async (req, res) => {
+  try {
+    const { amount_kwh } = req.body;
+    if (!amount_kwh || amount_kwh <= 0) {
+      return res.status(400).json({ success: false, message: "amount_kwh must be greater than 0" });
+    }
+
+    const soc = await getUserSoc(req.user.id);
+    if (soc === null) {
+      return res.status(400).json({ success: false, message: "No battery data found. Please set up an inverter first." });
+    }
+    if (soc <= 30) {
+      return res.status(400).json({ success: false, message: `Insufficient battery charge (${soc}% SOC). Minimum 30% required.` });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO donations (user_id, amount_kwh) VALUES ($1, $2) RETURNING *`,
+      [req.user.id, amount_kwh]
+    );
+    return res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error("Create donation error:", error.message);
+    return res.status(500).json({ success: false, message: "Error creating donation" });
+  }
+});
+
+app.delete("/api/community/donations/:id", authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM donations WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id]
+    );
+    if (!result.rows[0]) {
+      return res.status(404).json({ success: false, message: "Donation not found or not yours" });
+    }
+    if (result.rows[0].is_filled) {
+      return res.status(400).json({ success: false, message: "Cannot delete a filled donation" });
+    }
+
+    await pool.query("DELETE FROM donations WHERE id = $1", [req.params.id]);
+    return res.status(200).json({ success: true, message: "Donation deleted" });
+  } catch (error) {
+    console.error("Delete donation error:", error.message);
+    return res.status(500).json({ success: false, message: "Error deleting donation" });
+  }
+});
+
+app.post("/api/community/donations/:id/fill", authenticateToken, async (req, res) => {
+  try {
+    const donationResult = await pool.query(
+      `SELECT d.*, u.lat, u.lng, u.location
+       FROM donations d
+       JOIN users u ON d.user_id = u.id
+       WHERE d.id = $1`,
+      [req.params.id]
+    );
+
+    if (!donationResult.rows[0]) {
+      return res.status(404).json({ success: false, message: "Donation not found" });
+    }
+    const donation = donationResult.rows[0];
+
+    if (donation.user_id === req.user.id) {
+      return res.status(400).json({ success: false, message: "Cannot accept your own donation" });
+    }
+    if (donation.is_filled) {
+      return res.status(400).json({ success: false, message: "Donation already filled" });
+    }
+
+    const meResult = await pool.query(
+      "SELECT lat, lng, location FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    if (!isSameArea(meResult.rows[0], donation)) {
+      return res.status(403).json({ success: false, message: "Transfers only permitted within the same geographic area" });
+    }
+
+    const donorSoc = await getUserSoc(donation.user_id);
+    if (donorSoc === null || donorSoc <= 30) {
+      return res.status(400).json({ success: false, message: `Donor's battery is insufficient (${donorSoc}% SOC). Minimum 30% required.` });
+    }
+
+    const result = await pool.query(
+      `UPDATE donations SET is_filled = TRUE, filled_by_user_id = $1 WHERE id = $2 RETURNING *`,
+      [req.user.id, req.params.id]
+    );
+    return res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error("Fill donation error:", error.message);
+    return res.status(500).json({ success: false, message: "Error filling donation" });
+  }
+});
+
+// ── Energy Sales ──────────────────────────────────────────────────────────────
+
+app.get("/api/community/sales", authenticateToken, async (req, res) => {
+  try {
+    const meResult = await pool.query(
+      "SELECT location FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    const me = meResult.rows[0];
+
+    const result = await pool.query(
+      `SELECT s.*, u.username, u.location
+       FROM energy_sales s
+       JOIN users u ON s.user_id = u.id
+       WHERE s.is_filled = FALSE
+       ORDER BY s.created_at DESC`,
+      []
+    );
+
+    return res.status(200).json({ success: true, data: result.rows.filter((row) => row.user_id === req.user.id || isSameArea(me, row)) });
+  } catch (error) {
+    console.error("Get sales error:", error.message);
+    return res.status(500).json({ success: false, message: "Error fetching sales" });
+  }
+});
+
+app.post("/api/community/sales", authenticateToken, async (req, res) => {
+  try {
+    const { amount_kwh, price_per_kwh } = req.body;
+    if (!amount_kwh || amount_kwh <= 0) {
+      return res.status(400).json({ success: false, message: "amount_kwh must be greater than 0" });
+    }
+    if (!price_per_kwh || price_per_kwh <= 0) {
+      return res.status(400).json({ success: false, message: "price_per_kwh must be greater than 0" });
+    }
+
+    const battery = await getUserShareableKwh(req.user.id);
+    if (!battery) {
+      return res.status(400).json({ success: false, message: "No battery data found. Please set up an inverter first." });
+    }
+    if (battery.soc <= 30) {
+      return res.status(400).json({ success: false, message: `Insufficient battery charge (${battery.soc.toFixed(1)}% SOC). Minimum 30% required.` });
+    }
+    if (amount_kwh > battery.availableKwh) {
+      return res.status(400).json({ success: false, message: `Cannot list ${amount_kwh} kWh — only ${battery.availableKwh.toFixed(2)} kWh available after existing listings.` });
+    }
+
+    const { comment } = req.body;
+    const result = await pool.query(
+      `INSERT INTO energy_sales (user_id, amount_kwh, price_per_kwh, comment) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [req.user.id, amount_kwh, price_per_kwh, comment || null]
+    );
+    return res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error("Create sale error:", error.message);
+    return res.status(500).json({ success: false, message: "Error creating sale" });
+  }
+});
+
+app.delete("/api/community/sales/:id", authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM energy_sales WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id]
+    );
+    if (!result.rows[0]) {
+      return res.status(404).json({ success: false, message: "Sale not found or not yours" });
+    }
+    if (result.rows[0].is_filled) {
+      return res.status(400).json({ success: false, message: "Cannot delete a completed sale" });
+    }
+
+    await pool.query("DELETE FROM energy_sales WHERE id = $1", [req.params.id]);
+    return res.status(200).json({ success: true, message: "Sale listing deleted" });
+  } catch (error) {
+    console.error("Delete sale error:", error.message);
+    return res.status(500).json({ success: false, message: "Error deleting sale" });
+  }
+});
+
+app.post("/api/community/sales/:id/fill", authenticateToken, async (req, res) => {
+  try {
+    const saleResult = await pool.query(
+      `SELECT s.*, u.lat, u.lng, u.location
+       FROM energy_sales s
+       JOIN users u ON s.user_id = u.id
+       WHERE s.id = $1`,
+      [req.params.id]
+    );
+
+    if (!saleResult.rows[0]) {
+      return res.status(404).json({ success: false, message: "Sale not found" });
+    }
+    const sale = saleResult.rows[0];
+
+    if (sale.user_id === req.user.id) {
+      return res.status(400).json({ success: false, message: "Cannot buy your own sale listing" });
+    }
+    if (sale.is_filled) {
+      return res.status(400).json({ success: false, message: "Sale already completed" });
+    }
+
+    const meResult = await pool.query(
+      "SELECT lat, lng, location FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    if (!isSameArea(meResult.rows[0], sale)) {
+      return res.status(403).json({ success: false, message: "Transfers only permitted within the same geographic area" });
+    }
+
+    const sellerSoc = await getUserSoc(sale.user_id);
+    if (sellerSoc === null || sellerSoc <= 30) {
+      return res.status(400).json({ success: false, message: `Seller's battery is insufficient (${sellerSoc}% SOC). Minimum 30% required.` });
+    }
+
+    // Check buyer has enough empty battery space to receive the energy
+    const buyerSpace = await getUserRequestableKwh(req.user.id);
+    if (buyerSpace === null) {
+      return res.status(400).json({ success: false, message: "No battery data found for your account. Please set up an inverter first." });
+    }
+    if (parseFloat(sale.amount_kwh) > buyerSpace) {
+      return res.status(400).json({ success: false, message: `Not enough battery space to receive ${sale.amount_kwh} kWh — you only have ${buyerSpace.toFixed(2)} kWh of free capacity.` });
+    }
+
+    const result = await pool.query(
+      `UPDATE energy_sales SET is_filled = TRUE, filled_by_user_id = $1 WHERE id = $2 RETURNING *`,
+      [req.user.id, req.params.id]
+    );
+
+    // Wallet transfer: buyer pays seller
+    const total = (parseFloat(sale.amount_kwh) * parseFloat(sale.price_per_kwh)).toFixed(2);
+    await transferWallet(req.user.id, sale.user_id, parseFloat(total),
+      `Energy purchase: ${sale.amount_kwh} kWh @ R${parseFloat(sale.price_per_kwh).toFixed(2)}/kWh`);
+
+    // Adjust battery SOC for both parties and record grid export for seller
+    await applyEnergyTransfer(sale.user_id, req.user.id, parseFloat(sale.amount_kwh));
+
+    // Notify the seller
+    const buyerRow = await pool.query("SELECT username FROM users WHERE id = $1", [req.user.id]);
+    const buyerName  = buyerRow.rows[0]?.username || "Someone";
+    await createNotification(
+      sale.user_id,
+      "sale_completed",
+      "Energy Sale Completed",
+      `${buyerName} purchased ${sale.amount_kwh} kWh for R${total}.`,
+      { sale_id: sale.id, buyer_id: req.user.id, amount_kwh: sale.amount_kwh, total_rands: total }
+    );
+    // Notify the buyer
+    const sellerRow = await pool.query("SELECT username FROM users WHERE id = $1", [sale.user_id]);
+    const sellerName = sellerRow.rows[0]?.username || "Someone";
+    await createNotification(
+      req.user.id,
+      "purchase_completed",
+      "Energy Purchase Confirmed",
+      `You bought ${sale.amount_kwh} kWh from ${sellerName} for R${total}. Your battery has been updated.`,
+      { sale_id: sale.id, seller_id: sale.user_id, amount_kwh: sale.amount_kwh, total_rands: total }
+    );
+
+    return res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error("Fill sale error:", error.message);
+    return res.status(500).json({ success: false, message: "Error completing sale" });
+  }
+});
+
+// ── Energy Requests ───────────────────────────────────────────────────────────
+
+app.get("/api/community/requests", authenticateToken, async (req, res) => {
+  try {
+    const meResult = await pool.query(
+      "SELECT location FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    const me = meResult.rows[0];
+
+    const result = await pool.query(
+      `SELECT r.*, u.username, u.location
+       FROM energy_requests r
+       JOIN users u ON r.user_id = u.id
+       WHERE r.is_filled = FALSE
+       ORDER BY r.created_at DESC`,
+      []
+    );
+
+    return res.status(200).json({ success: true, data: result.rows.filter((row) => row.user_id === req.user.id || isSameArea(me, row)) });
+  } catch (error) {
+    console.error("Get requests error:", error.message);
+    return res.status(500).json({ success: false, message: "Error fetching requests" });
+  }
+});
+
+app.post("/api/community/requests", authenticateToken, async (req, res) => {
+  try {
+    const { amount_kwh } = req.body;
+    if (!amount_kwh || amount_kwh <= 0) {
+      return res.status(400).json({ success: false, message: "amount_kwh must be greater than 0" });
+    }
+
+    const requestable = await getUserRequestableKwh(req.user.id);
+    if (requestable !== null && typeof requestable === "object" && requestable.noBattery) {
+      // No-battery user: apply community caps
+      if (amount_kwh > NO_BATTERY_MAX_PER_REQUEST) {
+        return res.status(400).json({ success: false, message: `Users without a battery can request at most ${NO_BATTERY_MAX_PER_REQUEST} kWh per request.` });
+      }
+      if (amount_kwh > requestable.remaining) {
+        return res.status(400).json({ success: false, message: `You have ${requestable.remaining.toFixed(2)} kWh of your ${NO_BATTERY_MAX_OUTSTANDING} kWh community allowance remaining.` });
+      }
+    } else {
+      if (amount_kwh > requestable) {
+        return res.status(400).json({ success: false, message: `Cannot request ${amount_kwh} kWh — only ${requestable.toFixed(2)} kWh of battery space available after existing requests.` });
+      }
+    }
+
+    const { comment } = req.body;
+    const result = await pool.query(
+      `INSERT INTO energy_requests (user_id, amount_kwh, comment) VALUES ($1, $2, $3) RETURNING *`,
+      [req.user.id, amount_kwh, comment || null]
+    );
+    return res.status(201).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error("Create request error:", error.message);
+    return res.status(500).json({ success: false, message: "Error creating request" });
+  }
+});
+
+app.delete("/api/community/requests/:id", authenticateToken, async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM energy_requests WHERE id = $1 AND user_id = $2",
+      [req.params.id, req.user.id]
+    );
+    if (!result.rows[0]) {
+      return res.status(404).json({ success: false, message: "Request not found or not yours" });
+    }
+    if (result.rows[0].is_filled) {
+      return res.status(400).json({ success: false, message: "Cannot delete a filled request" });
+    }
+
+    await pool.query("DELETE FROM energy_requests WHERE id = $1", [req.params.id]);
+    return res.status(200).json({ success: true, message: "Request deleted" });
+  } catch (error) {
+    console.error("Delete request error:", error.message);
+    return res.status(500).json({ success: false, message: "Error deleting request" });
+  }
+});
+
+app.post("/api/community/requests/:id/fill", authenticateToken, async (req, res) => {
+  try {
+    const requestResult = await pool.query(
+      `SELECT r.*, u.lat, u.lng, u.location
+       FROM energy_requests r
+       JOIN users u ON r.user_id = u.id
+       WHERE r.id = $1`,
+      [req.params.id]
+    );
+
+    if (!requestResult.rows[0]) {
+      return res.status(404).json({ success: false, message: "Request not found" });
+    }
+    const request = requestResult.rows[0];
+
+    if (request.user_id === req.user.id) {
+      return res.status(400).json({ success: false, message: "Cannot fill your own request" });
+    }
+    if (request.is_filled) {
+      return res.status(400).json({ success: false, message: "Request already filled" });
+    }
+
+    const meResult = await pool.query(
+      "SELECT lat, lng, location FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    if (!isSameArea(meResult.rows[0], request)) {
+      return res.status(403).json({ success: false, message: "Transfers only permitted within the same geographic area" });
+    }
+
+    const fillerSoc = await getUserSoc(req.user.id);
+    if (fillerSoc === null) {
+      return res.status(400).json({ success: false, message: "No battery data found. Please set up an inverter first." });
+    }
+    if (fillerSoc <= 30) {
+      return res.status(400).json({ success: false, message: `Insufficient battery charge (${fillerSoc}% SOC). Minimum 30% required to fulfill a request.` });
+    }
+
+    // Check that the requester actually has space to receive it (skip for no-battery users)
+    const requesterSpace = await getUserRequestableKwh(request.user_id);
+    if (requesterSpace !== null && typeof requesterSpace === "number" && parseFloat(request.amount_kwh) > requesterSpace) {
+      return res.status(400).json({ success: false, message: `The requester's battery no longer has enough space for ${request.amount_kwh} kWh (only ${requesterSpace.toFixed(2)} kWh free).` });
+    }
+
+    const donorComment = req.body?.comment?.trim() || null;
+    const result = await pool.query(
+      `UPDATE energy_requests SET is_filled = TRUE, filled_by_user_id = $1, donor_comment = $2 WHERE id = $3 RETURNING *`,
+      [req.user.id, donorComment, req.params.id]
+    );
+
+    // Adjust SOC: filler (donor) sends energy to requester
+    await applyEnergyTransfer(req.user.id, request.user_id, parseFloat(request.amount_kwh));
+
+    // Notify the requester
+    const fillerRow = await pool.query("SELECT username FROM users WHERE id = $1", [req.user.id]);
+    const fillerName = fillerRow.rows[0]?.username || "Someone";
+    const fulfilledMsg = donorComment
+      ? `${fillerName} donated ${request.amount_kwh} kWh to your request: "${donorComment}"`
+      : `${fillerName} donated ${request.amount_kwh} kWh to your request. Your battery has been updated.`;
+    await createNotification(
+      request.user_id,
+      "request_fulfilled",
+      "Energy Request Fulfilled",
+      fulfilledMsg,
+      { request_id: request.id, filler_id: req.user.id, amount_kwh: request.amount_kwh }
+    );
+    // Notify the donor
+    const requesterRow = await pool.query("SELECT username FROM users WHERE id = $1", [request.user_id]);
+    const requesterName = requesterRow.rows[0]?.username || "Someone";
+    await createNotification(
+      req.user.id,
+      "donation_sent",
+      "Donation Sent",
+      `You donated ${request.amount_kwh} kWh to ${requesterName}'s request. Thank you!`,
+      { request_id: request.id, recipient_id: request.user_id, amount_kwh: request.amount_kwh }
+    );
+
+    return res.status(200).json({ success: true, data: result.rows[0] });
+  } catch (error) {
+    console.error("Fill request error:", error.message);
+    return res.status(500).json({ success: false, message: "Error filling request" });
   }
 });
 

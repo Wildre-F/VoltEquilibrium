@@ -118,18 +118,16 @@ async function runSimulation() {
   let batteryNetPower = netPower; // what actually flows into/out of battery
 
   if (netPower >= 0) {
-    // Solar covers load and has surplus
     if (batterySOC >= 99.9) {
-      // Battery full → export surplus to grid
-      grid_watts      = -netPower; // negative = export
+      // Battery full — curtail excess, no grid export
+      grid_watts      = 0;
       batteryNetPower = 0;
     }
     // else: charge battery, no grid interaction
   } else {
-    // Solar can't cover load, draw from battery
     if (batterySOC <= 0.1) {
-      // Battery empty → import from grid
-      grid_watts      = -netPower; // positive = import
+      // Battery empty — import from grid (positive = import)
+      grid_watts      = -netPower;
       batteryNetPower = 0;
     }
     // else: discharge battery, no grid interaction

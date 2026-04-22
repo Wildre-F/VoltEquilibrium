@@ -433,6 +433,7 @@
       const oauthToken = urlParams.get("token");
       if (oauthToken) {
         localStorage.setItem("authToken", oauthToken);
+        sessionStorage.setItem("authToken", oauthToken);
         window.history.replaceState(
           {},
           document.title,
@@ -441,7 +442,8 @@
       }
 
       const API_BASE = "http://localhost:3000";
-      const token = localStorage.getItem("authToken");
+      const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+      if (token && !sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
       let addedInverters = { solar: null, wind: null };
 
       if (!token) window.location.href = "../frontend/login.html";

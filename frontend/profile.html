@@ -1,933 +1,804 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile - VoltEquilibrium</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-        min-height: 100vh;
-        padding: 20px;
-      }
-      .container {
-        max-width: 650px;
-        margin: 0 auto;
-      }
-      .back-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #005147;
-        font-weight: bold;
-        text-decoration: none;
-        margin-bottom: 1.5rem;
-        cursor: pointer;
-        background: none;
-        border: none;
-        font-size: 0.95rem;
-      }
-      .card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-        margin-bottom: 1.5rem;
-      }
-      .card h2 {
-        color: #005147;
-        margin-bottom: 1.2rem;
-        font-size: 1.2rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid #eee;
-      }
-      .field {
-        margin-bottom: 1rem;
-      }
-      label {
-        display: block;
-        font-size: 0.75rem;
-        font-weight: bold;
-        color: #666;
-        margin-bottom: 0.3rem;
-        text-transform: uppercase;
-      }
-      input,
-      select {
-        width: 100%;
-        padding: 0.65rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 0.95rem;
-        background: white;
-      }
-      input:focus,
-      select:focus {
-        outline: none;
-        border-color: #005147;
-      }
-      input:disabled {
-        background: #f5f5f5;
-        color: #999;
-      }
-      .grid-2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-      }
-      .btn {
-        padding: 0.65rem 1.2rem;
-        border: none;
-        border-radius: 4px;
-        font-size: 0.9rem;
-        cursor: pointer;
-        font-weight: bold;
-      }
-      .btn-primary {
-        background: #005147;
-        color: white;
-      }
-      .btn-primary:hover {
-        background: #003d36;
-      }
-      .btn-danger {
-        background: #dc3545;
-        color: white;
-      }
-      .btn-danger:hover {
-        background: #c82333;
-      }
-      .btn-block {
-        width: 100%;
-        padding: 0.75rem;
-        margin-top: 0.5rem;
-      }
-      .inverter-card {
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 1.2rem;
-        margin-bottom: 1rem;
-      }
-      .inverter-card.added {
-        border-color: #005147;
-        background: #f0faf8;
-      }
-      .inverter-card h3 {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1rem;
-        color: #333;
-        font-size: 1rem;
-      }
-      .badge {
-        background: #005147;
-        color: white;
-        font-size: 0.7rem;
-        padding: 2px 8px;
-        border-radius: 20px;
-      }
-      .badge.optional {
-        background: #999;
-      }
-      .added-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem;
-        background: #e8f5e9;
-        border-radius: 6px;
-      }
-      .added-info span {
-        color: #2e7d32;
-        font-weight: bold;
-        font-size: 0.9rem;
-      }
-      .form-section {
-        display: block;
-      }
-      .form-section.hidden {
-        display: none;
-      }
-      .message {
-        padding: 0.75rem;
-        border-radius: 4px;
-        text-align: center;
-        margin-bottom: 1rem;
-        display: none;
-      }
-      .success {
-        background-color: #d4edda;
-        color: #155724;
-        display: block;
-      }
-      .error {
-        background-color: #f8d7da;
-        color: #721c24;
-        display: block;
-      }
-      .member-since {
-        color: #999;
-        font-size: 0.85rem;
-        margin-top: 0.5rem;
-      }
-      .danger-zone {
-        border: 2px solid #dc3545;
-      }
-      .danger-zone h2 {
-        color: #dc3545;
-        border-bottom-color: #ffd6d6;
-      }
-      .location-row {
-        display: flex;
-        gap: 0.5rem;
-      }
-      .location-row input {
-        flex: 1;
-      }
-      .api-key-box {
-        margin-top: 1rem;
-        padding: 0.75rem;
-        background: #fff8e1;
-        border-radius: 6px;
-        border-left: 3px solid #ffc107;
-        font-size: 0.85rem;
-        color: #555;
-      }
-      .api-key-box strong {
-        color: #333;
-        display: block;
-        margin-bottom: 0.3rem;
-      }
-      .api-key-value {
-        font-family: monospace;
-        font-size: 0.9rem;
-        color: #005147;
-        background: #f5f5f5;
-        padding: 0.4rem 0.6rem;
-        border-radius: 4px;
-        display: inline-block;
-        margin-top: 0.3rem;
-        word-break: break-all;
-      }
-      .copy-btn {
-        margin-left: 0.5rem;
-        padding: 0.25rem 0.6rem;
-        font-size: 0.75rem;
-        background: #005147;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-      }
-      .copy-btn:hover {
-        background: #003d36;
-      }
-      .profile-info {
-        margin-top: 0.75rem;
-        padding: 0.65rem;
-        background: #e8f4fd;
-        border-radius: 4px;
-        font-size: 0.82rem;
-        color: #1565c0;
-        border-left: 3px solid #1976d2;
-      }
-      .danger-actions {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        margin-top: 1rem;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <button
-        class="back-btn"
-        onclick="window.location.href = '../frontend/Dashboard.html'"
-      >
-        ← Back to Dashboard
-      </button>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>VoltEquilibrium | Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-on-surface": "#eef1f0",
+            primary: "#005147",
+            "secondary-fixed": "#d6e3ff",
+            "on-secondary-fixed-variant": "#00468c",
+            "on-tertiary-container": "#b5eb3e",
+            "on-surface": "#181c1c",
+            error: "#ba1a1a",
+            "tertiary-fixed": "#bdf447",
+            "on-background": "#181c1c",
+            "surface-variant": "#e0e3e2",
+            "surface-container": "#ebeeed",
+            "tertiary-container": "#4b6800",
+            "primary-fixed-dim": "#83d5c5",
+            "surface-bright": "#f7faf9",
+            "inverse-primary": "#83d5c5",
+            "surface-dim": "#d7dbda",
+            "on-primary-fixed": "#00201b",
+            "error-container": "#ffdad6",
+            "on-error": "#ffffff",
+            "on-primary": "#ffffff",
+            tertiary: "#374e00",
+            "on-surface-variant": "#3e4946",
+            background: "#f7faf9",
+            surface: "#f7faf9",
+            "on-tertiary-fixed-variant": "#374e00",
+            "primary-fixed": "#9ff2e1",
+            "surface-container-low": "#f1f4f3",
+            "on-secondary-fixed": "#001b3d",
+            "on-tertiary": "#ffffff",
+            "on-error-container": "#93000a",
+            "on-primary-fixed-variant": "#005046",
+            "secondary-fixed-dim": "#a9c7ff",
+            "on-secondary": "#ffffff",
+            "primary-container": "#006b5e",
+            "on-primary-container": "#95e8d8",
+            "surface-container-high": "#e6e9e8",
+            "secondary-container": "#63a1ff",
+            "on-tertiary-fixed": "#141f00",
+            "surface-tint": "#006b5e",
+            "surface-container-lowest": "#ffffff",
+            "outline-variant": "#bec9c5",
+            outline: "#6e7976",
+            "surface-container-highest": "#e0e3e2",
+            "inverse-surface": "#2d3131",
+            secondary: "#005db6",
+            "tertiary-fixed-dim": "#a2d729",
+            "on-secondary-container": "#00376f",
+          },
+          fontFamily: { headline: ["Manrope"], body: ["Plus Jakarta Sans"], label: ["Inter"] },
+          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "1.5rem", full: "9999px" },
+        },
+      },
+    };
+  </script>
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; line-height: 1; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+    .tab-btn.active { background: white; color: #005147; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+    .inverter-card-added { border-color: #005147 !important; background: #f0faf8; }
+    .form-section.hidden { display: none; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface">
 
-      <div id="message" class="message"></div>
-
-      <!-- Profile Info -->
-      <div class="card">
-        <h2>👤 My Profile</h2>
-        <div class="field">
-          <label>Username</label>
-          <input type="text" id="username" placeholder="Username" />
-        </div>
-        <div class="field">
-          <label>Email</label>
-          <input type="email" id="email" placeholder="Email" />
-        </div>
-        <div class="field">
-          <label>New Password (leave blank to keep current)</label>
-          <input type="password" id="new-password" placeholder="New password" />
-        </div>
-        <div class="field">
-          <label>Confirm New Password</label>
-          <input
-            type="password"
-            id="confirm-password"
-            placeholder="Confirm new password"
-          />
-        </div>
-        <button class="btn btn-primary btn-block" onclick="updateProfile()">
-          Save Changes
-        </button>
-        <p class="member-since" id="member-since"></p>
-      </div>
-
-      <!-- Energy Setup -->
-      <div class="card">
-        <h2>⚡ My Energy Setup</h2>
-
-        <!-- API Key display -->
-        <div class="api-key-box" id="api-key-section" style="display: none">
-          <strong>🔑 Your API Key</strong>
-          <div>
-            <span class="api-key-value" id="api-key-display"></span>
-            <button class="copy-btn" onclick="copyApiKey()">Copy</button>
-          </div>
-          <div style="margin-top: 0.4rem; font-size: 0.78rem; color: #888">
-            This key links your simulator script to your account. Keep it safe.
-          </div>
-        </div>
-
-        <!-- Generation Site Location -->
-        <div class="field">
-          <label>Generation Site Location</label>
-          <select id="location-preset" onchange="applyLocationPreset()">
-            <option value="">— Pick a demo location —</option>
-            <option value="-33.9249|18.4241|Cape Town, South Africa">
-              🇿🇦 Cape Town, South Africa
-            </option>
-            <option value="51.5074|-0.1278|London, United Kingdom">
-              🇬🇧 London, United Kingdom
-            </option>
-            <option value="35.6762|139.6503|Tokyo, Japan">
-              🇯🇵 Tokyo, Japan
-            </option>
-            <option value="-33.8688|151.2093|Sydney, Australia">
-              🇦🇺 Sydney, Australia
-            </option>
-            <option value="40.7128|-74.0060|New York, USA">
-              🇺🇸 New York, USA
-            </option>
-          </select>
-          <div style="display: flex; gap: 8px; margin-top: 8px">
-            <input
-              type="text"
-              id="site-location"
-              placeholder="Or type a location name"
-              style="flex: 1"
-            />
-            <button type="button" onclick="getLocation()">📍 Detect</button>
-          </div>
-          <p
-            id="location-status"
-            style="font-size: 0.8rem; color: #666; margin-top: 4px"
-          ></p>
-          <button
-            type="button"
-            onclick="saveLocation()"
-            style="margin-top: 8px"
-          >
-            💾 Save Location
-          </button>
-        </div>
-
-        <!-- Solar Inverter -->
-        <div class="inverter-card" id="solar-card">
-          <h3>
-            ☀️ Solar Inverter
-            <span class="badge optional" id="solar-badge">Not Added</span>
-          </h3>
-          <div class="form-section" id="solar-form">
-            <div class="grid-2">
-              <div class="field">
-                <label>Name</label>
-                <input
-                  type="text"
-                  id="solar-name"
-                  placeholder="e.g. Rooftop Solar"
-                />
-              </div>
-              <div class="field">
-                <label>Capacity (kW)</label>
-                <input
-                  type="number"
-                  id="solar-capacity"
-                  placeholder="e.g. 5"
-                  step="0.1"
-                  min="0"
-                />
-              </div>
-            </div>
-            <div class="field">
-              <label>Simulation Profile</label>
-              <select id="solar-profile" onchange="updateProfileInfo('solar')">
-                <option value="">— Select a profile —</option>
-                <option value="solar-small">Small household (1–3 kW)</option>
-                <option value="solar-large">Large array (5–10 kW)</option>
-              </select>
-            </div>
-            <div
-              class="profile-info"
-              id="solar-profile-info"
-              style="display: none"
-            ></div>
-            <button
-              class="btn btn-primary"
-              style="margin-top: 0.5rem"
-              onclick="addInverter('solar')"
-            >
-              Add Solar Inverter
-            </button>
-          </div>
-          <div class="form-section hidden" id="solar-added">
-            <div class="added-info">
-              <span id="solar-added-text">✅ Solar inverter added</span>
-              <button class="btn btn-danger" onclick="removeInverter('solar')">
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Wind Inverter -->
-        <div class="inverter-card" id="wind-card">
-          <h3>
-            💨 Wind Inverter
-            <span class="badge optional" id="wind-badge">Not Added</span>
-          </h3>
-          <div class="form-section" id="wind-form">
-            <div class="grid-2">
-              <div class="field">
-                <label>Name</label>
-                <input
-                  type="text"
-                  id="wind-name"
-                  placeholder="e.g. Backyard Turbine"
-                />
-              </div>
-              <div class="field">
-                <label>Capacity (kW)</label>
-                <input
-                  type="number"
-                  id="wind-capacity"
-                  placeholder="e.g. 2"
-                  step="0.1"
-                  min="0"
-                />
-              </div>
-            </div>
-            <div class="field">
-              <label>Simulation Profile</label>
-              <select id="wind-profile" onchange="updateProfileInfo('wind')">
-                <option value="">— Select a profile —</option>
-                <option value="wind-small">Small turbine (1–2 kW)</option>
-                <option value="wind-large">Large turbine (5–15 kW)</option>
-              </select>
-            </div>
-            <div
-              class="profile-info"
-              id="wind-profile-info"
-              style="display: none"
-            ></div>
-            <button
-              class="btn btn-primary"
-              style="margin-top: 0.5rem"
-              onclick="addInverter('wind')"
-            >
-              Add Wind Inverter
-            </button>
-          </div>
-          <div class="form-section hidden" id="wind-added">
-            <div class="added-info">
-              <span id="wind-added-text">✅ Wind inverter added</span>
-              <button class="btn btn-danger" onclick="removeInverter('wind')">
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Danger Zone -->
-      <div class="card danger-zone">
-        <h2>⚠️ Danger Zone</h2>
-        <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem">
-          These actions are permanent and cannot be undone.
-        </p>
-        <div class="danger-actions">
-          <button class="btn btn-danger" onclick="confirmDeleteData()">
-            🗑️ Delete All My Data
-          </button>
-          <button class="btn btn-danger" onclick="confirmDeleteAccount()">
-            ❌ Delete My Account
-          </button>
-        </div>
-        <p style="color: #999; font-size: 0.78rem; margin-top: 0.75rem">
-          "Delete All My Data" removes your readings and inverters but keeps
-          your account. "Delete My Account" removes everything permanently.
-        </p>
+  <!-- TopNavBar -->
+  <nav class="fixed top-0 w-full z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto">
+    <div class="flex items-center gap-8">
+      <span class="text-2xl font-extrabold tracking-tighter text-primary font-headline">VoltEquilibrium</span>
+      <div class="hidden md:flex items-center gap-6">
+        <a class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Dashboard.html">Overview</a>
+        <a class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Analytics.html">Analytics</a>
+        <a class="text-on-surface-variant/70 hover:text-primary transition-colors font-headline font-bold tracking-tight" href="Community_sharing.html">Community</a>
       </div>
     </div>
+    <div class="flex items-center gap-4">
+      <a href="Notifications.html">
+        <button class="p-2 hover:bg-surface-container-low rounded-full transition-all duration-300">
+          <span class="material-symbols-outlined text-primary">notifications</span>
+        </button>
+      </a>
+      <a href="Wallet.html">
+        <button class="flex items-center gap-1.5 px-3 py-1.5 bg-primary-fixed hover:bg-primary-fixed/70 rounded-full transition-colors">
+          <span class="material-symbols-outlined text-primary" style="font-size:1.1rem;font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+          <span id="nav-balance" class="text-xs font-bold text-primary font-label">R—</span>
+        </button>
+      </a>
+      <div id="nav-avatar" class="h-8 w-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+        <span class="material-symbols-outlined text-primary text-lg">person</span>
+      </div>
+    </div>
+  </nav>
 
-    <script>
-      const API_BASE = "http://localhost:3000";
-      const token = localStorage.getItem("authToken");
-      let inverterIds = { solar: null, wind: null };
+  <div class="flex pt-16">
+    <!-- SideNavBar -->
+    <aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 bg-surface-container-low flex flex-col p-6 gap-y-2 hidden md:flex z-20">
+      <div class="mb-8">
+        <h3 class="text-lg font-bold text-primary font-headline">Renewable Hub</h3>
+        <p class="text-xs font-semibold text-on-surface-variant/60 font-body">Community Grid</p>
+      </div>
+      <nav class="flex-1 flex flex-col gap-y-1 overflow-y-auto overflow-x-hidden min-h-0">
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Dashboard.html">
+          <span class="material-symbols-outlined">dashboard</span><span>Dashboard</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Analytics.html">
+          <span class="material-symbols-outlined">bar_chart</span><span>Analytics</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Notifications.html">
+          <span class="material-symbols-outlined">notifications</span><span>Notifications</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Recommendations.html">
+          <span class="material-symbols-outlined">auto_awesome</span><span>Recommendations</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Inverter.html">
+          <span class="material-symbols-outlined">developer_board</span><span>Inverter</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Community_sharing.html">
+          <span class="material-symbols-outlined">groups</span><span>Community Sharing</span>
+        </a>
+      </nav>
+      <div class="mt-auto flex flex-col gap-y-1 border-t border-outline-variant/20 pt-4">
+        <a href="Support.html" class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-white py-3 rounded-full font-headline font-bold text-xs tracking-widest uppercase mb-4 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity">
+          <span class="material-symbols-outlined text-sm">contact_support</span>Contact Support
+        </a>
+        <a id="sign-out" class="flex items-center gap-3 px-4 py-2 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm" href="#">
+          <span class="material-symbols-outlined">logout</span><span>Sign Out</span>
+        </a>
+      </div>
+    </aside>
 
-      if (!token) window.location.href = "../frontend/login.html";
+    <!-- Main Content -->
+    <main class="flex-1 md:ml-64 p-8 min-h-screen">
+      <div class="max-w-3xl mx-auto">
 
-      const profileDescriptions = {
-        "solar-small": "Peak ~3 kW at midday. Output scales with cloud cover.",
-        "solar-large": "Peak ~10 kW at midday. Output scales with cloud cover.",
-        "wind-small": "Rated ~2 kW at 12 m/s wind speed.",
-        "wind-large": "Rated ~15 kW at 12 m/s wind speed.",
-      };
+        <!-- Toast -->
+        <div id="toast" class="hidden fixed top-20 right-6 z-50 px-5 py-3 rounded-xl font-semibold text-sm shadow-lg font-body transition-all duration-300"></div>
 
-      function updateProfileInfo(type) {
-        const profile = document.getElementById(`${type}-profile`).value;
-        const infoBox = document.getElementById(`${type}-profile-info`);
-        if (profile) {
-          infoBox.textContent = "💡 " + profileDescriptions[profile];
-          infoBox.style.display = "block";
-        } else {
-          infoBox.style.display = "none";
-        }
-      }
+        <!-- Profile Hero -->
+        <div class="bg-surface-container-lowest rounded-2xl p-8 flex flex-col sm:flex-row items-center gap-6 mb-8 shadow-sm">
+          <!-- Avatar -->
+          <div class="relative flex-shrink-0">
+            <div id="avatar-circle" class="w-20 h-20 rounded-full flex items-center justify-center shadow-md" style="background:#9ff2e1">
+              <span class="material-symbols-outlined text-primary" style="font-size:2.5rem;font-variation-settings:'FILL' 1;">person</span>
+            </div>
+            <!-- Color swatches trigger -->
+            <button id="color-picker-btn" title="Change avatar colour" class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white shadow border border-outline-variant/30 flex items-center justify-center hover:bg-surface-container transition-colors">
+              <span class="material-symbols-outlined text-on-surface-variant" style="font-size:14px;">palette</span>
+            </button>
+            <!-- Swatches popover -->
+            <div id="color-swatches" class="hidden absolute top-full mt-2 left-0 bg-white rounded-xl shadow-lg border border-outline-variant/20 p-3 flex gap-2 z-10 flex-wrap w-40">
+              <button class="swatch w-7 h-7 rounded-full border-2 border-transparent hover:scale-110 transition-transform" style="background:#9ff2e1" data-color="#9ff2e1"></button>
+              <button class="swatch w-7 h-7 rounded-full border-2 border-transparent hover:scale-110 transition-transform" style="background:#d6e3ff" data-color="#d6e3ff"></button>
+              <button class="swatch w-7 h-7 rounded-full border-2 border-transparent hover:scale-110 transition-transform" style="background:#bdf447" data-color="#bdf447"></button>
+              <button class="swatch w-7 h-7 rounded-full border-2 border-transparent hover:scale-110 transition-transform" style="background:#ffd6d6" data-color="#ffd6d6"></button>
+              <button class="swatch w-7 h-7 rounded-full border-2 border-transparent hover:scale-110 transition-transform" style="background:#ffe082" data-color="#ffe082"></button>
+              <button class="swatch w-7 h-7 rounded-full border-2 border-transparent hover:scale-110 transition-transform" style="background:#e1bee7" data-color="#e1bee7"></button>
+              <button class="swatch w-7 h-7 rounded-full border-2 border-transparent hover:scale-110 transition-transform" style="background:#b3e5fc" data-color="#b3e5fc"></button>
+              <button class="swatch w-7 h-7 rounded-full border-2 border-transparent hover:scale-110 transition-transform" style="background:#f8bbd0" data-color="#f8bbd0"></button>
+            </div>
+          </div>
+          <div class="text-center sm:text-left">
+            <h1 id="hero-username" class="text-3xl font-extrabold font-headline text-on-surface tracking-tight">—</h1>
+            <p id="hero-email" class="text-on-surface-variant font-body mt-1 text-sm">—</p>
+            <p id="hero-member-since" class="text-xs text-outline font-label mt-1">—</p>
+          </div>
+        </div>
 
-      function copyApiKey() {
-        const key = document.getElementById("api-key-display").textContent;
-        navigator.clipboard.writeText(key).then(() => {
-          showMessage("API key copied to clipboard!", "success");
+        <!-- Tab Bar -->
+        <div class="flex gap-1 bg-surface-container p-1 rounded-xl mb-8 w-fit">
+          <button class="tab-btn active px-5 py-2 rounded-lg text-sm font-bold font-label transition-all" data-tab="profile">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-base">manage_accounts</span>Profile Settings</span>
+          </button>
+          <button class="tab-btn px-5 py-2 rounded-lg text-sm font-bold font-label text-on-surface-variant/70 transition-all" data-tab="inverter">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-base">developer_board</span>Inverter Settings</span>
+          </button>
+          <button class="tab-btn px-5 py-2 rounded-lg text-sm font-bold font-label text-on-surface-variant/70 transition-all" data-tab="achievements">
+            <span class="flex items-center gap-2"><span class="material-symbols-outlined text-base">emoji_events</span>Achievements</span>
+          </button>
+        </div>
+
+        <!-- ── Tab: Profile Settings ── -->
+        <div id="tab-profile" class="tab-panel active space-y-6">
+
+          <!-- Account Details -->
+          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
+            <h2 class="text-lg font-bold font-headline text-on-surface mb-5 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">badge</span>Account Details
+            </h2>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Username</label>
+                <input type="text" id="username" placeholder="Username" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-on-surface text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Email</label>
+                <input type="email" id="email" placeholder="Email" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-on-surface text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">New Password</label>
+                  <input type="password" id="new-password" placeholder="Leave blank to keep current" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-on-surface text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Confirm Password</label>
+                  <input type="password" id="confirm-password" placeholder="Confirm new password" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-on-surface text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+                </div>
+              </div>
+              <button onclick="updateProfile()" class="bg-primary text-white px-6 py-2.5 rounded-full font-bold text-sm font-label hover:opacity-90 transition-opacity mt-1">
+                Save Changes
+              </button>
+            </div>
+          </div>
+
+          <!-- Danger Zone -->
+          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border border-error/20">
+            <h2 class="text-lg font-bold font-headline text-error mb-2 flex items-center gap-2">
+              <span class="material-symbols-outlined">warning</span>Danger Zone
+            </h2>
+            <p class="text-on-surface-variant text-sm font-body mb-5">These actions are permanent and cannot be undone.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <button onclick="confirmDeleteData()" class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl border-2 border-error/40 text-error font-bold text-sm font-label hover:bg-error-container transition-colors">
+                <span class="material-symbols-outlined text-base">delete_sweep</span>Delete All My Data
+              </button>
+              <button onclick="confirmDeleteAccount()" class="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-error text-white font-bold text-sm font-label hover:opacity-90 transition-opacity">
+                <span class="material-symbols-outlined text-base">person_remove</span>Delete My Account
+              </button>
+            </div>
+            <p class="text-xs text-outline mt-4 font-label">"Delete All My Data" removes readings and inverters but keeps your account. "Delete My Account" removes everything permanently.</p>
+          </div>
+        </div>
+
+        <!-- ── Tab: Inverter Settings ── -->
+        <div id="tab-inverter" class="tab-panel space-y-6">
+
+          <!-- API Key -->
+          <div id="api-key-section" class="hidden bg-surface-container-lowest rounded-2xl p-6 shadow-sm border-l-4 border-tertiary">
+            <h2 class="text-base font-bold font-headline text-on-surface mb-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-tertiary text-base">key</span>Your API Key
+            </h2>
+            <div class="flex items-center gap-3 flex-wrap">
+              <code id="api-key-display" class="font-mono text-sm text-primary bg-surface-container px-4 py-2 rounded-xl flex-1 min-w-0 break-all"></code>
+              <button onclick="copyApiKey()" class="px-4 py-2 bg-primary text-white text-xs font-bold rounded-full font-label hover:opacity-90 transition-opacity flex-shrink-0">Copy</button>
+            </div>
+            <p class="text-xs text-outline mt-2 font-label">This key links your simulator to your account. Keep it safe.</p>
+          </div>
+
+          <!-- Location -->
+          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm">
+            <h2 class="text-lg font-bold font-headline text-on-surface mb-5 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary">location_on</span>Generation Site Location
+            </h2>
+            <div class="space-y-3">
+              <select id="location-preset" onchange="applyLocationPreset()" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-on-surface text-sm font-body focus:outline-none focus:border-primary transition-colors">
+                <option value="">— Pick a demo location —</option>
+                <option value="-33.9249|18.4241|Cape Town, South Africa">Cape Town, South Africa</option>
+                <option value="51.5074|-0.1278|London, United Kingdom">London, United Kingdom</option>
+                <option value="35.6762|139.6503|Tokyo, Japan">Tokyo, Japan</option>
+                <option value="-33.8688|151.2093|Sydney, Australia">Sydney, Australia</option>
+                <option value="40.7128|-74.0060|New York, USA">New York, USA</option>
+              </select>
+              <div class="flex gap-2">
+                <input type="text" id="site-location" placeholder="Or type a location name" class="flex-1 px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-on-surface text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+                <button type="button" onclick="getLocation()" class="px-4 py-2.5 bg-surface-container-high hover:bg-surface-container-highest text-on-surface-variant text-sm font-bold rounded-xl font-label transition-colors flex items-center gap-1">
+                  <span class="material-symbols-outlined text-base">my_location</span>Detect
+                </button>
+              </div>
+              <p id="location-status" class="text-xs text-outline font-label"></p>
+              <button type="button" onclick="saveLocation()" class="px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-full font-label hover:opacity-90 transition-opacity flex items-center gap-2">
+                <span class="material-symbols-outlined text-base">save</span>Save Location
+              </button>
+            </div>
+          </div>
+
+          <!-- Solar Inverter -->
+          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border-2 border-outline-variant/30" id="solar-card">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-bold font-headline text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-yellow-500" style="font-variation-settings:'FILL' 1;">wb_sunny</span>Solar Inverter
+              </h2>
+              <span id="solar-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label">Not Added</span>
+            </div>
+            <div class="form-section" id="solar-form">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Name</label>
+                  <input type="text" id="solar-name" placeholder="e.g. Rooftop Solar" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Capacity (kW)</label>
+                  <input type="number" id="solar-capacity" placeholder="e.g. 5" step="0.1" min="0" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Simulation Profile</label>
+                <select id="solar-profile" onchange="updateProfileInfo('solar')" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors">
+                  <option value="">— Select a profile —</option>
+                  <option value="solar-small">Small household (1–3 kW)</option>
+                  <option value="solar-large">Large array (5–10 kW)</option>
+                </select>
+              </div>
+              <div id="solar-profile-info" class="hidden text-xs text-secondary bg-secondary-fixed/40 px-4 py-2 rounded-xl mb-3 font-body"></div>
+              <button onclick="addInverter('solar')" class="px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-full font-label hover:opacity-90 transition-opacity">
+                Add Solar Inverter
+              </button>
+            </div>
+            <div class="form-section hidden" id="solar-added">
+              <div class="flex items-center justify-between bg-primary-fixed/30 rounded-xl px-4 py-3">
+                <span id="solar-added-text" class="text-sm font-semibold text-primary font-body"></span>
+                <button onclick="removeInverter('solar')" class="text-error text-xs font-bold font-label hover:underline">Remove</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wind Inverter -->
+          <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm border-2 border-outline-variant/30" id="wind-card">
+            <div class="flex items-center justify-between mb-4">
+              <h2 class="text-lg font-bold font-headline text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1;">air</span>Wind Inverter
+              </h2>
+              <span id="wind-badge" class="text-xs font-bold px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label">Not Added</span>
+            </div>
+            <div class="form-section" id="wind-form">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Name</label>
+                  <input type="text" id="wind-name" placeholder="e.g. Backyard Turbine" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Capacity (kW)</label>
+                  <input type="number" id="wind-capacity" placeholder="e.g. 2" step="0.1" min="0" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors" />
+                </div>
+              </div>
+              <div class="mb-3">
+                <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Simulation Profile</label>
+                <select id="wind-profile" onchange="updateProfileInfo('wind')" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors">
+                  <option value="">— Select a profile —</option>
+                  <option value="wind-small">Small turbine (1–2 kW)</option>
+                  <option value="wind-large">Large turbine (5–15 kW)</option>
+                </select>
+              </div>
+              <div id="wind-profile-info" class="hidden text-xs text-secondary bg-secondary-fixed/40 px-4 py-2 rounded-xl mb-3 font-body"></div>
+              <button onclick="addInverter('wind')" class="px-5 py-2.5 bg-primary text-white text-sm font-bold rounded-full font-label hover:opacity-90 transition-opacity">
+                Add Wind Inverter
+              </button>
+            </div>
+            <div class="form-section hidden" id="wind-added">
+              <div class="flex items-center justify-between bg-primary-fixed/30 rounded-xl px-4 py-3">
+                <span id="wind-added-text" class="text-sm font-semibold text-primary font-body"></span>
+                <button onclick="removeInverter('wind')" class="text-error text-xs font-bold font-label hover:underline">Remove</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Tab: Achievements ── -->
+        <div id="tab-achievements" class="tab-panel">
+          <div class="mb-6">
+            <p class="text-on-surface-variant text-sm font-body">Track your milestones on the VoltEquilibrium platform.</p>
+          </div>
+          <div id="achievements-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <p class="text-on-surface-variant text-sm col-span-2 text-center py-8">Loading achievements…</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:3000";
+    const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+    if (token && !sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
+    if (!token) window.location.href = "login.html";
+
+    let inverterIds = { solar: null, wind: null };
+
+    // ── Sign out ──────────────────────────────────────────────────────────────
+    document.getElementById("sign-out").addEventListener("click", (e) => {
+      e.preventDefault();
+      sessionStorage.removeItem("authToken");
+      localStorage.removeItem("authToken");
+      window.location.href = "login.html";
+    });
+
+    // ── Tab switching ─────────────────────────────────────────────────────────
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => {
+          b.classList.remove("active");
+          b.classList.add("text-on-surface-variant/70");
         });
-      }
+        document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        btn.classList.remove("text-on-surface-variant/70");
+        document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+        if (btn.dataset.tab === "achievements") loadAchievements();
+      });
+    });
 
-      async function loadProfile() {
-        try {
-          const response = await fetch(`${API_BASE}/api/profile`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const result = await response.json();
-          if (result.success) {
-            document.getElementById("username").value = result.data.username;
-            document.getElementById("email").value = result.data.email;
-            document.getElementById("member-since").textContent =
-              `Member since: ${new Date(result.data.created_at).toLocaleDateString()}`;
-          }
-        } catch (error) {
-          showMessage("Error loading profile", "error");
+    // ── Avatar colour ─────────────────────────────────────────────────────────
+    const AVATAR_COLOR_KEY = "avatarColor";
+    function applyAvatarColor(color) {
+      document.getElementById("avatar-circle").style.background = color;
+      document.getElementById("nav-avatar").style.background = color;
+      localStorage.setItem(AVATAR_COLOR_KEY, color);
+      // Mark active swatch
+      document.querySelectorAll(".swatch").forEach(s => {
+        s.style.borderColor = s.dataset.color === color ? "#005147" : "transparent";
+      });
+    }
+    const savedColor = localStorage.getItem(AVATAR_COLOR_KEY) || "#9ff2e1";
+    applyAvatarColor(savedColor);
+
+    document.getElementById("color-picker-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      document.getElementById("color-swatches").classList.toggle("hidden");
+    });
+    document.querySelectorAll(".swatch").forEach(s => {
+      s.addEventListener("click", () => {
+        applyAvatarColor(s.dataset.color);
+        document.getElementById("color-swatches").classList.add("hidden");
+      });
+    });
+    document.addEventListener("click", () => {
+      document.getElementById("color-swatches").classList.add("hidden");
+    });
+
+    // ── Toast ─────────────────────────────────────────────────────────────────
+    const profileDescriptions = {
+      "solar-small": "Peak ~3 kW at midday. Output scales with cloud cover.",
+      "solar-large": "Peak ~10 kW at midday. Output scales with cloud cover.",
+      "wind-small":  "Rated ~2 kW at 12 m/s wind speed.",
+      "wind-large":  "Rated ~15 kW at 12 m/s wind speed.",
+    };
+
+    function showMessage(msg, type) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.className = "";
+      const base = "fixed top-20 right-6 z-50 px-5 py-3 rounded-xl font-semibold text-sm shadow-lg font-body transition-all duration-300";
+      if (type === "success") t.className = base + " bg-primary-fixed text-primary";
+      else if (type === "error") t.className = base + " bg-error-container text-error";
+      else t.className = base + " bg-surface-container-high text-on-surface-variant";
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => { t.className = "hidden"; }, 3000);
+    }
+
+    function updateProfileInfo(type) {
+      const profile = document.getElementById(`${type}-profile`).value;
+      const infoBox = document.getElementById(`${type}-profile-info`);
+      if (profile) {
+        infoBox.textContent = profileDescriptions[profile];
+        infoBox.classList.remove("hidden");
+      } else {
+        infoBox.classList.add("hidden");
+      }
+    }
+
+    function copyApiKey() {
+      const key = document.getElementById("api-key-display").textContent;
+      navigator.clipboard.writeText(key).then(() => showMessage("API key copied!", "success"));
+    }
+
+    // ── Load profile ──────────────────────────────────────────────────────────
+    async function loadProfile() {
+      try {
+        const res    = await fetch(`${API_BASE}/api/profile`, { headers: { Authorization: `Bearer ${token}` } });
+        const result = await res.json();
+        if (result.success) {
+          document.getElementById("username").value        = result.data.username;
+          document.getElementById("email").value           = result.data.email;
+          document.getElementById("hero-username").textContent  = result.data.username;
+          document.getElementById("hero-email").textContent     = result.data.email;
+          document.getElementById("hero-member-since").textContent =
+            `Member since ${new Date(result.data.created_at).toLocaleDateString("en-ZA", { year:"numeric", month:"long" })}`;
         }
-      }
+      } catch { showMessage("Error loading profile", "error"); }
+    }
 
-      async function loadInverters() {
-        try {
-          const response = await fetch(`${API_BASE}/api/setup/status`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const result = await response.json();
-
-          if (result.success) {
-            // Show location
-            if (result.location) {
-              document.getElementById("site-location").value = result.location;
-            }
-
-            // Show inverters
-            if (result.inverters && result.inverters.length > 0) {
-              result.inverters.forEach((inv) => {
-                inverterIds[inv.type] = inv.id;
-                showInverterAdded(
-                  inv.type,
-                  inv.name,
-                  inv.capacity,
-                  inv.profile,
-                );
-              });
-            }
-          }
-
-          // Show API key — try localStorage first, then fetch from backend
-          let apiKey = localStorage.getItem("apiKey");
-          if (!apiKey) {
-            const keyRes = await fetch(`${API_BASE}/api/user/apikey`, {
-              headers: { Authorization: `Bearer ${token}` },
+    // ── Load inverters ────────────────────────────────────────────────────────
+    async function loadInverters() {
+      try {
+        const res    = await fetch(`${API_BASE}/api/setup/status`, { headers: { Authorization: `Bearer ${token}` } });
+        const result = await res.json();
+        if (result.success) {
+          if (result.location) document.getElementById("site-location").value = result.location;
+          if (result.inverters && result.inverters.length > 0) {
+            result.inverters.forEach(inv => {
+              inverterIds[inv.type] = inv.id;
+              showInverterAdded(inv.type, inv.name, inv.capacity, inv.profile);
             });
-            const keyData = await keyRes.json();
-            if (keyData.success && keyData.apiKey) {
-              localStorage.setItem("apiKey", keyData.apiKey); // update localStorage too
-              document.getElementById("api-key-display").textContent =
-                keyData.apiKey;
-              document.getElementById("api-key-section").style.display =
-                "block";
-            }
           }
-          if (apiKey) {
-            document.getElementById("api-key-display").textContent = apiKey;
-            document.getElementById("api-key-section").style.display = "block";
+        }
+        let apiKey = localStorage.getItem("apiKey");
+        if (!apiKey) {
+          const keyRes  = await fetch(`${API_BASE}/api/user/apikey`, { headers: { Authorization: `Bearer ${token}` } });
+          const keyData = await keyRes.json();
+          if (keyData.success && keyData.apiKey) {
+            localStorage.setItem("apiKey", keyData.apiKey);
+            apiKey = keyData.apiKey;
           }
-        } catch (error) {
-          console.error("Error loading inverters:", error);
         }
-      }
+        if (apiKey) {
+          document.getElementById("api-key-display").textContent = apiKey;
+          document.getElementById("api-key-section").classList.remove("hidden");
+        }
+      } catch (err) { console.error("Error loading inverters:", err); }
+    }
 
-      async function updateProfile() {
-        const username = document.getElementById("username").value.trim();
-        const email = document.getElementById("email").value.trim();
-        const newPass = document.getElementById("new-password").value;
-        const confPass = document.getElementById("confirm-password").value;
+    // ── Update profile ────────────────────────────────────────────────────────
+    async function updateProfile() {
+      const username = document.getElementById("username").value.trim();
+      const email    = document.getElementById("email").value.trim();
+      const newPass  = document.getElementById("new-password").value;
+      const confPass = document.getElementById("confirm-password").value;
 
-        if (!username || !email) {
-          showMessage("Username and email are required", "error");
-          return;
-        }
-        if (newPass && newPass !== confPass) {
-          showMessage("Passwords do not match", "error");
-          return;
-        }
-        if (newPass && newPass.length < 8) {
-          showMessage("Password must be at least 8 characters", "error");
-          return;
-        }
+      if (!username || !email)           { showMessage("Username and email are required", "error"); return; }
+      if (newPass && newPass !== confPass){ showMessage("Passwords do not match", "error"); return; }
+      if (newPass && newPass.length < 8) { showMessage("Password must be at least 8 characters", "error"); return; }
 
+      try {
+        const res    = await fetch(`${API_BASE}/api/profile/update`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ username, email, password: newPass || undefined }),
+        });
+        const result = await res.json();
+        if (result.success) {
+          showMessage("Profile updated!", "success");
+          document.getElementById("hero-username").textContent = username;
+          document.getElementById("hero-email").textContent    = email;
+          document.getElementById("new-password").value  = "";
+          document.getElementById("confirm-password").value = "";
+        } else { showMessage(result.message, "error"); }
+      } catch { showMessage("Error updating profile", "error"); }
+    }
+
+    // ── Add inverter ──────────────────────────────────────────────────────────
+    async function addInverter(type) {
+      const name     = document.getElementById(`${type}-name`).value.trim();
+      const capacity = document.getElementById(`${type}-capacity`).value;
+      const profile  = document.getElementById(`${type}-profile`).value;
+      const locInput = document.getElementById("site-location");
+      const location = locInput.value.trim();
+      const lat      = locInput.dataset.lat || null;
+      const lng      = locInput.dataset.lng || null;
+
+      if (!name)     { showMessage("Please enter a name for your inverter", "error"); return; }
+      if (!profile)  { showMessage("Please select a simulation profile", "error"); return; }
+      if (!location) { showMessage("Please enter or detect your location first", "error"); return; }
+
+      try {
+        const res    = await fetch(`${API_BASE}/api/setup/inverter`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ name, type, capacity: capacity || null, location, lat, lng, profile }),
+        });
+        const result = await res.json();
+        if (result.success) {
+          inverterIds[type] = result.data.id;
+          if (result.apiKey) {
+            localStorage.setItem("apiKey", result.apiKey);
+            document.getElementById("api-key-display").textContent = result.apiKey;
+            document.getElementById("api-key-section").classList.remove("hidden");
+          }
+          localStorage.setItem(`${type}Profile`, profile);
+          showInverterAdded(type, name, capacity, profile);
+          showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} inverter added!`, "success");
+        } else { showMessage(result.message, "error"); }
+      } catch { showMessage("Error adding inverter", "error"); }
+    }
+
+    // ── Remove inverter ───────────────────────────────────────────────────────
+    async function removeInverter(type) {
+      const inverterId = inverterIds[type];
+      if (!inverterId) return;
+      if (!confirm(`Remove your ${type} inverter? This will also delete all its readings.`)) return;
+
+      try {
+        const res    = await fetch(`${API_BASE}/api/setup/inverter/${inverterId}`, {
+          method: "DELETE", headers: { Authorization: `Bearer ${token}` },
+        });
+        const result = await res.json();
+        if (result.success) {
+          inverterIds[type] = null;
+          localStorage.removeItem(`${type}Profile`);
+          document.getElementById(`${type}-form`).classList.remove("hidden");
+          document.getElementById(`${type}-added`).classList.add("hidden");
+          document.getElementById(`${type}-card`).classList.remove("inverter-card-added");
+          document.getElementById(`${type}-name`).value = "";
+          document.getElementById(`${type}-capacity`).value = "";
+          document.getElementById(`${type}-profile`).value = "";
+          document.getElementById(`${type}-profile-info`).classList.add("hidden");
+          document.getElementById(`${type}-badge`).textContent = "Not Added";
+          document.getElementById(`${type}-badge`).className = "text-xs font-bold px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label";
+          showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} inverter removed`, "success");
+        } else { showMessage(result.message || "Error removing inverter", "error"); }
+      } catch { showMessage("Error removing inverter", "error"); }
+    }
+
+    function showInverterAdded(type, name, capacity, profile) {
+      document.getElementById(`${type}-form`).classList.add("hidden");
+      document.getElementById(`${type}-added`).classList.remove("hidden");
+      document.getElementById(`${type}-card`).classList.add("inverter-card-added");
+      const profileLabel = profile ? ` · ${profile}` : "";
+      document.getElementById(`${type}-added-text`).textContent =
+        `${name}${capacity ? ` • ${capacity} kW` : ""}${profileLabel}`;
+      document.getElementById(`${type}-badge`).textContent = "Added";
+      document.getElementById(`${type}-badge`).className = "text-xs font-bold px-3 py-1 rounded-full bg-primary-fixed text-primary font-label";
+    }
+
+    // ── Location ──────────────────────────────────────────────────────────────
+    function getLocation() {
+      const btn    = event.target.closest("button");
+      const status = document.getElementById("location-status");
+      if (!navigator.geolocation) { status.textContent = "Geolocation not supported."; return; }
+      btn.disabled = true;
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude.toFixed(6);
+        const lng = position.coords.longitude.toFixed(6);
         try {
-          const response = await fetch(`${API_BASE}/api/profile/update`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              username,
-              email,
-              password: newPass || undefined,
-            }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            showMessage("Profile updated successfully!", "success");
-            document.getElementById("new-password").value = "";
-            document.getElementById("confirm-password").value = "";
-          } else {
-            showMessage(result.message, "error");
-          }
-        } catch (error) {
-          showMessage("Error updating profile", "error");
+          const res  = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+          const data = await res.json();
+          const city   = data.address.city || data.address.town || data.address.suburb || data.address.village;
+          const suburb = data.address.suburb || "";
+          const name   = suburb ? `${suburb}, ${city}` : city;
+          const input  = document.getElementById("site-location");
+          input.value = name; input.dataset.lat = lat; input.dataset.lng = lng;
+          status.textContent = `${name} (${lat}, ${lng})`;
+        } catch {
+          const input = document.getElementById("site-location");
+          input.value = `${lat}, ${lng}`; input.dataset.lat = lat; input.dataset.lng = lng;
+          status.textContent = `${lat}, ${lng}`;
         }
-      }
+        btn.disabled = false;
+      }, () => { btn.disabled = false; status.textContent = "Could not get location."; });
+    }
 
-      async function addInverter(type) {
-        const name = document.getElementById(`${type}-name`).value.trim();
-        const capacity = document.getElementById(`${type}-capacity`).value;
-        const profile = document.getElementById(`${type}-profile`).value;
-        const locationInput = document.getElementById("site-location");
-        const location = locationInput.value.trim();
-        const lat = locationInput.dataset.lat || null;
-        const lng = locationInput.dataset.lng || null;
+    function applyLocationPreset() {
+      const val = document.getElementById("location-preset").value;
+      if (!val) return;
+      const [lat, lng, name] = val.split("|");
+      const input = document.getElementById("site-location");
+      input.value = name; input.dataset.lat = lat; input.dataset.lng = lng;
+      document.getElementById("location-status").textContent = `${name} selected — click Save Location to apply`;
+    }
 
-        if (!name) {
-          showMessage("Please enter a name for your inverter", "error");
-          return;
-        }
-        if (!profile) {
-          showMessage("Please select a simulation profile", "error");
-          return;
-        }
-        if (!location) {
-          showMessage("Please enter or detect your location first", "error");
-          return;
-        }
+    async function saveLocation() {
+      const input    = document.getElementById("site-location");
+      const location = input.value.trim();
+      const lat      = input.dataset.lat;
+      const lng      = input.dataset.lng;
+      if (!lat || !lng) { showMessage("Please select or detect a location first", "error"); return; }
+      try {
+        const res    = await fetch(`${API_BASE}/api/profile/location`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ location, lat, lng }),
+        });
+        const result = await res.json();
+        if (result.success) showMessage("Location updated — simulators restarting", "success");
+        else showMessage(result.message, "error");
+      } catch { showMessage("Error saving location", "error"); }
+    }
 
-        try {
-          const response = await fetch(`${API_BASE}/api/setup/inverter`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              name,
-              type,
-              capacity: capacity || null,
-              location,
-              lat,
-              lng,
-              profile,
-            }),
-          });
-          const result = await response.json();
-          if (result.success) {
-            inverterIds[type] = result.data.id;
-            // Update API key display if returned
-            if (result.apiKey) {
-              localStorage.setItem("apiKey", result.apiKey);
-              document.getElementById("api-key-display").textContent =
-                result.apiKey;
-              document.getElementById("api-key-section").style.display =
-                "block";
-            }
-            localStorage.setItem(`${type}Profile`, profile);
-            showInverterAdded(type, name, capacity, profile);
-            showMessage(
-              `${type.charAt(0).toUpperCase() + type.slice(1)} inverter added!`,
-              "success",
-            );
-          } else {
-            showMessage(result.message, "error");
-          }
-        } catch (error) {
-          showMessage("Error adding inverter", "error");
-        }
-      }
-
-      async function removeInverter(type) {
-        const inverterId = inverterIds[type];
-        if (!inverterId) return;
-
-        if (
-          !confirm(
-            `Remove your ${type} inverter? This will also delete all its readings.`,
-          )
-        )
-          return;
-
-        try {
-          const response = await fetch(
-            `${API_BASE}/api/setup/inverter/${inverterId}`,
-            {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${token}` },
-            },
-          );
-          const result = await response.json();
-          if (result.success) {
-            inverterIds[type] = null;
+    // ── Delete data / account ─────────────────────────────────────────────────
+    async function confirmDeleteData() {
+      if (!confirm("Delete all your energy readings and inverters?\n\nYour account will be kept but all readings, inverters and battery data will be permanently deleted.")) return;
+      try {
+        const res    = await fetch(`${API_BASE}/api/account/data`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+        const result = await res.json();
+        if (result.success) {
+          inverterIds = { solar: null, wind: null };
+          localStorage.removeItem("apiKey");
+          ["solar", "wind"].forEach(type => {
             localStorage.removeItem(`${type}Profile`);
             document.getElementById(`${type}-form`).classList.remove("hidden");
             document.getElementById(`${type}-added`).classList.add("hidden");
-            document.getElementById(`${type}-card`).classList.remove("added");
-            document.getElementById(`${type}-name`).value = "";
-            document.getElementById(`${type}-capacity`).value = "";
-            document.getElementById(`${type}-profile`).value = "";
-            document.getElementById(`${type}-profile-info`).style.display =
-              "none";
+            document.getElementById(`${type}-card`).classList.remove("inverter-card-added");
             document.getElementById(`${type}-badge`).textContent = "Not Added";
-            document.getElementById(`${type}-badge`).className =
-              "badge optional";
-            showMessage(
-              `${type.charAt(0).toUpperCase() + type.slice(1)} inverter removed`,
-              "success",
-            );
-          } else {
-            showMessage(result.message || "Error removing inverter", "error");
-          }
-        } catch (error) {
-          showMessage("Error removing inverter", "error");
-        }
-      }
-
-      function showInverterAdded(type, name, capacity, profile) {
-        document.getElementById(`${type}-form`).classList.add("hidden");
-        document.getElementById(`${type}-added`).classList.remove("hidden");
-        document.getElementById(`${type}-card`).classList.add("added");
-        const profileLabel = profile ? ` · ${profile}` : "";
-        document.getElementById(`${type}-added-text`).textContent =
-          `✅ ${name}${capacity ? ` • ${capacity} kW` : ""}${profileLabel}`;
-        document.getElementById(`${type}-badge`).textContent = "Added";
-        document.getElementById(`${type}-badge`).className = "badge";
-      }
-
-      function getLocation() {
-        const btn = event.target;
-        const status = document.getElementById("location-status");
-        if (!navigator.geolocation) {
-          status.textContent = "Geolocation not supported.";
-          status.style.color = "#dc3545";
-          return;
-        }
-        btn.textContent = "⏳";
-        btn.disabled = true;
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const lat = position.coords.latitude.toFixed(6);
-            const lng = position.coords.longitude.toFixed(6);
-            try {
-              const res = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-              );
-              const data = await res.json();
-              const city =
-                data.address.city ||
-                data.address.town ||
-                data.address.suburb ||
-                data.address.village;
-              const suburb = data.address.suburb || "";
-              const locationName = suburb ? `${suburb}, ${city}` : city;
-              const input = document.getElementById("site-location");
-              input.value = locationName;
-              input.dataset.lat = lat;
-              input.dataset.lng = lng;
-              status.textContent = `✅ ${locationName} (${lat}, ${lng})`;
-              status.style.color = "#2e7d32";
-            } catch {
-              const input = document.getElementById("site-location");
-              input.value = `${lat}, ${lng}`;
-              input.dataset.lat = lat;
-              input.dataset.lng = lng;
-              status.textContent = `✅ ${lat}, ${lng}`;
-              status.style.color = "#2e7d32";
-            }
-            btn.textContent = "📍 Detect";
-            btn.disabled = false;
-          },
-          () => {
-            btn.textContent = "📍 Detect";
-            btn.disabled = false;
-            status.textContent = "❌ Could not get location.";
-            status.style.color = "#dc3545";
-          },
-        );
-      }
-
-      function applyLocationPreset() {
-        const val = document.getElementById("location-preset").value;
-        if (!val) return;
-        const parts = val.split("|");
-        const lat = parts[0];
-        const lng = parts[1];
-        const name = parts[2];
-        const input = document.getElementById("site-location");
-        input.value = name;
-        input.dataset.lat = lat;
-        input.dataset.lng = lng;
-        document.getElementById("location-status").textContent =
-          `✅ ${name} selected — click Save Location to apply`;
-        document.getElementById("location-status").style.color = "#1565c0";
-      }
-
-      async function saveLocation() {
-        const input = document.getElementById("site-location");
-        const location = input.value.trim();
-        const lat = input.dataset.lat;
-        const lng = input.dataset.lng;
-
-        if (!lat || !lng) {
-          showMessage("Please select or detect a location first", "error");
-          return;
-        }
-
-        try {
-          const res = await fetch(`${API_BASE}/api/profile/location`, {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({ location, lat, lng }),
+            document.getElementById(`${type}-badge`).className = "text-xs font-bold px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label";
           });
-          const result = await res.json();
-          if (result.success) {
-            showMessage(
-              "Location updated — simulators restarting with new weather",
-              "success",
-            );
-          } else {
-            showMessage(result.message, "error");
-          }
-        } catch (err) {
-          showMessage("Error saving location", "error");
-        }
-      }
+          document.getElementById("api-key-section").classList.add("hidden");
+          showMessage("All data deleted successfully", "success");
+        } else { showMessage(result.message, "error"); }
+      } catch { showMessage("Error deleting data", "error"); }
+    }
 
-      async function confirmDeleteData() {
-        if (
-          !confirm(
-            "Delete all your energy readings and inverters?\n\nYour account will be kept but all readings, inverters and battery data will be permanently deleted.",
-          )
-        )
-          return;
+    async function confirmDeleteAccount() {
+      if (!confirm("Delete your entire account?\n\nThis permanently deletes your profile, inverters, and all energy readings. This cannot be undone!")) return;
+      try {
+        const res    = await fetch(`${API_BASE}/api/account`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+        const result = await res.json();
+        if (result.success) {
+          sessionStorage.clear();
+          localStorage.clear();
+          window.location.href = "login.html";
+        } else { showMessage(result.message, "error"); }
+      } catch { showMessage("Error deleting account", "error"); }
+    }
 
+    // ── Achievements ──────────────────────────────────────────────────────────
+    const ACHIEVEMENT_DEFS = [
+      { id: "first_inverter",   icon: "developer_board",    title: "Power Player",      desc: "Set up your first inverter",               color: "#9ff2e1",  check: d => d.hasInverter },
+      { id: "solar_added",      icon: "wb_sunny",           title: "Sun Chaser",        desc: "Added a solar inverter",                   color: "#ffe082",  check: d => d.hasSolar },
+      { id: "wind_added",       icon: "air",                title: "Wind Rider",        desc: "Added a wind inverter",                    color: "#b3e5fc",  check: d => d.hasWind },
+      { id: "both_inverters",   icon: "bolt",               title: "Hybrid Pioneer",    desc: "Running both solar and wind",              color: "#bdf447",  check: d => d.hasSolar && d.hasWind },
+      { id: "location_set",     icon: "location_on",        title: "Grounded",          desc: "Set your generation site location",        color: "#d6e3ff",  check: d => d.hasLocation },
+      { id: "first_sale",       icon: "sell",               title: "First Sale",        desc: "Sold energy to a neighbour",               color: "#9ff2e1",  check: d => d.salesCount > 0 },
+      { id: "first_purchase",   icon: "shopping_cart",      title: "Smart Buyer",       desc: "Purchased community energy",               color: "#d6e3ff",  check: d => d.purchasesCount > 0 },
+      { id: "first_donation",   icon: "volunteer_activism", title: "Good Samaritan",    desc: "Donated energy to someone in need",        color: "#bdf447",  check: d => d.donationsCount > 0 },
+      { id: "five_sales",       icon: "trending_up",        title: "Market Maker",      desc: "Completed 5 energy sales",                 color: "#ffe082",  check: d => d.salesCount >= 5 },
+      { id: "community_active", icon: "groups",             title: "Community Pillar",  desc: "Participated in 3 or more community trades", color: "#e1bee7", check: d => (d.salesCount + d.purchasesCount + d.donationsCount) >= 3 },
+      { id: "api_key",          icon: "key",                title: "Plugged In",        desc: "Generated your API key",                   color: "#ffd6d6",  check: d => d.hasApiKey },
+      { id: "read_10kwh",       icon: "battery_charging_full", title: "Energy Builder", desc: "Generated over 10 kWh total",             color: "#9ff2e1",  check: d => d.totalKwh >= 10 },
+    ];
+
+    async function loadAchievements() {
+      const grid = document.getElementById("achievements-grid");
+      try {
+        // Gather data from existing endpoints
+        const [statusRes, notifRes] = await Promise.all([
+          fetch(`${API_BASE}/api/setup/status`, { headers: { Authorization: `Bearer ${token}` } }),
+          fetch(`${API_BASE}/api/notifications`, { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+        const status = await statusRes.json();
+        const notifs = await notifRes.json();
+
+        const inverters = status.inverters || [];
+        const notes     = notifs.data || [];
+
+        const data = {
+          hasInverter:    inverters.length > 0,
+          hasSolar:       inverters.some(i => i.type === "solar"),
+          hasWind:        inverters.some(i => i.type === "wind"),
+          hasLocation:    !!status.location,
+          hasApiKey:      !!localStorage.getItem("apiKey"),
+          salesCount:     notes.filter(n => n.type === "sale_completed").length,
+          purchasesCount: notes.filter(n => n.type === "purchase_completed").length,
+          donationsCount: notes.filter(n => n.type === "donation_sent").length,
+          totalKwh:       0,
+        };
+
+        // Fetch total kWh from co2 endpoint
         try {
-          const response = await fetch(`${API_BASE}/api/account/data`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const result = await response.json();
-          if (result.success) {
-            inverterIds = { solar: null, wind: null };
-            localStorage.removeItem("apiKey");
-            localStorage.removeItem("solarProfile");
-            localStorage.removeItem("windProfile");
-            // Reset inverter UI
-            ["solar", "wind"].forEach((type) => {
-              document
-                .getElementById(`${type}-form`)
-                .classList.remove("hidden");
-              document.getElementById(`${type}-added`).classList.add("hidden");
-              document.getElementById(`${type}-card`).classList.remove("added");
-              document.getElementById(`${type}-badge`).textContent =
-                "Not Added";
-              document.getElementById(`${type}-badge`).className =
-                "badge optional";
-            });
-            document.getElementById("api-key-section").style.display = "none";
-            showMessage("All data deleted successfully", "success");
-          } else {
-            showMessage(result.message, "error");
-          }
-        } catch (error) {
-          showMessage("Error deleting data", "error");
-        }
+          const co2Res  = await fetch(`${API_BASE}/api/co2`, { headers: { Authorization: `Bearer ${token}` } });
+          const co2Data = await co2Res.json();
+          if (co2Data.success) data.totalKwh = co2Data.data.total_kwh || 0;
+        } catch {}
+
+        const unlocked = ACHIEVEMENT_DEFS.filter(a => a.check(data)).length;
+        grid.innerHTML = `
+          <div class="col-span-2 flex items-center justify-between mb-2">
+            <p class="text-sm font-semibold font-label text-on-surface-variant">${unlocked} / ${ACHIEVEMENT_DEFS.length} unlocked</p>
+            <div class="h-2 flex-1 mx-4 bg-surface-container rounded-full overflow-hidden">
+              <div class="h-full bg-primary rounded-full transition-all duration-700" style="width:${Math.round(unlocked/ACHIEVEMENT_DEFS.length*100)}%"></div>
+            </div>
+          </div>
+          ${ACHIEVEMENT_DEFS.map(a => {
+            const earned = a.check(data);
+            return `
+              <div class="bg-surface-container-lowest rounded-2xl p-5 flex items-start gap-4 border-2 ${earned ? "border-outline-variant/20" : "border-transparent opacity-50"}">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0" style="background:${earned ? a.color : "#e0e3e2"}">
+                  <span class="material-symbols-outlined" style="font-size:1.25rem;color:${earned ? "#005147" : "#9e9e9e"};font-variation-settings:'FILL' 1;">${a.icon}</span>
+                </div>
+                <div>
+                  <p class="text-sm font-bold font-headline text-on-surface">${a.title}</p>
+                  <p class="text-xs text-on-surface-variant font-body mt-0.5">${a.desc}</p>
+                  ${earned ? `<span class="inline-block mt-1.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary-fixed text-primary font-label uppercase tracking-widest">Unlocked</span>` : ""}
+                </div>
+              </div>`;
+          }).join("")}`;
+      } catch (err) {
+        console.error(err);
+        grid.innerHTML = `<p class="text-on-surface-variant text-sm col-span-2 text-center py-8">Could not load achievements.</p>`;
       }
+    }
 
-      async function confirmDeleteAccount() {
-        if (
-          !confirm(
-            "Delete your entire account?\n\nThis permanently deletes your profile, inverters, and all energy readings. This cannot be undone!",
-          )
-        )
-          return;
+    // Load nav wallet balance
+    fetch(`${API_BASE}/api/wallet`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json()).then(d => {
+        if (d.success) document.getElementById("nav-balance").textContent = `R${parseFloat(d.data.balance).toFixed(2)}`;
+      }).catch(() => {});
 
-        try {
-          const response = await fetch(`${API_BASE}/api/account`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const result = await response.json();
-          if (result.success) {
-            localStorage.clear();
-            window.location.href = "../frontend/login.html";
-          } else {
-            showMessage(result.message, "error");
-          }
-        } catch (error) {
-          showMessage("Error deleting account", "error");
-        }
-      }
-
-      function showMessage(msg, type) {
-        const el = document.getElementById("message");
-        el.textContent = msg;
-        el.className = `message ${type}`;
-        setTimeout(() => {
-          el.className = "message";
-        }, 3000);
-      }
-
-      loadProfile();
-      loadInverters();
-    </script>
-  </body>
+    loadProfile();
+    loadInverters();
+  </script>
+</body>
 </html>

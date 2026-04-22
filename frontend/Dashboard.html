@@ -176,27 +176,27 @@
         <button id="theme-toggle" class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300" aria-label="Toggle theme">
           <span id="theme-icon" class="material-symbols-outlined text-primary">dark_mode</span>
         </button>
-        <button
-          class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300"
-        >
-          <span class="material-symbols-outlined text-primary"
-            >notifications</span
-          >
-        </button>
-        <button
-          class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300"
-        >
-          <span class="material-symbols-outlined text-primary">settings</span>
-        </button>
+        <a href="Notifications.html">
+          <button class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300">
+            <span class="material-symbols-outlined text-primary">notifications</span>
+          </button>
+        </a>
+        <a href="Wallet.html">
+          <button class="flex items-center gap-1.5 px-3 py-1.5 bg-primary-fixed hover:bg-primary-fixed/70 rounded-full transition-colors">
+            <span class="material-symbols-outlined text-primary" style="font-size:1.1rem;font-variation-settings:'FILL' 1;">account_balance_wallet</span>
+            <span id="nav-balance" class="text-xs font-bold text-primary font-label">R—</span>
+          </button>
+        </a>
         <a href="../frontend/profile.html">
-          <div
-            class="h-8 w-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-          >
-            <span class="material-symbols-outlined text-primary text-lg"
-              >person</span
-            >
+          <div id="nav-avatar" class="h-8 w-8 rounded-full bg-primary-fixed flex items-center justify-center overflow-hidden cursor-pointer hover:opacity-80 transition-opacity">
+            <span class="material-symbols-outlined text-primary text-lg">person</span>
           </div>
         </a>
+        <script>(function(){
+          var c=localStorage.getItem('avatarColor');if(c)document.getElementById('nav-avatar').style.background=c;
+          var t=sessionStorage.getItem('authToken')||localStorage.getItem('authToken');
+          if(t)fetch('http://localhost:3000/api/wallet',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(d=>{if(d.success)document.getElementById('nav-balance').textContent='R'+parseFloat(d.data.balance).toFixed(2);}).catch(()=>{});
+        })();</script>
       </div>
     </nav>
 
@@ -212,7 +212,7 @@
           Community Grid
         </p>
       </div>
-      <nav class="flex-1 flex flex-col gap-y-1 overflow-y-auto min-h-0">
+      <nav class="flex-1 flex flex-col gap-y-1 overflow-y-auto overflow-x-hidden min-h-0">
         <a
           class="flex items-center gap-3 px-4 py-3 bg-white text-primary rounded-xl shadow-sm font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
           href="Dashboard.html"
@@ -233,13 +233,6 @@
         >
           <span class="material-symbols-outlined">notifications</span
           ><span>Notifications</span>
-        </a>
-        <a
-          class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
-          href="Energy_request.html"
-        >
-          <span class="material-symbols-outlined">electric_bolt</span
-          ><span>Energy Requests</span>
         </a>
         <a
           class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1"
