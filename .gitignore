@@ -7,7 +7,7 @@ mosquitto/data/
 # Logs
 <<<<<<< Updated upstream
 *.log
-.claude
+
 =======
 *.log
 >>>>>>> Stashed changes
