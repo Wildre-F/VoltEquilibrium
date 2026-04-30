@@ -11,6 +11,8 @@ const nodemailer = require("nodemailer");
 const fetch      = require("node-fetch");
 const mqtt       = require("mqtt");
 const rateLimit  = require("express-rate-limit");
+const swaggerUi  = require("swagger-ui-express");
+const swaggerDoc = require("./swagger.json");
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Internal Modules
@@ -41,6 +43,31 @@ const JWT_SECRET = process.env.JWT_SECRET;
 //                    saves roughly R2.50 you would otherwise have paid Eskom.
 const CO2_KG_PER_KWH = 0.928;
 const RANDS_PER_KWH  = 2.5;
+
+// PayFast sandbox config
+const PF_MERCHANT_ID  = process.env.PAYFAST_MERCHANT_ID  || "10000100";
+const PF_MERCHANT_KEY = process.env.PAYFAST_MERCHANT_KEY || "46f0cd694581a";
+const PF_PASSPHRASE   = process.env.PAYFAST_PASSPHRASE   || "jt7NOE43FZPn";
+const PF_SANDBOX      = process.env.PAYFAST_SANDBOX === "true";
+const PF_HOST         = PF_SANDBOX ? "https://sandbox.payfast.co.za/eng/process" : "https://www.payfast.co.za/eng/process";
+const PF_RETURN_URL   = process.env.PAYFAST_RETURN_URL  || "http://localhost:5500/frontend/Wallet.html?payment=success";
+const PF_CANCEL_URL   = process.env.PAYFAST_CANCEL_URL  || "http://localhost:5500/frontend/Wallet.html?payment=cancelled";
+const PF_NOTIFY_URL   = process.env.PAYFAST_NOTIFY_URL  || "http://localhost:3000/api/wallet/payfast/notify";
+
+function generatePayfastSignature(data) {
+  const pfOutput = [];
+  for (const [key, val] of Object.entries(data)) {
+    if (val !== undefined && val !== "") {
+      pfOutput.push(`${key}=${String(val).trim()}`);
+    }
+  }
+  let pfParamString = pfOutput.join("&");
+  if (PF_PASSPHRASE) {
+    pfParamString += `&passphrase=${PF_PASSPHRASE.trim()}`;
+  }
+  console.log("[PayFast] Signature string:", pfParamString);
+  return crypto.createHash("md5").update(pfParamString).digest("hex");
+}
 
 // ── Create notifications table if it doesn't exist yet ───────────────────────
 pool.query(`
@@ -87,6 +114,7 @@ const weatherCache = {};
 // ═══════════════════════════════════════════════════════════════════════════
 app.use(cors({ origin: process.env.FRONTEND_URL }));
 app.use(express.json());
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc, { explorer: true }));
 app.use(passport.initialize());
 
 // Prevent browsers from caching protected API responses
@@ -505,7 +533,7 @@ app.post("/api/reset-password", async (req, res) => {
 app.get("/api/profile", authenticateToken, async (req, res, next) => {
   try {
     const result = await pool.query(
-      "SELECT id, username, email, created_at FROM users WHERE id = $1",
+      "SELECT id, username, email, avatar_color, created_at FROM users WHERE id = $1",
       [req.user.id],
     );
 
@@ -554,6 +582,20 @@ app.put("/api/profile/update", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Update profile error:", error.message);
     return res.status(500).json({ success: false, message: "Error updating profile" });
+  }
+});
+
+app.put("/api/profile/avatar-color", authenticateToken, async (req, res) => {
+  try {
+    const { color } = req.body;
+    if (!color || !/^#[0-9a-fA-F]{6}$/.test(color)) {
+      return res.status(400).json({ success: false, message: "Invalid color format" });
+    }
+    await pool.query("UPDATE users SET avatar_color = $1 WHERE id = $2", [color, req.user.id]);
+    return res.json({ success: true });
+  } catch (error) {
+    console.error("Avatar color error:", error.message);
+    return res.status(500).json({ success: false, message: "Error updating avatar color" });
   }
 });
 
@@ -670,21 +712,134 @@ app.delete("/api/account", authenticateToken, async (req, res) => {
 
 app.get("/api/setup/status", authenticateToken, async (req, res) => {
   try {
-    const result     = await pool.query("SELECT * FROM inverters WHERE user_id = $1", [req.user.id]);
-    const userResult = await pool.query("SELECT role, location FROM users WHERE id = $1", [req.user.id]);
+    const result        = await pool.query("SELECT * FROM inverters WHERE user_id = $1", [req.user.id]);
+    const userResult    = await pool.query("SELECT role, location FROM users WHERE id = $1", [req.user.id]);
+    const batteryResult = await pool.query("SELECT id, capacity_kwh FROM batteries WHERE user_id = $1", [req.user.id]);
 
     return res.status(200).json({
-      success:   true,
-      hasSetup:  result.rows.length > 0,
-      inverters: result.rows,
-      role:      userResult.rows[0].role,
-      location:  userResult.rows[0].location,
+      success:    true,
+      hasSetup:   result.rows.length > 0 || batteryResult.rows.length > 0,
+      hasBattery: batteryResult.rows.length > 0,
+      inverters:  result.rows,
+      battery:    batteryResult.rows[0] || null,
+      role:       userResult.rows[0].role,
+      location:   userResult.rows[0].location,
     });
   } catch (error) {
     console.error("Setup status error:", error.message);
     return res.status(500).json({ success: false, message: "Error checking setup status" });
   }
 });
+
+// POST /api/setup/battery-only — setup for consumers with battery but no generation
+app.post("/api/setup/battery-only", authenticateToken, async (req, res) => {
+  try {
+    const { capacity_kwh, location, lat, lng } = req.body;
+    const cap = parseFloat(capacity_kwh) || 10;
+
+    // Check if battery already exists
+    const existing = await pool.query("SELECT id FROM batteries WHERE user_id = $1", [req.user.id]);
+    if (existing.rows.length > 0) {
+      return res.status(409).json({ success: false, message: "Battery already set up" });
+    }
+
+    // Create battery
+    const battResult = await pool.query(
+      "INSERT INTO batteries (user_id, name, capacity_kwh) VALUES ($1, $2, $3) RETURNING *",
+      [req.user.id, "Home Battery", cap],
+    );
+
+    // Update user location (keep role as consumer)
+    await pool.query(
+      "UPDATE users SET location = $1, lat = $2, lng = $3 WHERE id = $4",
+      [location || null, lat, lng, req.user.id],
+    );
+
+    // Seed initial battery reading at 50% SOC
+    const battId  = battResult.rows[0].id;
+    const voltage = 48 + (50 / 100) * 6; // 51V at 50%
+    await pool.query(
+      `INSERT INTO battery_readings (battery_id, state_of_charge, voltage, current, temperature, power_w, recorded_at)
+       VALUES ($1, 50, $2, 0, 25, 0, NOW())`,
+      [battId, voltage.toFixed(2)],
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: "Battery setup complete",
+      data: battResult.rows[0],
+    });
+  } catch (error) {
+    console.error("Battery-only setup error:", error.message);
+    return res.status(500).json({ success: false, message: "Error setting up battery" });
+  }
+});
+
+// ── Historic data seed for demo ──────────────────────────────────────────────
+let seedDataCache = null;
+async function seedHistoricData(inverterId, userId) {
+  try {
+    if (!seedDataCache) {
+      const fs   = require("fs");
+      const file = require("path").join(__dirname, "seed-solar-large.json");
+      if (!fs.existsSync(file)) { console.log("[seed] No seed file found"); return; }
+      seedDataCache = JSON.parse(fs.readFileSync(file, "utf8"));
+      console.log(`[seed] Loaded ${seedDataCache.rawReadings.length} readings`);
+    }
+
+    const battResult = await pool.query(
+      "SELECT id FROM batteries WHERE user_id = $1 LIMIT 1", [userId]
+    );
+    const batteryId = battResult.rows[0]?.id;
+
+    // Insert raw readings in batches of 500
+    const raw = seedDataCache.rawReadings;
+    const batchSize = 500;
+    for (let i = 0; i < raw.length; i += batchSize) {
+      const batch = raw.slice(i, i + batchSize);
+      const values = [];
+      const params = [];
+      let p = 1;
+      for (const r of batch) {
+        values.push(`($${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++})`);
+        params.push(inverterId, r.power_w, r.dc_voltage, r.dc_current, r.ac_voltage,
+          r.ac_current, r.frequency, r.temperature, r.energy_kwh, r.load_watts,
+          r.grid_watts, r.cloud_cover, r.wind_speed || 0, r.recorded_at, 0);
+      }
+      await pool.query(
+        `INSERT INTO raw_readings (inverter_id, power_w, dc_voltage, dc_current, ac_voltage,
+          ac_current, frequency, temperature, energy_kwh, load_watts,
+          grid_watts, cloud_cover, wind_speed, recorded_at, load_kwh)
+         VALUES ${values.join(",")}`,
+        params
+      );
+    }
+
+    // Insert battery readings
+    if (batteryId) {
+      const bat = seedDataCache.batteryReadings;
+      for (let i = 0; i < bat.length; i += batchSize) {
+        const batch = bat.slice(i, i + batchSize);
+        const values = [];
+        const params = [];
+        let p = 1;
+        for (const r of batch) {
+          values.push(`($${p++},$${p++},$${p++},$${p++},$${p++},$${p++},$${p++})`);
+          params.push(batteryId, r.state_of_charge, r.voltage, r.current, r.temperature, r.power_w, r.recorded_at);
+        }
+        await pool.query(
+          `INSERT INTO battery_readings (battery_id, state_of_charge, voltage, current, temperature, power_w, recorded_at)
+           VALUES ${values.join(",")}`,
+          params
+        );
+      }
+    }
+
+    console.log(`[seed] Inserted ${raw.length} raw + ${batteryId ? raw.length : 0} battery readings for inverter ${inverterId}`);
+  } catch (err) {
+    console.error("[seed] Error seeding historic data:", err.message);
+  }
+}
 
 app.post("/api/setup/inverter", authenticateToken, async (req, res) => {
   try {
@@ -754,6 +909,11 @@ app.post("/api/setup/inverter", authenticateToken, async (req, res) => {
         token:    simToken,
         deviceId: result.rows[0].id,
       });
+    }
+
+    // Seed historic data for solar-large demo
+    if (profile === "solar-large") {
+      seedHistoricData(result.rows[0].id, req.user.id);
     }
 
     return res.status(201).json({
@@ -974,6 +1134,8 @@ app.get("/api/readings/latest", authenticateToken, async (req, res) => {
         rr.wind_speed,
         rr.rotor_rpm,
         rr.pitch_angle,
+        rr.load_watts,
+        rr.grid_watts,
         rr.cloud_cover,
         br.state_of_charge,
         br.voltage       AS battery_voltage,
@@ -1001,14 +1163,38 @@ app.get("/api/readings/latest", authenticateToken, async (req, res) => {
       [req.user.id],
     );
 
-    const solar      = result.rows.filter((r) => r.type === "solar");
-    const wind       = result.rows.filter((r) => r.type === "wind");
-    const totalPower = result.rows.reduce((sum, r) => sum + (parseFloat(r.power_w) || 0), 0);
+    let rows = result.rows;
+
+    // Battery-only user: no inverters, so query battery directly
+    if (rows.length === 0) {
+      const battOnly = await pool.query(
+        `SELECT
+           NULL AS inverter_id, 'battery' AS type, NULL AS profile,
+           0 AS power_w, 0 AS dc_voltage, 0 AS dc_current, 0 AS ac_voltage,
+           0 AS ac_current, 0 AS frequency, 0 AS inverter_temp, 0 AS energy_kwh,
+           0 AS wind_speed, 0 AS rotor_rpm, 0 AS pitch_angle, 0 AS load_watts,
+           0 AS grid_watts, 0 AS cloud_cover,
+           br.state_of_charge, br.voltage AS battery_voltage,
+           br.current AS battery_current, br.temperature AS battery_temp,
+           br.power_w AS battery_power, br.recorded_at
+         FROM batteries b
+         LEFT JOIN LATERAL (
+           SELECT * FROM battery_readings WHERE battery_id = b.id ORDER BY recorded_at DESC LIMIT 1
+         ) br ON true
+         WHERE b.user_id = $1`,
+        [req.user.id],
+      );
+      rows = battOnly.rows;
+    }
+
+    const solar      = rows.filter((r) => r.type === "solar");
+    const wind       = rows.filter((r) => r.type === "wind");
+    const totalPower = rows.reduce((sum, r) => sum + (parseFloat(r.power_w) || 0), 0);
 
     return res.status(200).json({
       success: true,
       data: {
-        all:          result.rows,
+        all:          rows,
         solar,
         wind,
         totalPower:   Math.round(totalPower),
@@ -1666,6 +1852,69 @@ app.get("/api/inverter/analytics", authenticateToken, async (req, res) => {
   }
 });
 
+// GET /api/inverter/efficiency?source=solar|wind&days=30
+app.get("/api/inverter/efficiency", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const source = req.query.source || "solar";
+    const days   = Math.min(parseInt(req.query.days) || 30, 90);
+
+    const invResult = await pool.query(
+      "SELECT id, type, capacity, created_at FROM inverters WHERE user_id = $1 AND type = $2",
+      [userId, source],
+    );
+    if (invResult.rows.length === 0) {
+      return res.json({ success: true, data: { inverters: [], totalCapacity: 0, daily: [] } });
+    }
+
+    const inverters   = invResult.rows;
+    const inverterIds = inverters.map((r) => r.id);
+    const totalCapacity = inverters.reduce((sum, r) => sum + (parseFloat(r.capacity) || 0), 0);
+
+    const daily = await pool.query(
+      `SELECT
+         recorded_at::date        AS date,
+         AVG(power_w)             AS avg_power_w,
+         MAX(power_w)             AS peak_power_w,
+         MAX(energy_kwh)          AS daily_kwh,
+         AVG(temperature)         AS avg_temp,
+         AVG(cloud_cover)         AS avg_cloud_cover,
+         AVG(wind_speed)          AS avg_wind_speed
+       FROM raw_readings
+       WHERE inverter_id = ANY($1)
+         AND recorded_at >= CURRENT_DATE - ($2 || ' days')::interval
+       GROUP BY recorded_at::date
+       ORDER BY date ASC`,
+      [inverterIds, String(days)],
+    );
+
+    return res.json({
+      success: true,
+      data: {
+        inverters: inverters.map((r) => ({
+          id: r.id,
+          type: r.type,
+          capacity: parseFloat(r.capacity) || 0,
+          createdAt: r.created_at,
+        })),
+        totalCapacity,
+        daily: daily.rows.map((r) => ({
+          date:          r.date,
+          avgPowerW:     parseFloat(parseFloat(r.avg_power_w     || 0).toFixed(1)),
+          peakPowerW:    parseFloat(parseFloat(r.peak_power_w    || 0).toFixed(1)),
+          dailyKwh:      parseFloat(parseFloat(r.daily_kwh       || 0).toFixed(3)),
+          avgTemp:       parseFloat(parseFloat(r.avg_temp        || 0).toFixed(1)),
+          avgCloudCover: parseFloat(parseFloat(r.avg_cloud_cover || 0).toFixed(1)),
+          avgWindSpeed:  parseFloat(parseFloat(r.avg_wind_speed  || 0).toFixed(1)),
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Inverter efficiency error:", error.message);
+    return res.status(500).json({ success: false, message: "Error fetching efficiency data" });
+  }
+});
+
 // GET /api/inverter/analytics/export — CSV download of same data
 app.get("/api/inverter/analytics/export", authenticateToken, async (req, res) => {
   try {
@@ -1910,7 +2159,7 @@ async function getUserRequestableKwh(userId) {
 
 async function getOrCreateWallet(userId) {
   await pool.query(
-    `INSERT INTO wallets (user_id, balance) VALUES ($1, 1000.00) ON CONFLICT (user_id) DO NOTHING`,
+    `INSERT INTO wallets (user_id, balance) VALUES ($1, 0.00) ON CONFLICT (user_id) DO NOTHING`,
     [userId]
   );
   const result = await pool.query(`SELECT * FROM wallets WHERE user_id = $1`, [userId]);
@@ -1969,23 +2218,108 @@ app.get("/api/wallet/transactions", authenticateToken, async (req, res) => {
   }
 });
 
-app.post("/api/wallet/topup", authenticateToken, async (req, res) => {
+// POST /api/wallet/payfast/initiate — create pending payment + return form fields for redirect
+app.post("/api/wallet/payfast/initiate", authenticateToken, async (req, res) => {
   try {
     const amount = parseFloat(req.body.amount);
-    if (!amount || amount <= 0 || amount > 10000) {
-      return res.status(400).json({ success: false, message: "Amount must be between R0.01 and R10,000" });
+    if (!amount || amount < 1 || amount > 10000) {
+      return res.status(400).json({ success: false, message: "Amount must be between R1 and R10,000" });
     }
-    const wallet = await getOrCreateWallet(req.user.id);
+    const mPaymentId = `VE-${req.user.id}-${Date.now()}`;
+
+    await pool.query(
+      `INSERT INTO payfast_payments (user_id, m_payment_id, amount) VALUES ($1, $2, $3)`,
+      [req.user.id, mPaymentId, amount.toFixed(2)],
+    );
+
+    // Form fields for PayFast — no signature needed for sandbox
+    const formFields = {
+      merchant_id:  PF_MERCHANT_ID,
+      merchant_key: PF_MERCHANT_KEY,
+      return_url:   PF_RETURN_URL,
+      cancel_url:   PF_CANCEL_URL,
+      m_payment_id: mPaymentId,
+      amount:       amount.toFixed(2),
+      item_name:    "VoltEquilibrium Wallet Top-Up",
+    };
+
+    return res.json({
+      success: true,
+      data: { payfast_url: PF_HOST, form_fields: formFields },
+    });
+  } catch (err) {
+    console.error("PayFast initiate error:", err.message);
+    return res.status(500).json({ success: false, message: "Error initiating payment" });
+  }
+});
+
+// POST /api/wallet/payfast/notify — ITN callback from PayFast (server-to-server)
+app.post("/api/wallet/payfast/notify", express.urlencoded({ extended: false }), async (req, res) => {
+  try {
+    const { m_payment_id, pf_payment_id, payment_status, amount_gross } = req.body;
+    if (payment_status !== "COMPLETE") return res.status(200).send("OK");
+
+    const payment = await pool.query(
+      `SELECT * FROM payfast_payments WHERE m_payment_id = $1 AND status = 'pending'`,
+      [m_payment_id],
+    );
+    if (payment.rows.length === 0) return res.status(200).send("OK");
+
+    const row    = payment.rows[0];
+    const amount = parseFloat(amount_gross || row.amount);
+
+    await pool.query(`UPDATE payfast_payments SET status = 'complete', pf_payment_id = $1 WHERE id = $2`, [pf_payment_id, row.id]);
+
+    const wallet = await getOrCreateWallet(row.user_id);
     const newBal = parseFloat(wallet.balance) + amount;
-    await pool.query(`UPDATE wallets SET balance = $1 WHERE user_id = $2`, [newBal.toFixed(2), req.user.id]);
+    await pool.query(`UPDATE wallets SET balance = $1 WHERE user_id = $2`, [newBal.toFixed(2), row.user_id]);
     await pool.query(
       `INSERT INTO wallet_transactions (user_id, type, direction, amount, balance_after, description)
-       VALUES ($1,'top_up','credit',$2,$3,'Funds added')`,
-      [req.user.id, amount.toFixed(2), newBal.toFixed(2)]
+       VALUES ($1,'top_up','credit',$2,$3,$4)`,
+      [row.user_id, amount.toFixed(2), newBal.toFixed(2), `PayFast payment ${m_payment_id}`],
     );
-    return res.status(200).json({ success: true, data: { balance: newBal.toFixed(2) } });
+
+    return res.status(200).send("OK");
   } catch (err) {
-    return res.status(500).json({ success: false, message: "Error adding funds" });
+    console.error("PayFast ITN error:", err.message);
+    return res.status(200).send("OK");
+  }
+});
+
+// GET /api/wallet/payfast/status/:id — check payment status (+ sandbox auto-confirm)
+app.get("/api/wallet/payfast/status/:id", authenticateToken, async (req, res) => {
+  try {
+    const payment = await pool.query(
+      `SELECT * FROM payfast_payments WHERE m_payment_id = $1 AND user_id = $2`,
+      [req.params.id, req.user.id],
+    );
+    if (payment.rows.length === 0) {
+      return res.status(404).json({ success: false, message: "Payment not found" });
+    }
+
+    const row = payment.rows[0];
+
+    // Sandbox auto-confirm: if still pending and sandbox mode, credit the wallet automatically
+    if (row.status === "pending" && PF_SANDBOX) {
+      const amount = parseFloat(row.amount);
+      await pool.query(`UPDATE payfast_payments SET status = 'complete' WHERE id = $1`, [row.id]);
+
+      const wallet = await getOrCreateWallet(row.user_id);
+      const newBal = parseFloat(wallet.balance) + amount;
+      await pool.query(`UPDATE wallets SET balance = $1 WHERE user_id = $2`, [newBal.toFixed(2), row.user_id]);
+      await pool.query(
+        `INSERT INTO wallet_transactions (user_id, type, direction, amount, balance_after, description)
+         VALUES ($1,'top_up','credit',$2,$3,$4)`,
+        [row.user_id, amount.toFixed(2), newBal.toFixed(2), `PayFast payment ${row.m_payment_id}`],
+      );
+
+      return res.json({ success: true, data: { status: "complete", amount: amount.toFixed(2) } });
+    }
+
+    return res.json({ success: true, data: { status: row.status, amount: parseFloat(row.amount).toFixed(2) } });
+  } catch (err) {
+    console.error("PayFast status error:", err.message);
+    return res.status(500).json({ success: false, message: "Error checking payment status" });
   }
 });
 

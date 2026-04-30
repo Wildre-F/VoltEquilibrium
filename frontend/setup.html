@@ -411,6 +411,36 @@
         </div>
       </div>
 
+      <!-- Battery Only Card -->
+      <div class="inverter-card" id="battery-card">
+        <h3>🔋 Battery Only <span class="badge optional">No Generation</span></h3>
+        <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">
+          I don't have solar or wind — I just want a battery to store energy from the community.
+        </p>
+        <div class="form-section" id="battery-form">
+          <div class="field">
+            <label>Battery Capacity</label>
+            <select id="battery-capacity">
+              <option value="5">5 kWh — Small home</option>
+              <option value="10" selected>10 kWh — Standard home</option>
+              <option value="20">20 kWh — Large home</option>
+            </select>
+          </div>
+          <button
+            class="btn btn-primary"
+            onclick="setupBatteryOnly()"
+            style="margin-top: 0.5rem"
+          >
+            Set Up Battery Only
+          </button>
+        </div>
+        <div class="form-section hidden" id="battery-added">
+          <div class="added-info">
+            <span id="battery-added-text">✅ Battery set up</span>
+          </div>
+        </div>
+      </div>
+
       <button
         class="btn-success"
         id="proceed-btn"
@@ -419,12 +449,6 @@
       >
         Proceed to Dashboard
       </button>
-
-      <div class="skip-link">
-        <a href="#" onclick="skipSetup()"
-          >I don't generate power, skip to consumer view →</a
-        >
-      </div>
     </div>
 
     <script>
@@ -445,6 +469,7 @@
       const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
       if (token && !sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
       let addedInverters = { solar: null, wind: null };
+      let batteryOnlySetup = false;
 
       if (!token) window.location.href = "../frontend/login.html";
 
@@ -672,15 +697,39 @@
       }
 
       function updateProceedButton() {
-        const hasAny = addedInverters.solar || addedInverters.wind;
+        const hasAny = addedInverters.solar || addedInverters.wind || batteryOnlySetup;
         document.getElementById("proceed-btn").disabled = !hasAny;
       }
 
-      function proceedToDashboard() {
-        window.location.href = "../frontend/Dashboard.html";
+      async function setupBatteryOnly() {
+        const capacity = document.getElementById("battery-capacity").value;
+        const locationInput = document.getElementById("site-location");
+        const location = locationInput.value.trim();
+        const lat = locationInput.dataset.lat;
+        const lng = locationInput.dataset.lng;
+
+        try {
+          const res = await fetch(`${API_BASE}/api/setup/battery-only`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ capacity_kwh: capacity, location, lat, lng }),
+          });
+          const result = await res.json();
+          if (!result.success) { showMessage(result.message, "error"); return; }
+
+          batteryOnlySetup = true;
+          document.getElementById("battery-form").classList.add("hidden");
+          document.getElementById("battery-added").classList.remove("hidden");
+          document.getElementById("battery-card").classList.add("added");
+          document.getElementById("battery-added-text").textContent = `✅ Battery · ${capacity} kWh`;
+          updateProceedButton();
+          showMessage("Battery set up successfully!", "success");
+        } catch (err) {
+          showMessage("Error setting up battery", "error");
+        }
       }
 
-      function skipSetup() {
+      function proceedToDashboard() {
         window.location.href = "../frontend/Dashboard.html";
       }
 

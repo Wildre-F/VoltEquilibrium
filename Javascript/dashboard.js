@@ -20,9 +20,15 @@ window.addEventListener("pageshow", async () => {
     const res = await fetch("http://localhost:3000/api/setup/status", {
       headers: { Authorization: `Bearer ${token}` },
     });
+    if (res.status === 401 || res.status === 403) {
+      sessionStorage.removeItem("authToken");
+      localStorage.removeItem("authToken");
+      window.location.replace("../frontend/login.html");
+      return;
+    }
     const data = await res.json();
     localStorage.setItem("userRole", data.role);
-    if (!data.hasSetup && data.role !== "consumer") {
+    if (data.success && !data.hasSetup && data.role !== "consumer") {
       window.location.replace("../frontend/setup.html");
       return;
     }
@@ -71,7 +77,7 @@ window.addEventListener("pageshow", async () => {
     show(msg, type = "info") {
       const colors = {
         info: "bg-primary text-white",
-        success: "bg-tertiary text-on-surface",
+        success: "bg-primary text-on-primary",
         warning: "bg-secondary text-white",
         error: "bg-error text-white",
       };
@@ -185,18 +191,78 @@ window.addEventListener("pageshow", async () => {
   function showActivePanel() {
     const hasSolar = !!lastData?.solar?.length;
     const hasWind = !!lastData?.wind?.length;
+    const hasBatteryOnly = !hasSolar && !hasWind && !!lastData?.all?.length;
 
     document.getElementById("panel-solar").classList.add("hidden");
     document.getElementById("panel-wind").classList.add("hidden");
     document.getElementById("panel-nodata").classList.add("hidden");
+    const battPanel = document.getElementById("panel-battery");
+    if (battPanel) battPanel.classList.add("hidden");
 
-    if (activeSource === "solar" && hasSolar) {
+    if (hasBatteryOnly && battPanel) {
+      battPanel.classList.remove("hidden");
+      // Hide source toggle for battery-only users
+      const toggle = document.getElementById("source-toggle");
+      if (toggle) toggle.classList.add("hidden");
+      // Update battery panel dials
+      updateBatteryPanel(lastData.all[0]);
+    } else if (activeSource === "solar" && hasSolar) {
       document.getElementById("panel-solar").classList.remove("hidden");
     } else if (activeSource === "wind" && hasWind) {
       document.getElementById("panel-wind").classList.remove("hidden");
+    } else if (hasBatteryOnly && battPanel) {
+      battPanel.classList.remove("hidden");
     } else {
       document.getElementById("panel-nodata").classList.remove("hidden");
     }
+  }
+
+  function updateBatteryPanel(d) {
+    if (!d) return;
+    const ARC_LEN = 236;
+    const soc   = parseFloat(d.state_of_charge) || 0;
+    const volts = parseFloat(d.battery_voltage) || 0;
+    const curr  = Math.abs(parseFloat(d.battery_current) || 0);
+    const temp  = parseFloat(d.battery_temp) || 0;
+    const power = parseFloat(d.battery_power) || 0;
+
+    // SOC dial
+    const socArc = document.getElementById("batt-soc-arc");
+    if (socArc) socArc.style.strokeDashoffset = ARC_LEN * (1 - soc / 100);
+    setText("batt-soc-text", `${soc.toFixed(0)}%`);
+
+    // Voltage dial (range 44-56V)
+    const voltFrac = Math.min(1, Math.max(0, (volts - 44) / 12));
+    const voltArc = document.getElementById("batt-volt-arc");
+    if (voltArc) voltArc.style.strokeDashoffset = ARC_LEN * (1 - voltFrac);
+    setText("batt-volt-text", `${volts.toFixed(1)} V`);
+
+    // Current dial (range 0-30A)
+    const currFrac = Math.min(1, curr / 30);
+    const currArc = document.getElementById("batt-curr-arc");
+    if (currArc) currArc.style.strokeDashoffset = ARC_LEN * (1 - currFrac);
+    setText("batt-curr-text", `${curr.toFixed(1)} A`);
+
+    // Temp dial (range 0-60C)
+    const tempFrac = Math.min(1, temp / 60);
+    const tempArc = document.getElementById("batt-temp-arc");
+    if (tempArc) tempArc.style.strokeDashoffset = ARC_LEN * (1 - tempFrac);
+    setText("batt-temp-text", `${temp.toFixed(0)}°C`);
+
+    // Info tiles
+    const fmt = (w) => Math.abs(w) >= 1000 ? `${(w/1000).toFixed(1)} kW` : `${Math.round(w)} W`;
+    setText("batt-power", fmt(power));
+    setText("batt-status", power > 10 ? "Charging" : power < -10 ? "Discharging" : "Idle");
+    setText("batt-stored", `${(soc / 100 * 10).toFixed(1)} kWh`); // assumes 10kWh default
+
+    // Update energy flow for battery-only (no solar node)
+    const el = (id) => document.getElementById(id);
+    if (el("flow-solar-node")) el("flow-solar-node").style.display = "none";
+    if (el("flow-line-solar")) el("flow-line-solar").style.display = "none";
+    if (el("flow-solar-w")) el("flow-solar-w").textContent = "";
+    if (el("flow-load-w")) el("flow-load-w").textContent = fmt(Math.abs(parseFloat(d.load_watts) || 0));
+    if (el("flow-batt-soc")) el("flow-batt-soc").textContent = `${soc.toFixed(0)}%`;
+    if (el("flow-batt-w")) el("flow-batt-w").textContent = fmt(Math.abs(power));
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -334,7 +400,41 @@ window.addEventListener("pageshow", async () => {
       pushToChart(windChart, now, pw, activeRange.wind);
     }
 
+    // ── Update energy flow diagram ──────────────────────────────────────────
+    updateEnergyFlow(solar, wind);
+
     showActivePanel();
+  }
+
+  function updateEnergyFlow(solar, wind) {
+    const src = document.querySelector(".src-btn.active")?.dataset.source || "solar";
+    const d = src === "solar" ? solar : wind;
+    if (!d) return;
+
+    const pvW    = parseFloat(d.power_w) || 0;
+    const loadW  = parseFloat(d.load_watts) || 0;
+    const gridW  = parseFloat(d.grid_watts) || 0;
+    const battW  = parseFloat(d.battery_power) || 0;
+    const battSOC = parseFloat(d.state_of_charge) || 0;
+
+    const fmt = (w) => w >= 1000 ? `${(w/1000).toFixed(1)} kW` : `${Math.round(w)} W`;
+
+    const el = (id) => document.getElementById(id);
+    if (el("flow-solar-w"))   el("flow-solar-w").textContent   = fmt(pvW);
+    if (el("flow-inv-w"))     el("flow-inv-w").textContent     = fmt(pvW);
+    if (el("flow-load-w"))    el("flow-load-w").textContent    = fmt(loadW);
+    if (el("flow-grid-w"))    el("flow-grid-w").textContent    = gridW > 0 ? fmt(gridW) : "0 W";
+    if (el("flow-batt-soc"))  el("flow-batt-soc").textContent  = `${battSOC.toFixed(0)}%`;
+    if (el("flow-batt-w"))    el("flow-batt-w").textContent    = battW !== 0 ? fmt(Math.abs(battW)) : "0 W";
+
+    // Animate flow lines
+    const setFlow = (id, cls) => { const l = el(id); if (l) l.setAttribute("class", cls); };
+
+    setFlow("flow-line-solar", pvW > 10    ? "flow-right" : "flow-none");
+    setFlow("flow-line-load",  loadW > 10  ? "flow-right" : "flow-none");
+    setFlow("flow-line-grid",  gridW > 10  ? "flow-left"  : "flow-none");
+    // Battery: positive = charging (flow down), negative = discharging (flow up)
+    setFlow("flow-line-batt",  Math.abs(battW) > 10 ? (battW > 0 ? "flow-right" : "flow-left") : "flow-none");
   }
 
   function setText(id, val) {

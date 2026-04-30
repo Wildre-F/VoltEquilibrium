@@ -73,7 +73,7 @@
           <span class="material-symbols-outlined text-primary text-lg">person</span>
         </div>
       </a>
-      <script>(function(){var c=localStorage.getItem('avatarColor');if(c)document.getElementById('nav-avatar').style.background=c;})();</script>
+      <script>(function(){var t=sessionStorage.getItem('authToken')||localStorage.getItem('authToken');if(t)fetch('http://localhost:3000/api/profile',{headers:{Authorization:'Bearer '+t}}).then(function(r){return r.json()}).then(function(j){if(j.success&&j.data.avatar_color)document.getElementById('nav-avatar').style.background=j.data.avatar_color;}).catch(function(){});})();</script>
     </div>
   </nav>
 
@@ -140,11 +140,12 @@
           <p class="text-white/60 text-xs font-label mt-3">Used for buying and selling community energy</p>
         </div>
 
-        <!-- Add Funds -->
+        <!-- Add Funds via PayFast -->
         <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm mb-6">
           <h2 class="text-base font-bold font-headline text-on-surface mb-4 flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1;">add_card</span>Add Funds
+            <span class="material-symbols-outlined text-primary text-base" style="font-variation-settings:'FILL' 1;">add_card</span>Add Funds via PayFast
           </h2>
+          <p class="text-xs text-on-surface-variant mb-3 font-body">You'll be redirected to PayFast to complete payment securely.</p>
           <div class="flex gap-3 flex-wrap mb-3">
             <button onclick="setAmount(100)"  class="quick-amt px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R100</button>
             <button onclick="setAmount(250)"  class="quick-amt px-4 py-2 rounded-full text-sm font-bold font-label bg-surface-container hover:bg-surface-container-high transition-colors">R250</button>
@@ -154,11 +155,11 @@
           <div class="flex gap-3">
             <div class="relative flex-1">
               <span class="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant font-bold font-label text-sm">R</span>
-              <input id="topup-amount" type="number" min="1" max="10000" step="1" placeholder="Custom amount"
+              <input id="topup-amount" type="number" min="1" max="10000" step="1" placeholder="Enter amount"
                 class="w-full pl-8 pr-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors" />
             </div>
-            <button onclick="addFunds()" class="px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl font-label hover:opacity-90 transition-opacity whitespace-nowrap">
-              Add Funds
+            <button onclick="payWithPayfast()" id="payfast-btn" class="px-6 py-3 bg-primary text-white font-bold text-sm rounded-xl font-label hover:opacity-90 transition-opacity whitespace-nowrap flex items-center gap-2">
+              <span class="material-symbols-outlined text-sm">lock</span> Pay with PayFast
             </button>
           </div>
         </div>
@@ -260,22 +261,45 @@
       } catch {}
     }
 
-    async function addFunds() {
+    async function payWithPayfast() {
       const amount = parseFloat(document.getElementById("topup-amount").value);
-      if (!amount || amount <= 0) { showToast("Enter a valid amount.", "error"); return; }
+      if (!amount || amount < 1 || amount > 10000) {
+        showToast("Enter an amount between R1 and R10,000.", "error");
+        return;
+      }
+      const btn = document.getElementById("payfast-btn");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Redirecting...';
       try {
-        const res  = await fetch(`${API}/api/wallet/topup`, {
+        const res = await fetch(`${API}/api/wallet/payfast/initiate`, {
           method: "POST",
           headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
           body: JSON.stringify({ amount }),
         });
         const data = await res.json();
         if (!data.success) throw new Error(data.message);
-        document.getElementById("topup-amount").value = "";
-        showToast(`R${parseFloat(amount).toFixed(2)} added successfully!`, "success");
-        loadWallet();
-        loadTransactions();
-      } catch (err) { showToast(err.message, "error"); }
+
+        // Save payment ID so we can confirm on return
+        sessionStorage.setItem("pendingPaymentId", data.data.form_fields.m_payment_id);
+
+        // Build hidden form and submit to PayFast
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = data.data.payfast_url;
+        for (const [key, value] of Object.entries(data.data.form_fields)) {
+          const input = document.createElement("input");
+          input.type = "hidden";
+          input.name = key;
+          input.value = value;
+          form.appendChild(input);
+        }
+        document.body.appendChild(form);
+        form.submit();
+      } catch (err) {
+        showToast(err.message || "Failed to initiate payment.", "error");
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined text-sm">lock</span> Pay with PayFast';
+      }
     }
 
     async function loadTransactions() {
@@ -322,6 +346,50 @@
         list.innerHTML = `<p class="text-center text-on-surface-variant text-sm py-8">Could not load transactions.</p>`;
       }
     }
+
+    // Handle return from PayFast
+    (function handlePayfastReturn() {
+      const params = new URLSearchParams(window.location.search);
+      const status = params.get("payment");
+      if (!status) return;
+
+      window.history.replaceState({}, "", "Wallet.html");
+
+      if (status === "cancelled") {
+        showToast("Payment was cancelled.", "error");
+        return;
+      }
+
+      if (status === "success") {
+        const pendingId = sessionStorage.getItem("pendingPaymentId");
+        if (pendingId) {
+          // Call status endpoint which auto-confirms in sandbox mode
+          fetch(`${API}/api/wallet/payfast/status/${pendingId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+            .then(r => r.json())
+            .then(data => {
+              sessionStorage.removeItem("pendingPaymentId");
+              if (data.success && data.data.status === "complete") {
+                showToast(`R${parseFloat(data.data.amount).toFixed(2)} added to your wallet!`, "success");
+              } else {
+                showToast("Payment processed!", "success");
+              }
+              loadWallet();
+              loadTransactions();
+            })
+            .catch(() => {
+              sessionStorage.removeItem("pendingPaymentId");
+              loadWallet();
+              loadTransactions();
+            });
+        } else {
+          showToast("Payment processed!", "success");
+          loadWallet();
+          loadTransactions();
+        }
+      }
+    })();
 
     loadWallet();
     loadTransactions();
