@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
     api_key VARCHAR(255) UNIQUE,
     reset_token VARCHAR(255),
     reset_token_expiry TIMESTAMP,
+    avatar_color VARCHAR(20) DEFAULT '#9ff2e1',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -158,7 +159,7 @@ ALTER TABLE energy_requests ADD COLUMN IF NOT EXISTS donor_comment  VARCHAR(500)
 CREATE TABLE IF NOT EXISTS wallets (
     id         SERIAL PRIMARY KEY,
     user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE UNIQUE,
-    balance    DECIMAL(10,2) NOT NULL DEFAULT 1000.00,
+    balance    DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 CREATE TABLE IF NOT EXISTS wallet_transactions (
@@ -171,6 +172,17 @@ CREATE TABLE IF NOT EXISTS wallet_transactions (
     description      TEXT,
     counter_party_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     created_at       TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ── PayFast Payments ─────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS payfast_payments (
+    id            SERIAL PRIMARY KEY,
+    user_id       INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    m_payment_id  VARCHAR(100) UNIQUE NOT NULL,
+    amount        DECIMAL(10,2) NOT NULL,
+    status        VARCHAR(20) DEFAULT 'pending',
+    pf_payment_id VARCHAR(100),
+    created_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
 -- ── Community Energy Sharing ──────────────────────────────────────────────────

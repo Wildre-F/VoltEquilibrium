@@ -9,9 +9,9 @@
             50% { transform: scale(1.02); }
         }
         body {
-            background-color: #f7faf9;
+            background-color: var(--color-background);
             font-family: 'Plus Jakarta Sans', sans-serif;
-            color: #181c1c;
+            color: var(--color-on-surface);
         }
         .animate-fade-in {
             animation: fadeIn 0.3s ease-out;

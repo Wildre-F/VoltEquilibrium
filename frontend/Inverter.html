@@ -24,51 +24,51 @@
         theme: {
           extend: {
             colors: {
-              "inverse-on-surface": "#eef1f0",
-              primary: "#005147",
-              "secondary-fixed": "#d6e3ff",
+              "inverse-on-surface": "var(--color-inverse-on-surface)",
+              primary: "var(--color-primary)",
+              "secondary-fixed": "var(--color-secondary-fixed)",
               "on-secondary-fixed-variant": "#00468c",
               "on-tertiary-container": "#b5eb3e",
-              "on-surface": "#181c1c",
-              error: "#ba1a1a",
-              "tertiary-fixed": "#bdf447",
-              "on-background": "#181c1c",
+              "on-surface": "var(--color-on-surface)",
+              error: "var(--color-error)",
+              "tertiary-fixed": "var(--color-tertiary-fixed)",
+              "on-background": "var(--color-on-background)",
               "surface-variant": "#e0e3e2",
-              "surface-container": "#ebeeed",
-              "tertiary-container": "#4b6800",
-              "primary-fixed-dim": "#83d5c5",
-              "surface-bright": "#f7faf9",
+              "surface-container": "var(--color-surface-container)",
+              "tertiary-container": "var(--color-tertiary-container)",
+              "primary-fixed-dim": "var(--color-primary-fixed-dim)",
+              "surface-bright": "var(--color-surface-bright)",
               "inverse-primary": "#83d5c5",
-              "surface-dim": "#d7dbda",
-              "on-primary-fixed": "#00201b",
-              "error-container": "#ffdad6",
-              "on-error": "#ffffff",
-              "on-primary": "#ffffff",
-              tertiary: "#374e00",
-              "on-surface-variant": "#3e4946",
-              background: "#f7faf9",
-              surface: "#f7faf9",
+              "surface-dim": "var(--color-surface-dim)",
+              "on-primary-fixed": "var(--color-on-primary-fixed)",
+              "error-container": "var(--color-error-container)",
+              "on-error": "var(--color-on-error)",
+              "on-primary": "var(--color-on-primary)",
+              tertiary: "var(--color-tertiary)",
+              "on-surface-variant": "var(--color-on-surface-variant)",
+              background: "var(--color-background)",
+              surface: "var(--color-surface)",
               "on-tertiary-fixed-variant": "#374e00",
-              "primary-fixed": "#9ff2e1",
-              "surface-container-low": "#f1f4f3",
+              "primary-fixed": "var(--color-primary-fixed)",
+              "surface-container-low": "var(--color-surface-container-low)",
               "on-secondary-fixed": "#001b3d",
-              "on-tertiary": "#ffffff",
-              "on-error-container": "#93000a",
+              "on-tertiary": "var(--color-on-tertiary)",
+              "on-error-container": "var(--color-on-error-container)",
               "on-primary-fixed-variant": "#005046",
               "secondary-fixed-dim": "#a9c7ff",
-              "on-secondary": "#ffffff",
-              "primary-container": "#006b5e",
-              "on-primary-container": "#95e8d8",
-              "surface-container-high": "#e6e9e8",
-              "secondary-container": "#63a1ff",
+              "on-secondary": "var(--color-on-secondary)",
+              "primary-container": "var(--color-primary-container)",
+              "on-primary-container": "var(--color-on-primary-container)",
+              "surface-container-high": "var(--color-surface-container-high)",
+              "secondary-container": "var(--color-secondary-container)",
               "on-tertiary-fixed": "#141f00",
               "surface-tint": "#006b5e",
-              "surface-container-lowest": "#ffffff",
-              "outline-variant": "#bec9c5",
-              outline: "#6e7976",
-              "surface-container-highest": "#e0e3e2",
-              "inverse-surface": "#2d3131",
-              secondary: "#005db6",
+              "surface-container-lowest": "var(--color-surface-container-lowest)",
+              "outline-variant": "var(--color-outline-variant)",
+              outline: "var(--color-outline)",
+              "surface-container-highest": "var(--color-surface-container-highest)",
+              "inverse-surface": "var(--color-inverse-surface)",
+              secondary: "var(--color-secondary)",
               "tertiary-fixed-dim": "#a2d729",
               "on-secondary-container": "#00376f",
             },
@@ -87,6 +87,7 @@
         },
       };
     </script>
+    <link rel="stylesheet" href="../CSS/theme.css" />
     <link rel="stylesheet" href="../CSS/dashboard.css" />
     <style>
       .detail-btn {
@@ -143,14 +144,14 @@
     </style>
   </head>
 
-  <body class="bg-background dark:bg-slate-900 text-on-surface dark:text-white antialiased">
+  <body class="bg-background text-on-surface antialiased">
     <!-- Help Modal -->
     <div id="help-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
         <div class="flex items-center justify-between p-5 border-b border-outline-variant/20">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary">help</span>
-            <h2 class="font-bold font-headline text-on-surface dark:text-white">Inverter Metrics Explained</h2>
+            <h2 class="font-bold font-headline text-on-surface text-on-surface">Inverter Metrics Explained</h2>
           </div>
           <button id="help-close" class="p-1.5 hover:bg-surface-container rounded-full transition-colors">
             <span class="material-symbols-outlined text-on-surface-variant dark:text-slate-400">close</span>
@@ -167,7 +168,7 @@
     </div>
 
     <!-- TopNavBar -->
-    <nav class="fixed top-0 w-full z-30 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto border-none">
+    <nav class="fixed top-0 w-full z-30 bg-surface-container-lowest/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto border-none">
       <div class="flex items-center gap-8">
         <span class="text-2xl font-extrabold tracking-tighter text-primary font-headline">VoltEquilibrium</span>
         <div class="hidden md:flex items-center gap-6">
@@ -181,14 +182,14 @@
           <span class="material-symbols-outlined text-primary text-base">explore</span>
           <span class="text-xs font-bold font-label text-primary hidden sm:inline">Tour</span>
         </button>
-        <button id="help-btn" class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300" title="Metric explanations">
+        <button id="help-btn" class="p-2 hover:bg-surface-container-low hover:bg-surface-container rounded-full transition-all duration-300" title="Metric explanations">
           <span class="material-symbols-outlined text-primary">help</span>
         </button>
-        <button id="theme-toggle" class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300" aria-label="Toggle theme">
+        <button id="theme-toggle" class="p-2 hover:bg-surface-container-low hover:bg-surface-container rounded-full transition-all duration-300" aria-label="Toggle theme">
           <span id="theme-icon" class="material-symbols-outlined text-primary">dark_mode</span>
         </button>
         <a href="Notifications.html">
-          <button class="p-2 hover:bg-surface-container-low dark:hover:bg-slate-700 rounded-full transition-all duration-300">
+          <button class="p-2 hover:bg-surface-container-low hover:bg-surface-container rounded-full transition-all duration-300">
             <span class="material-symbols-outlined text-primary">notifications</span>
           </button>
         </a>
@@ -204,9 +205,8 @@
           </div>
         </a>
         <script>(function(){
-          var c=localStorage.getItem('avatarColor');if(c)document.getElementById('nav-avatar').style.background=c;
           var t=sessionStorage.getItem('authToken')||localStorage.getItem('authToken');
-          if(t)fetch('http://localhost:3000/api/wallet',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(d=>{if(d.success)document.getElementById('nav-balance').textContent='R'+parseFloat(d.data.balance).toFixed(2);}).catch(()=>{});
+          if(t){fetch('http://localhost:3000/api/profile',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(j=>{if(j.success&&j.data.avatar_color)document.getElementById('nav-avatar').style.background=j.data.avatar_color;}).catch(()=>{});fetch('http://localhost:3000/api/wallet',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(d=>{if(d.success)document.getElementById('nav-balance').textContent='R'+parseFloat(d.data.balance).toFixed(2);}).catch(()=>{});}
         })();</script>
       </div>
     </nav>
@@ -230,7 +230,7 @@
         <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Recommendations.html">
           <span class="material-symbols-outlined">auto_awesome</span><span>Recommendations</span>
         </a>
-        <a class="flex items-center gap-3 px-4 py-3 bg-white text-primary rounded-xl shadow-sm font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Inverter.html">
+        <a class="flex items-center gap-3 px-4 py-3 bg-surface-container-lowest text-primary rounded-xl shadow-sm font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Inverter.html">
           <span class="material-symbols-outlined">developer_board</span><span>Inverter</span>
         </a>
         <a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm transition-transform duration-200 hover:translate-x-1" href="Community_sharing.html">
@@ -283,7 +283,7 @@
       <section class="mb-10" id="section-devices">
         <h2 class="text-lg font-bold font-headline text-primary mb-4">Inverter Details</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="inverter-cards">
-          <div class="flex items-center justify-center h-40 bg-white rounded-2xl shadow-sm text-on-surface-variant/40 text-sm font-label" id="cards-loading">
+          <div class="flex items-center justify-center h-40 bg-surface-container-lowest rounded-2xl shadow-sm text-on-surface-variant/40 text-sm font-label" id="cards-loading">
             Loading devices…
           </div>
         </div>

@@ -101,9 +101,8 @@
         </div>
       </a>
       <script>(function(){
-        var c=localStorage.getItem('avatarColor');if(c)document.getElementById('nav-avatar').style.background=c;
         var t=sessionStorage.getItem('authToken')||localStorage.getItem('authToken');
-        if(t)fetch('http://localhost:3000/api/wallet',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(d=>{if(d.success)document.getElementById('nav-balance').textContent='R'+parseFloat(d.data.balance).toFixed(2);}).catch(()=>{});
+        if(t){fetch('http://localhost:3000/api/profile',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(j=>{if(j.success&&j.data.avatar_color)document.getElementById('nav-avatar').style.background=j.data.avatar_color;}).catch(()=>{});fetch('http://localhost:3000/api/wallet',{headers:{Authorization:'Bearer '+t}}).then(r=>r.json()).then(d=>{if(d.success)document.getElementById('nav-balance').textContent='R'+parseFloat(d.data.balance).toFixed(2);}).catch(()=>{});}
       })();</script>
     </div>
   </nav>

@@ -92,12 +92,12 @@ function buildElecTile(label, value, unit, icon, iconColor) {
   return `
     <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 flex flex-col gap-3">
       <div class="flex items-center justify-between">
-        <span class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant/60 dark:text-slate-400">${label}</span>
+        <span class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant/60 text-on-surface-variant/60">${label}</span>
         <span class="material-symbols-outlined text-xl" style="color:${iconColor}">${icon}</span>
       </div>
       <div class="flex items-end gap-1.5">
         <span class="text-3xl font-extrabold font-headline text-on-surface dark:text-white leading-none">${value}</span>
-        <span class="text-sm font-label text-on-surface-variant/60 dark:text-slate-400 mb-0.5">${unit}</span>
+        <span class="text-sm font-label text-on-surface-variant/60 text-on-surface-variant/60 mb-0.5">${unit}</span>
       </div>
     </div>`;
 }
@@ -158,15 +158,15 @@ async function loadSummary() {
     const typeColor = isWind ? "#005db6" : "#374e00";
     const windRows  = isWind ? `
       <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
-        <span class="text-on-surface-variant/60 dark:text-slate-400 font-label">Wind Speed</span>
+        <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Wind Speed</span>
         <span class="font-semibold font-label dark:text-white">${inv.liveWindSpeed != null ? inv.liveWindSpeed + " m/s" : "—"}</span>
       </div>
       <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
-        <span class="text-on-surface-variant/60 dark:text-slate-400 font-label">Rotor RPM</span>
+        <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Rotor RPM</span>
         <span class="font-semibold font-label dark:text-white">${inv.liveRotorRpm != null ? fmt(inv.liveRotorRpm, 1) : "—"}</span>
       </div>
       <div class="flex justify-between text-sm py-1">
-        <span class="text-on-surface-variant/60 dark:text-slate-400 font-label">Pitch Angle</span>
+        <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Pitch Angle</span>
         <span class="font-semibold font-label dark:text-white">${inv.livePitchAngle != null ? fmt(inv.livePitchAngle, 1) + "°" : "—"}</span>
       </div>` : "";
 
@@ -179,7 +179,7 @@ async function loadSummary() {
             </div>
             <div>
               <p class="font-bold font-headline text-on-surface dark:text-white">${inv.name}</p>
-              <p class="text-xs text-on-surface-variant/60 dark:text-slate-400 font-label capitalize">${inv.profile || inv.type}</p>
+              <p class="text-xs text-on-surface-variant/60 text-on-surface-variant/60 font-label capitalize">${inv.profile || inv.type}</p>
             </div>
           </div>
           <div class="text-right">
@@ -207,19 +207,19 @@ async function loadSummary() {
         </div>
         <div class="border-t border-outline-variant/20 pt-3">
           <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
-            <span class="text-on-surface-variant/60 dark:text-slate-400 font-label">Today Generated</span>
+            <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Today Generated</span>
             <span class="font-semibold font-label dark:text-white">${fmt(inv.todayKwh, 3)} kWh</span>
           </div>
           <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
-            <span class="text-on-surface-variant/60 dark:text-slate-400 font-label">Today Load</span>
+            <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Today Load</span>
             <span class="font-semibold font-label dark:text-white">${fmt(inv.todayLoadKwh, 3)} kWh</span>
           </div>
           <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
-            <span class="text-on-surface-variant/60 dark:text-slate-400 font-label">Today Grid</span>
+            <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Today Grid</span>
             <span class="font-semibold font-label dark:text-white">${fmt(inv.todayGridKwh, 3)} kWh</span>
           </div>
           <div class="flex justify-between text-sm py-1 ${isWind ? "border-b border-outline-variant/10" : ""}">
-            <span class="text-on-surface-variant/60 dark:text-slate-400 font-label">Temperature</span>
+            <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Temperature</span>
             <span class="font-semibold font-label dark:text-white">${inv.liveTemp != null ? fmt(inv.liveTemp, 1) + " °C" : "—"}</span>
           </div>
           ${windRows}
@@ -227,7 +227,7 @@ async function loadSummary() {
         ${battery ? `
         <div class="mt-4 pt-3 border-t border-outline-variant/20">
           <div class="flex items-center justify-between mb-1">
-            <span class="text-xs font-bold font-label text-on-surface-variant/60 dark:text-slate-400 uppercase tracking-widest">Battery</span>
+            <span class="text-xs font-bold font-label text-on-surface-variant/60 text-on-surface-variant/60 uppercase tracking-widest">Battery</span>
             <span class="text-sm font-extrabold font-headline text-primary">${fmt(battery.soc, 1)}%</span>
           </div>
           <div class="w-full h-2 bg-surface-container dark:bg-slate-700 rounded-full overflow-hidden">
@@ -272,7 +272,7 @@ document.getElementById("help-content").innerHTML = HELP_TILES.map((t, i) => `
       <p class="font-bold font-headline text-on-surface dark:text-white text-sm">${t.title}</p>
     </div>
     <p class="text-sm text-on-surface-variant dark:text-slate-300 font-body mb-2 ml-8">${t.desc}</p>
-    <p class="text-xs text-on-surface-variant/60 dark:text-slate-400 font-label italic ml-8">📐 ${t.calc}</p>
+    <p class="text-xs text-on-surface-variant/60 text-on-surface-variant/60 font-label italic ml-8">📐 ${t.calc}</p>
   </div>`).join("");
 
 // ── Theme toggle ───────────────────────────────────────────────────────────

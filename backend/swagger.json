@@ -1,0 +1,821 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "VoltEquilibrium API",
+    "description": "Green energy monitoring, community sharing, and wallet management API for the EcoConnect ICT Initiative.",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "http://localhost:3000", "description": "Local development" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean", "example": false },
+          "message": { "type": "string" }
+        }
+      }
+    }
+  },
+  "security": [{ "BearerAuth": [] }],
+  "tags": [
+    { "name": "Auth", "description": "Registration, login, password reset" },
+    { "name": "Profile", "description": "User profile management" },
+    { "name": "Setup", "description": "Inverter setup and configuration" },
+    { "name": "Readings", "description": "Live and historical energy readings" },
+    { "name": "Battery", "description": "Battery state data" },
+    { "name": "Analytics", "description": "Energy analytics, CO2 savings, summaries" },
+    { "name": "Inverter", "description": "Inverter summary, analytics, efficiency" },
+    { "name": "Weather", "description": "Current weather and forecast" },
+    { "name": "Wallet", "description": "Wallet balance, PayFast payments, withdrawals" },
+    { "name": "Notifications", "description": "User notifications" },
+    { "name": "Community", "description": "Energy donations, sales, and requests" },
+    { "name": "System", "description": "Health checks and test endpoints" }
+  ],
+  "paths": {
+    "/": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health check",
+        "security": [],
+        "responses": { "200": { "description": "Server is running" } }
+      }
+    },
+    "/api/test": {
+      "get": {
+        "tags": ["System"],
+        "summary": "API test endpoint",
+        "security": [],
+        "responses": { "200": { "description": "API is working" } }
+      }
+    },
+    "/api/db-test": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Database connectivity test",
+        "security": [],
+        "responses": { "200": { "description": "Database connection status" } }
+      }
+    },
+    "/api/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new user",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "email", "password"],
+                "properties": {
+                  "username": { "type": "string", "example": "John Doe" },
+                  "email": { "type": "string", "example": "john@example.com" },
+                  "password": { "type": "string", "example": "MyPassword123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User registered successfully" },
+          "400": { "description": "Validation error" },
+          "409": { "description": "Email already registered" }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Login and receive JWT token",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string", "example": "john@example.com" },
+                  "password": { "type": "string", "example": "MyPassword123" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "token": { "type": "string" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/api/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Request password reset email",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email"],
+                "properties": {
+                  "email": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Reset email sent if account exists" } }
+      }
+    },
+    "/api/reset-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Reset password with token",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["token", "password"],
+                "properties": {
+                  "token": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Password reset successful" } }
+      }
+    },
+    "/api/profile": {
+      "get": {
+        "tags": ["Profile"],
+        "summary": "Get current user profile",
+        "responses": {
+          "200": {
+            "description": "Profile data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "username": { "type": "string" },
+                        "email": { "type": "string" },
+                        "avatar_color": { "type": "string" },
+                        "created_at": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/profile/update": {
+      "put": {
+        "tags": ["Profile"],
+        "summary": "Update username, email, or password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "email"],
+                "properties": {
+                  "username": { "type": "string" },
+                  "email": { "type": "string" },
+                  "password": { "type": "string", "description": "Leave blank to keep current" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Profile updated" } }
+      }
+    },
+    "/api/profile/avatar-color": {
+      "put": {
+        "tags": ["Profile"],
+        "summary": "Update avatar color",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["color"],
+                "properties": {
+                  "color": { "type": "string", "example": "#9ff2e1", "pattern": "^#[0-9a-fA-F]{6}$" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Avatar color updated" } }
+      }
+    },
+    "/api/profile/location": {
+      "put": {
+        "tags": ["Profile"],
+        "summary": "Update user location",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "location": { "type": "string" },
+                  "lat": { "type": "number" },
+                  "lng": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Location updated" } }
+      }
+    },
+    "/api/user/apikey": {
+      "get": {
+        "tags": ["Profile"],
+        "summary": "Get or generate API key",
+        "responses": { "200": { "description": "API key returned" } }
+      }
+    },
+    "/api/account/data": {
+      "delete": {
+        "tags": ["Profile"],
+        "summary": "Delete all user data (inverters, readings, wallet)",
+        "responses": { "200": { "description": "Data deleted" } }
+      }
+    },
+    "/api/account": {
+      "delete": {
+        "tags": ["Profile"],
+        "summary": "Delete entire account",
+        "responses": { "200": { "description": "Account deleted" } }
+      }
+    },
+    "/api/setup/status": {
+      "get": {
+        "tags": ["Setup"],
+        "summary": "Check if user has completed setup",
+        "responses": {
+          "200": {
+            "description": "Setup status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "hasSetup": { "type": "boolean" },
+                    "inverters": { "type": "array" },
+                    "role": { "type": "string" },
+                    "location": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/setup/inverter": {
+      "post": {
+        "tags": ["Setup"],
+        "summary": "Add a new inverter",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "type"],
+                "properties": {
+                  "name": { "type": "string", "example": "Rooftop Solar" },
+                  "type": { "type": "string", "enum": ["solar", "wind"] },
+                  "capacity": { "type": "number", "example": 5, "description": "Capacity in kW" },
+                  "profile": { "type": "string", "enum": ["solar-small", "solar-large", "wind-small", "wind-large"] },
+                  "location": { "type": "string" },
+                  "lat": { "type": "number" },
+                  "lng": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Inverter added" },
+          "409": { "description": "Inverter of this type already exists" }
+        }
+      }
+    },
+    "/api/setup/inverter/{id}": {
+      "delete": {
+        "tags": ["Setup"],
+        "summary": "Remove an inverter",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Inverter deleted" } }
+      }
+    },
+    "/api/weather": {
+      "get": {
+        "tags": ["Weather"],
+        "summary": "Get current weather for location",
+        "parameters": [
+          { "name": "lat", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "lng", "in": "query", "required": true, "schema": { "type": "number" } }
+        ],
+        "responses": { "200": { "description": "Current weather data" } }
+      }
+    },
+    "/api/weather/forecast": {
+      "get": {
+        "tags": ["Weather"],
+        "summary": "Get 2-day weather forecast",
+        "parameters": [
+          { "name": "lat", "in": "query", "required": true, "schema": { "type": "number" } },
+          { "name": "lng", "in": "query", "required": true, "schema": { "type": "number" } }
+        ],
+        "responses": { "200": { "description": "Hourly forecast data" } }
+      }
+    },
+    "/api/readings": {
+      "post": {
+        "tags": ["Readings"],
+        "summary": "Submit energy reading (used by simulators)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "inverter_id": { "type": "integer" },
+                  "power_w": { "type": "number" },
+                  "dc_voltage": { "type": "number" },
+                  "dc_current": { "type": "number" },
+                  "ac_voltage": { "type": "number" },
+                  "ac_current": { "type": "number" },
+                  "frequency": { "type": "number" },
+                  "temperature": { "type": "number" },
+                  "energy_kwh": { "type": "number" },
+                  "load_watts": { "type": "number" },
+                  "grid_watts": { "type": "number" },
+                  "cloud_cover": { "type": "number" },
+                  "wind_speed": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Reading saved" } }
+      }
+    },
+    "/api/readings/latest": {
+      "get": {
+        "tags": ["Readings"],
+        "summary": "Get latest reading per inverter",
+        "responses": { "200": { "description": "Latest readings for solar and wind inverters" } }
+      }
+    },
+    "/api/readings/history": {
+      "get": {
+        "tags": ["Readings"],
+        "summary": "Get recent reading history",
+        "parameters": [
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "default": 20 } }
+        ],
+        "responses": { "200": { "description": "Historical readings" } }
+      }
+    },
+    "/api/battery": {
+      "get": {
+        "tags": ["Battery"],
+        "summary": "Get latest battery state",
+        "responses": { "200": { "description": "Battery SOC, voltage, current, temperature" } }
+      }
+    },
+    "/api/co2": {
+      "get": {
+        "tags": ["Analytics"],
+        "summary": "Get CO2 savings and generation data",
+        "responses": {
+          "200": {
+            "description": "CO2 and savings data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "todayKwh": { "type": "number" },
+                        "lifetimeKwh": { "type": "number" },
+                        "todayCo2Kg": { "type": "number" },
+                        "todayRands": { "type": "number" },
+                        "lifetimeCo2Kg": { "type": "number" },
+                        "lifetimeRands": { "type": "number" },
+                        "history": { "type": "array", "description": "Last 30 days" },
+                        "constants": { "type": "object" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/analytics/summary": {
+      "get": {
+        "tags": ["Analytics"],
+        "summary": "Full generation summary (today, week, month, all-time)",
+        "responses": { "200": { "description": "Generation summary with breakdowns" } }
+      }
+    },
+    "/api/inverter/summary": {
+      "get": {
+        "tags": ["Inverter"],
+        "summary": "Get inverter device summary",
+        "responses": { "200": { "description": "Inverter metadata and status" } }
+      }
+    },
+    "/api/inverter/analytics": {
+      "get": {
+        "tags": ["Inverter"],
+        "summary": "Get time-bucketed power and battery analytics",
+        "parameters": [
+          { "name": "source", "in": "query", "schema": { "type": "string", "enum": ["solar", "wind"], "default": "solar" } },
+          { "name": "date", "in": "query", "schema": { "type": "string", "format": "date" }, "description": "YYYY-MM-DD" },
+          { "name": "detail", "in": "query", "schema": { "type": "string", "enum": ["min", "moderate", "max"], "default": "moderate" }, "description": "10min / 30min / 1hr buckets" }
+        ],
+        "responses": { "200": { "description": "Power and battery time-series data" } }
+      }
+    },
+    "/api/inverter/efficiency": {
+      "get": {
+        "tags": ["Inverter"],
+        "summary": "Get daily efficiency data for the efficiency model",
+        "parameters": [
+          { "name": "source", "in": "query", "schema": { "type": "string", "enum": ["solar", "wind"], "default": "solar" } },
+          { "name": "days", "in": "query", "schema": { "type": "integer", "default": 30, "maximum": 90 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Efficiency data with inverter capacity and daily metrics",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "inverters": { "type": "array" },
+                        "totalCapacity": { "type": "number", "description": "Total capacity in kW" },
+                        "daily": { "type": "array" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/inverter/analytics/export": {
+      "get": {
+        "tags": ["Inverter"],
+        "summary": "Download analytics as CSV",
+        "parameters": [
+          { "name": "source", "in": "query", "schema": { "type": "string", "enum": ["solar", "wind"] } },
+          { "name": "date", "in": "query", "schema": { "type": "string", "format": "date" } },
+          { "name": "detail", "in": "query", "schema": { "type": "string", "enum": ["min", "moderate", "max"] } }
+        ],
+        "responses": { "200": { "description": "CSV file download" } }
+      }
+    },
+    "/api/wallet": {
+      "get": {
+        "tags": ["Wallet"],
+        "summary": "Get wallet balance (auto-creates wallet if needed)",
+        "responses": {
+          "200": {
+            "description": "Wallet data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "id": { "type": "integer" },
+                        "user_id": { "type": "integer" },
+                        "balance": { "type": "string", "example": "250.00" }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/wallet/transactions": {
+      "get": {
+        "tags": ["Wallet"],
+        "summary": "Get last 50 wallet transactions",
+        "responses": { "200": { "description": "Transaction list" } }
+      }
+    },
+    "/api/wallet/payfast/initiate": {
+      "post": {
+        "tags": ["Wallet"],
+        "summary": "Initiate PayFast payment",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount"],
+                "properties": {
+                  "amount": { "type": "number", "minimum": 1, "maximum": 10000, "example": 100 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "PayFast form fields and redirect URL" } }
+      }
+    },
+    "/api/wallet/payfast/notify": {
+      "post": {
+        "tags": ["Wallet"],
+        "summary": "PayFast ITN callback (server-to-server)",
+        "security": [],
+        "responses": { "200": { "description": "OK" } }
+      }
+    },
+    "/api/wallet/payfast/status/{id}": {
+      "get": {
+        "tags": ["Wallet"],
+        "summary": "Check payment status (auto-confirms in sandbox)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "200": { "description": "Payment status and amount" } }
+      }
+    },
+    "/api/wallet/withdraw": {
+      "post": {
+        "tags": ["Wallet"],
+        "summary": "Withdraw funds from wallet",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount"],
+                "properties": {
+                  "amount": { "type": "number", "minimum": 0.01, "maximum": 10000 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Withdrawal successful" },
+          "400": { "description": "Insufficient balance" }
+        }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "Get all notifications",
+        "responses": { "200": { "description": "List of notifications" } }
+      }
+    },
+    "/api/notifications/{id}/read": {
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Mark a notification as read",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Marked as read" } }
+      }
+    },
+    "/api/notifications/read-all": {
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Mark all notifications as read",
+        "responses": { "200": { "description": "All marked as read" } }
+      }
+    },
+    "/api/community/donations": {
+      "get": {
+        "tags": ["Community"],
+        "summary": "List energy donation requests",
+        "responses": { "200": { "description": "List of donation requests" } }
+      },
+      "post": {
+        "tags": ["Community"],
+        "summary": "Create an energy donation request",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount_kwh"],
+                "properties": {
+                  "amount_kwh": { "type": "number", "example": 2.5 },
+                  "comment": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Donation request created" } }
+      }
+    },
+    "/api/community/donations/{id}": {
+      "delete": {
+        "tags": ["Community"],
+        "summary": "Cancel a donation request",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Donation cancelled" } }
+      }
+    },
+    "/api/community/donations/{id}/fill": {
+      "post": {
+        "tags": ["Community"],
+        "summary": "Fill a donation request (donate energy)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "comment": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Donation fulfilled" } }
+      }
+    },
+    "/api/community/sales": {
+      "get": {
+        "tags": ["Community"],
+        "summary": "List energy sales",
+        "responses": { "200": { "description": "List of energy sales" } }
+      },
+      "post": {
+        "tags": ["Community"],
+        "summary": "Create an energy sale listing",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount_kwh", "price_per_kwh"],
+                "properties": {
+                  "amount_kwh": { "type": "number", "example": 5 },
+                  "price_per_kwh": { "type": "number", "example": 2.5 }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Sale listing created" } }
+      }
+    },
+    "/api/community/sales/{id}": {
+      "delete": {
+        "tags": ["Community"],
+        "summary": "Cancel a sale listing",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Sale cancelled" } }
+      }
+    },
+    "/api/community/sales/{id}/fill": {
+      "post": {
+        "tags": ["Community"],
+        "summary": "Purchase energy from a sale listing",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": { "description": "Purchase completed, wallet debited" },
+          "400": { "description": "Insufficient balance or battery space" }
+        }
+      }
+    },
+    "/api/community/requests": {
+      "get": {
+        "tags": ["Community"],
+        "summary": "List energy requests",
+        "responses": { "200": { "description": "List of energy requests" } }
+      },
+      "post": {
+        "tags": ["Community"],
+        "summary": "Create an energy request",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["amount_kwh", "price_per_kwh"],
+                "properties": {
+                  "amount_kwh": { "type": "number" },
+                  "price_per_kwh": { "type": "number" },
+                  "comment": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "Request created" } }
+      }
+    },
+    "/api/community/requests/{id}": {
+      "delete": {
+        "tags": ["Community"],
+        "summary": "Cancel an energy request",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": { "200": { "description": "Request cancelled" } }
+      }
+    },
+    "/api/community/requests/{id}/fill": {
+      "post": {
+        "tags": ["Community"],
+        "summary": "Fill an energy request (sell energy)",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "integer" } }],
+        "responses": {
+          "200": { "description": "Request fulfilled, wallet credited" },
+          "400": { "description": "Insufficient battery SOC" }
+        }
+      }
+    },
+    "/api/loadshedding": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Get current load shedding status",
+        "security": [],
+        "responses": { "200": { "description": "Load shedding stage and schedule" } }
+      }
+    }
+  }
+}
