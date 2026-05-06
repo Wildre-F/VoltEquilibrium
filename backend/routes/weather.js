@@ -48,7 +48,8 @@ router.get("/", authenticateToken, async (req, res) => {
     };
 
     return res.json({ success: true, data: weatherCache[key].data, cached: false });
-  } catch {
+  } catch (err) {
+    console.error("[weather] current weather fetch error:", err.message);
     return res.status(500).json({ success: false, message: "Weather fetch failed" });
   }
 });

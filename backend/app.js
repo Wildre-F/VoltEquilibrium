@@ -142,7 +142,7 @@ mqttClient.on("message", async (topic, message) => {
   const topicApiKey = topic.split("/")[1] || "";
   for (const [res, client] of sseClients) {
     if (client.apiKey && topicApiKey === client.apiKey) {
-      try { res.write(`data: ${JSON.stringify(entry)}\n\n`); } catch { sseClients.delete(res); }
+      try { res.write(`data: ${JSON.stringify(entry)}\n\n`); } catch (err) { console.error("[sse] write error:", err.message); sseClients.delete(res); }
     }
   }
 
@@ -306,7 +306,8 @@ function authenticateToken(req, res, next) {
 
     req.user = jwt.verify(token, JWT_SECRET);
     next();
-  } catch {
+  } catch (err) {
+    console.error("[auth] token verification failed:", err.message);
     return res.status(403).json({ success: false, message: "Invalid or expired token" });
   }
 }
@@ -359,7 +360,7 @@ app.get("/api/debug/mqtt/stream", async (req, res) => {
   try {
     const decoded = jwt.verify(tkn, JWT_SECRET);
     req.user = decoded;
-  } catch { return res.status(401).json({ message: "Invalid token" }); }
+  } catch (err) { console.error("[sse] token verification failed:", err.message); return res.status(401).json({ message: "Invalid token" }); }
   // Look up user's API key to filter MQTT messages
   const userRow = await pool.query("SELECT api_key FROM users WHERE id = $1", [req.user.id]);
   const userApiKey = userRow.rows[0]?.api_key || null;
@@ -381,7 +382,8 @@ app.get("/api/loadshedding", async (req, res) => {
     const response = await fetch("https://loadshedding.eskom.co.za/LoadShedding/GetStatus");
     const status   = await response.json();
     return res.status(200).json({ success: true, stage: status - 1 });
-  } catch {
+  } catch (err) {
+    console.error("[loadshedding] Eskom API fetch error:", err.message);
     return res.status(500).json({ success: false, message: "Could not fetch loadshedding status" });
   }
 });

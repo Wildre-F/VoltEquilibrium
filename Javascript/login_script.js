@@ -489,6 +489,7 @@
         showToast(result.message, "error");
       }
     } catch (error) {
+      console.error("[login] forgot password error:", error.message);
       showToast("Something went wrong. Please try again.", "error");
     }
   }

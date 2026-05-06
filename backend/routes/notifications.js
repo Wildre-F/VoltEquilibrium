@@ -40,6 +40,7 @@ router.post("/notifications/:id/read", authenticateToken, async (req, res) => {
     );
     return res.status(200).json({ success: true });
   } catch (err) {
+    console.error("[notifications] mark read error:", err.message);
     return res.status(500).json({ success: false, message: "Error marking notification read" });
   }
 });
@@ -52,6 +53,7 @@ router.post("/notifications/read-all", authenticateToken, async (req, res) => {
     );
     return res.status(200).json({ success: true });
   } catch (err) {
+    console.error("[notifications] mark all read error:", err.message);
     return res.status(500).json({ success: false, message: "Error marking all notifications read" });
   }
 });

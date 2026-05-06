@@ -170,7 +170,8 @@
       } else {
         addMessage("assistant", data.message || "Sorry, something went wrong.", true);
       }
-    } catch {
+    } catch (err) {
+      console.error("[chatbot] send message error:", err.message);
       removeTyping();
       addMessage("assistant", "Could not reach the AI assistant. Please try again.", true);
     }
@@ -197,6 +198,8 @@
         messages.innerHTML = "";
         data.data.forEach((m) => addMessage(m.role, m.content));
       }
-    } catch {}
+    } catch (err) {
+      console.error("[chatbot] load history error:", err.message);
+    }
   }
 })();

@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="../CSS/theme.css" />
     <script>
       tailwind.config = {
         darkMode: "class",
@@ -32,7 +33,7 @@
       }
     </script>
   </head>
-  <body class="bg-background dark:bg-slate-900 text-on-surface dark:text-white font-body min-h-screen">
+  <body class="bg-background text-on-surface font-body min-h-screen">
     <div class="max-w-3xl mx-auto px-6 py-16">
       <!-- Back -->
       <a href="login.html" class="inline-flex items-center gap-2 text-sm font-semibold font-label text-primary hover:underline mb-10">
@@ -45,35 +46,35 @@
           <span class="material-symbols-outlined text-primary text-3xl">policy</span>
           <h1 class="text-3xl font-extrabold font-headline text-primary">Privacy Policy</h1>
         </div>
-        <p class="text-sm text-on-surface-variant dark:text-slate-400 font-label">Last updated: April 2026 · This page is a placeholder and will be replaced with the full legal document before launch.</p>
+        <p class="text-sm text-on-surface-variant font-label">Last updated: April 2026 · This page is a placeholder and will be replaced with the full legal document before launch.</p>
       </div>
 
       <!-- Placeholder sections -->
       <div class="flex flex-col gap-6">
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 opacity-70">
-          <h2 class="font-bold font-headline text-on-surface dark:text-white mb-2">1. Information We Collect</h2>
-          <p class="text-sm text-on-surface-variant dark:text-slate-400 font-body">We collect account registration data (name, email, password hash), device telemetry (inverter readings, battery state, location coordinates used for weather data), and usage analytics to improve the platform. No data is sold to third parties.</p>
+        <div class="bg-surface-container-lowest rounded-2xl p-6 opacity-70">
+          <h2 class="font-bold font-headline text-on-surface mb-2">1. Information We Collect</h2>
+          <p class="text-sm text-on-surface-variant font-body">We collect account registration data (name, email, password hash), device telemetry (inverter readings, battery state, location coordinates used for weather data), and usage analytics to improve the platform. No data is sold to third parties.</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 opacity-70">
-          <h2 class="font-bold font-headline text-on-surface dark:text-white mb-2">2. How We Use Your Data</h2>
-          <p class="text-sm text-on-surface-variant dark:text-slate-400 font-body">Your data is used solely to provide the VoltEquilibrium monitoring service — displaying live readings, calculating CO₂ savings, and generating analytics reports for your own devices.</p>
+        <div class="bg-surface-container-lowest rounded-2xl p-6 opacity-70">
+          <h2 class="font-bold font-headline text-on-surface mb-2">2. How We Use Your Data</h2>
+          <p class="text-sm text-on-surface-variant font-body">Your data is used solely to provide the VoltEquilibrium monitoring service — displaying live readings, calculating CO₂ savings, and generating analytics reports for your own devices.</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 opacity-70">
-          <h2 class="font-bold font-headline text-on-surface dark:text-white mb-2">3. Data Retention</h2>
-          <p class="text-sm text-on-surface-variant dark:text-slate-400 font-body">Raw telemetry readings are retained for up to 12 months. Account data is retained until you request deletion. You may delete all your data at any time from the Profile page.</p>
+        <div class="bg-surface-container-lowest rounded-2xl p-6 opacity-70">
+          <h2 class="font-bold font-headline text-on-surface mb-2">3. Data Retention</h2>
+          <p class="text-sm text-on-surface-variant font-body">Raw telemetry readings are retained for up to 12 months. Account data is retained until you request deletion. You may delete all your data at any time from the Profile page.</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 opacity-70">
-          <h2 class="font-bold font-headline text-on-surface dark:text-white mb-2">4. Security</h2>
-          <p class="text-sm text-on-surface-variant dark:text-slate-400 font-body">Passwords are hashed using bcrypt. API keys are generated cryptographically. All communication between the client and server uses HTTPS in production. JWT tokens expire after 1 hour.</p>
+        <div class="bg-surface-container-lowest rounded-2xl p-6 opacity-70">
+          <h2 class="font-bold font-headline text-on-surface mb-2">4. Security</h2>
+          <p class="text-sm text-on-surface-variant font-body">Passwords are hashed using bcrypt. API keys are generated cryptographically. All communication between the client and server uses HTTPS in production. JWT tokens expire after 1 hour.</p>
         </div>
-        <div class="bg-white dark:bg-slate-800 rounded-2xl p-6 opacity-70">
-          <h2 class="font-bold font-headline text-on-surface dark:text-white mb-2">5. Contact</h2>
-          <p class="text-sm text-on-surface-variant dark:text-slate-400 font-body">For privacy-related requests, use the Contact Support page accessible from any dashboard sidebar.</p>
+        <div class="bg-surface-container-lowest rounded-2xl p-6 opacity-70">
+          <h2 class="font-bold font-headline text-on-surface mb-2">5. Contact</h2>
+          <p class="text-sm text-on-surface-variant font-body">For privacy-related requests, use the Contact Support page accessible from any dashboard sidebar.</p>
         </div>
 
-        <div class="bg-surface-container dark:bg-slate-700 rounded-xl px-5 py-3 flex items-center gap-3">
+        <div class="bg-surface-container rounded-xl px-5 py-3 flex items-center gap-3">
           <span class="material-symbols-outlined text-primary">info</span>
-          <p class="text-xs font-label text-on-surface-variant dark:text-slate-300">This is a development placeholder. Full legal policy will be drafted before public launch.</p>
+          <p class="text-xs font-label text-on-surface-variant">This is a development placeholder. Full legal policy will be drafted before public launch.</p>
         </div>
       </div>
     </div>

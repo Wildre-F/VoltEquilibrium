@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="../CSS/theme.css" />
     <script>
       tailwind.config = {
         darkMode: "class",
@@ -46,7 +47,7 @@
       }
     </style>
   </head>
-  <body class="bg-background dark:bg-slate-900 text-on-surface dark:text-white font-body min-h-screen">
+  <body class="bg-background text-on-surface font-body min-h-screen">
     <div class="max-w-2xl mx-auto px-6 py-16">
       <a href="login.html" class="inline-flex items-center gap-2 text-sm font-semibold font-label text-primary hover:underline mb-10">
         <span class="material-symbols-outlined text-base">arrow_back</span>Back to Login
@@ -59,9 +60,9 @@
             <span class="material-symbols-outlined text-primary text-3xl">monitor_heart</span>
             <h1 class="text-3xl font-extrabold font-headline text-primary">System Status</h1>
           </div>
-          <p class="text-sm text-on-surface-variant dark:text-slate-400 font-label">Live health of all VoltEquilibrium services</p>
+          <p class="text-sm text-on-surface-variant font-label">Live health of all VoltEquilibrium services</p>
         </div>
-        <div id="overall-badge" class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container dark:bg-slate-700 text-sm font-bold font-label">
+        <div id="overall-badge" class="flex items-center gap-2 px-4 py-2 rounded-full bg-surface-container text-sm font-bold font-label">
           <span class="status-dot dot-checking" id="overall-dot"></span>
           <span id="overall-label">Checking…</span>
         </div>
@@ -71,28 +72,28 @@
       <div class="flex flex-col gap-3 mb-8">
 
         <!-- API / Backend -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-primary">cloud</span>
             <div>
-              <p class="font-bold font-label text-sm text-on-surface dark:text-white">API Server</p>
-              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">REST endpoints · Auth · Data ingestion</p>
+              <p class="font-bold font-label text-sm text-on-surface">API Server</p>
+              <p class="text-xs text-on-surface-variant font-body">REST endpoints · Auth · Data ingestion</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
             <span class="status-dot dot-checking" id="api-dot"></span>
             <span class="text-xs font-bold font-label" id="api-label">Checking…</span>
-            <span class="text-xs text-on-surface-variant/50 dark:text-slate-500 font-label ml-2" id="api-latency"></span>
+            <span class="text-xs text-on-surface-variant/50 font-label ml-2" id="api-latency"></span>
           </div>
         </div>
 
         <!-- Database -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-primary">storage</span>
             <div>
-              <p class="font-bold font-label text-sm text-on-surface dark:text-white">Database</p>
-              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">PostgreSQL · Readings · User data</p>
+              <p class="font-bold font-label text-sm text-on-surface">Database</p>
+              <p class="text-xs text-on-surface-variant font-body">PostgreSQL · Readings · User data</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -102,12 +103,12 @@
         </div>
 
         <!-- MQTT Broker -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-primary">hub</span>
             <div>
-              <p class="font-bold font-label text-sm text-on-surface dark:text-white">MQTT Broker</p>
-              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">Mosquitto · Device telemetry ingestion</p>
+              <p class="font-bold font-label text-sm text-on-surface">MQTT Broker</p>
+              <p class="text-xs text-on-surface-variant font-body">Mosquitto · Device telemetry ingestion</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -117,28 +118,28 @@
         </div>
 
         <!-- Simulator Pipeline -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-primary">precision_manufacturing</span>
             <div>
-              <p class="font-bold font-label text-sm text-on-surface dark:text-white">Simulator Pipeline</p>
-              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">Live data feed · 30 s update interval</p>
+              <p class="font-bold font-label text-sm text-on-surface">Simulator Pipeline</p>
+              <p class="text-xs text-on-surface-variant font-body">Live data feed · 30 s update interval</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
             <span class="status-dot dot-checking" id="sim-dot"></span>
             <span class="text-xs font-bold font-label" id="sim-label">Checking…</span>
-            <span class="text-xs text-on-surface-variant/50 dark:text-slate-500 font-label ml-2" id="sim-age"></span>
+            <span class="text-xs text-on-surface-variant/50 font-label ml-2" id="sim-age"></span>
           </div>
         </div>
 
         <!-- Weather Service -->
-        <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm px-5 py-4 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <span class="material-symbols-outlined text-primary">partly_cloudy_day</span>
             <div>
-              <p class="font-bold font-label text-sm text-on-surface dark:text-white">Weather Service</p>
-              <p class="text-xs text-on-surface-variant dark:text-slate-400 font-body">Open-Meteo · Forecast &amp; current conditions</p>
+              <p class="font-bold font-label text-sm text-on-surface">Weather Service</p>
+              <p class="text-xs text-on-surface-variant font-body">Open-Meteo · Forecast &amp; current conditions</p>
             </div>
           </div>
           <div class="flex items-center gap-2">
@@ -150,7 +151,7 @@
       </div>
 
       <!-- Last checked + auto-refresh -->
-      <div class="flex items-center justify-between text-xs font-label text-on-surface-variant/50 dark:text-slate-500">
+      <div class="flex items-center justify-between text-xs font-label text-on-surface-variant/50">
         <span id="checked-at">Checking all services…</span>
         <button id="refresh-btn" class="flex items-center gap-1 hover:text-primary transition-colors">
           <span class="material-symbols-outlined text-sm">refresh</span>Refresh

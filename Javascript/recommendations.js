@@ -194,7 +194,9 @@ async function loadPowerSchedule() {
   try {
     const lsJson = await apiFetch("/api/loadshedding");
     if (lsJson?.success) lsStage = lsJson.stage || 0;
-  } catch {}
+  } catch (err) {
+    console.error("[recommendations] loadshedding fetch error:", err.message);
+  }
 
   // Fetch battery SOC
   let soc = 0;
@@ -204,7 +206,9 @@ async function loadPowerSchedule() {
       const d = (readJson.data.all || [])[0] || {};
       soc = parseFloat(d.state_of_charge) || 0;
     }
-  } catch {}
+  } catch (err) {
+    console.error("[recommendations] battery SOC fetch error:", err.message);
+  }
 
   const now = new Date();
   const currentHour = now.getHours();

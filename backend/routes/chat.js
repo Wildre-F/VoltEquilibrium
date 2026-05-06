@@ -14,6 +14,7 @@ router.get("/history", authenticateToken, async (req, res) => {
     );
     return res.json({ success: true, data: result.rows });
   } catch (err) {
+    console.error("[chat] load history error:", err.message);
     return res.status(500).json({ success: false, message: "Error loading chat history" });
   }
 });
@@ -100,7 +101,9 @@ router.post("/", authenticateToken, async (req, res) => {
         if (wData.success) {
           weatherInfo = `Current weather: ${wData.data.temperature}°C, cloud ${wData.data.cloud_cover}%, wind ${wData.data.wind_speed} m/s.`;
         }
-      } catch {}
+      } catch (err) {
+        console.error("[chat] weather context fetch error:", err.message);
+      }
     }
 
     const systemPrompt = `You are VoltBot, the energy data assistant for VoltEquilibrium — a South African green energy app.
@@ -193,6 +196,7 @@ router.delete("/history", authenticateToken, async (req, res) => {
     await pool.query("DELETE FROM chat_messages WHERE user_id = $1", [req.user.id]);
     return res.json({ success: true });
   } catch (err) {
+    console.error("[chat] clear history error:", err.message);
     return res.status(500).json({ success: false, message: "Error clearing chat" });
   }
 });

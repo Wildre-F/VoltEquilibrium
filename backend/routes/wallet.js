@@ -10,6 +10,7 @@ router.get("/", authenticateToken, async (req, res) => {
     const wallet = await getOrCreateWallet(req.user.id);
     return res.status(200).json({ success: true, data: wallet });
   } catch (err) {
+    console.error("[wallet] fetch wallet error:", err.message);
     return res.status(500).json({ success: false, message: "Error fetching wallet" });
   }
 });
@@ -28,6 +29,7 @@ router.get("/transactions", authenticateToken, async (req, res) => {
     );
     return res.status(200).json({ success: true, data: result.rows });
   } catch (err) {
+    console.error("[wallet] fetch transactions error:", err.message);
     return res.status(500).json({ success: false, message: "Error fetching transactions" });
   }
 });
@@ -157,6 +159,7 @@ router.post("/withdraw", authenticateToken, async (req, res) => {
     );
     return res.status(200).json({ success: true, data: { balance: newBal.toFixed(2) } });
   } catch (err) {
+    console.error("[wallet] withdraw error:", err.message);
     return res.status(500).json({ success: false, message: "Error withdrawing funds" });
   }
 });
