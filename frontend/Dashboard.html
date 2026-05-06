@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="view-transition" content="same-origin" />
     <title>VoltEquilibrium | Dashboard</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
@@ -14,75 +15,8 @@
     />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              primary: "var(--color-primary)",
-              "primary-fixed": "var(--color-primary-fixed)",
-              "primary-fixed-dim": "var(--color-primary-fixed-dim)",
-              "primary-container": "var(--color-primary-container)",
-              "on-primary": "var(--color-on-primary)",
-              "on-primary-fixed": "var(--color-on-primary-fixed)",
-              "on-primary-fixed-variant": "#005046",
-              "on-primary-container": "var(--color-on-primary-container)",
-              "inverse-primary": "#83d5c5",
-              secondary: "var(--color-secondary)",
-              "secondary-fixed": "var(--color-secondary-fixed)",
-              "secondary-fixed-dim": "#a9c7ff",
-              "secondary-container": "var(--color-secondary-container)",
-              "on-secondary": "var(--color-on-secondary)",
-              "on-secondary-fixed": "#001b3d",
-              "on-secondary-fixed-variant": "#00468c",
-              "on-secondary-container": "#00376f",
-              tertiary: "var(--color-tertiary)",
-              "tertiary-fixed": "var(--color-tertiary-fixed)",
-              "tertiary-fixed-dim": "#a2d729",
-              "tertiary-container": "var(--color-tertiary-container)",
-              "on-tertiary": "var(--color-on-tertiary)",
-              "on-tertiary-fixed": "#141f00",
-              "on-tertiary-fixed-variant": "#374e00",
-              "on-tertiary-container": "#b5eb3e",
-              error: "var(--color-error)",
-              "error-container": "var(--color-error-container)",
-              "on-error": "var(--color-on-error)",
-              "on-error-container": "var(--color-on-error-container)",
-              background: "var(--color-background)",
-              surface: "var(--color-surface)",
-              "surface-dim": "var(--color-surface-dim)",
-              "surface-bright": "var(--color-surface-bright)",
-              "surface-container-lowest": "var(--color-surface-container-lowest)",
-              "surface-container-low": "var(--color-surface-container-low)",
-              "surface-container": "var(--color-surface-container)",
-              "surface-container-high": "var(--color-surface-container-high)",
-              "surface-container-highest": "var(--color-surface-container-highest)",
-              "surface-variant": "#e0e3e2",
-              "surface-tint": "#006b5e",
-              "on-surface": "var(--color-on-surface)",
-              "on-surface-variant": "var(--color-on-surface-variant)",
-              "on-background": "var(--color-on-background)",
-              outline: "var(--color-outline)",
-              "outline-variant": "var(--color-outline-variant)",
-              "inverse-surface": "var(--color-inverse-surface)",
-              "inverse-on-surface": "var(--color-inverse-on-surface)",
-            },
-            fontFamily: {
-              headline: ["Manrope"],
-              body: ["Plus Jakarta Sans"],
-              label: ["Inter"],
-            },
-            borderRadius: {
-              DEFAULT: "0.25rem",
-              lg: "0.5rem",
-              xl: "1.5rem",
-              full: "9999px",
-            },
-          },
-        },
-      };
-    </script>
+    <script src="../Javascript/tailwind-config.js"></script>
+    <script src="../Javascript/config.js"></script>
     <link rel="stylesheet" href="../CSS/theme.css" />
     <link rel="stylesheet" href="../CSS/dashboard.css" />
     <style>
@@ -151,8 +85,8 @@
       class="fixed top-0 w-full z-30 bg-surface-container-lowest/80 backdrop-blur-xl shadow-sm h-16 px-8 flex justify-between items-center max-w-[1920px] mx-auto border-none"
     >
       <div class="flex items-center gap-8">
-        <span
-          class="text-2xl font-extrabold tracking-tighter text-primary font-headline"
+        <span id="logo-text"
+          class="text-2xl font-extrabold tracking-tighter text-primary font-headline cursor-default select-none"
           >VoltEquilibrium</span
         >
         <div class="hidden md:flex items-center gap-6">
@@ -263,6 +197,10 @@
           class="w-full flex items-center justify-center gap-2 bg-gradient-to-br from-primary to-primary-container text-white py-3 rounded-full font-headline font-bold text-xs tracking-widest uppercase mb-4 shadow-lg shadow-primary/20 hover:opacity-90 transition-opacity"
         ><span class="material-symbols-outlined text-sm">contact_support</span>Contact Support
         </a>
+        <a id="debug-link" href="debug.html"
+          class="hidden flex items-center gap-3 px-4 py-2 text-error/60 hover:bg-error-container rounded-xl font-semibold text-sm transition-all">
+          <span class="material-symbols-outlined">bug_report</span><span>Debug Console</span>
+        </a>
         <a
           id="sign-out"
           class="flex items-center gap-3 px-4 py-2 text-on-surface-variant/60 hover:bg-surface-container-highest rounded-xl font-semibold text-sm"
@@ -338,74 +276,75 @@
           <span class="material-symbols-outlined text-primary text-base">account_tree</span>Energy Flow
         </h3>
         <div class="relative w-full overflow-x-auto">
-          <svg id="energy-flow" viewBox="0 0 800 200" class="w-full" style="min-width:600px;max-height:220px;">
+          <svg id="energy-flow" viewBox="0 0 600 320" class="w-full" style="min-width:400px;max-height:340px;">
             <defs>
               <style>
-                @keyframes flowRight { from { stroke-dashoffset: 20; } to { stroke-dashoffset: 0; } }
-                @keyframes flowLeft  { from { stroke-dashoffset: 0; }  to { stroke-dashoffset: 20; } }
-                .flow-right { stroke-dasharray: 6 4; animation: flowRight 1s linear infinite; will-change: stroke-dashoffset; }
-                .flow-left  { stroke-dasharray: 6 4; animation: flowLeft  1s linear infinite; will-change: stroke-dashoffset; }
+                @keyframes flowDash { from { stroke-dashoffset: 20; } to { stroke-dashoffset: 0; } }
+                @keyframes flowDashRev { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 20; } }
+                .flow-right { stroke-dasharray: 6 4; animation: flowDash 1s linear infinite; will-change: stroke-dashoffset; }
+                .flow-left  { stroke-dasharray: 6 4; animation: flowDashRev 1s linear infinite; will-change: stroke-dashoffset; }
                 .flow-none  { stroke-dasharray: 4 8; opacity: 0.2; animation: none; }
               </style>
             </defs>
 
             <!-- === NODES === -->
-            <!-- Solar Panel -->
+            <!-- Solar (top-left) -->
             <g id="flow-solar-node">
-              <rect x="20" y="55" width="120" height="90" rx="16" fill="var(--color-primary-container)" opacity="0.15" stroke="var(--color-primary)" stroke-width="1.5"/>
-              <text x="80" y="90" text-anchor="middle" fill="var(--color-primary)" font-size="28" font-family="Material Symbols Outlined">solar_power</text>
-              <text x="80" y="118" text-anchor="middle" fill="var(--color-on-surface)" font-size="11" font-weight="700" font-family="Manrope">Solar</text>
-              <text id="flow-solar-w" x="80" y="135" text-anchor="middle" fill="var(--color-on-surface-variant)" font-size="10" font-family="Inter">0 W</text>
+              <rect x="30" y="15" width="130" height="95" rx="16" fill="var(--color-primary-container)" opacity="0.15" stroke="var(--color-primary)" stroke-width="1.5"/>
+              <text x="95" y="50" text-anchor="middle" fill="var(--color-primary)" font-size="26" font-family="Material Symbols Outlined">solar_power</text>
+              <text x="95" y="74" text-anchor="middle" fill="var(--color-on-surface)" font-size="11" font-weight="700" font-family="Manrope">Solar</text>
+              <text id="flow-solar-w" x="95" y="92" text-anchor="middle" fill="var(--color-on-surface-variant)" font-size="10" font-family="Inter">0 W</text>
             </g>
 
-            <!-- Inverter -->
+            <!-- Inverter (center) -->
             <g>
-              <rect x="260" y="55" width="120" height="90" rx="16" fill="var(--color-secondary-container)" opacity="0.15" stroke="var(--color-secondary)" stroke-width="1.5"/>
-              <text x="320" y="90" text-anchor="middle" fill="var(--color-secondary)" font-size="28" font-family="Material Symbols Outlined">developer_board</text>
-              <text x="320" y="118" text-anchor="middle" fill="var(--color-on-surface)" font-size="11" font-weight="700" font-family="Manrope">Inverter</text>
-              <text id="flow-inv-w" x="320" y="135" text-anchor="middle" fill="var(--color-on-surface-variant)" font-size="10" font-family="Inter">0 W</text>
+              <rect x="235" y="110" width="130" height="95" rx="16" fill="var(--color-secondary-container)" opacity="0.15" stroke="var(--color-secondary)" stroke-width="1.5"/>
+              <text x="300" y="145" text-anchor="middle" fill="var(--color-secondary)" font-size="26" font-family="Material Symbols Outlined">developer_board</text>
+              <text x="300" y="169" text-anchor="middle" fill="var(--color-on-surface)" font-size="11" font-weight="700" font-family="Manrope">Inverter</text>
+              <text id="flow-inv-w" x="300" y="187" text-anchor="middle" fill="var(--color-on-surface-variant)" font-size="10" font-family="Inter">0 W</text>
             </g>
 
-            <!-- House / Load -->
+            <!-- Grid / Eskom (top-right) -->
             <g>
-              <rect x="500" y="55" width="120" height="90" rx="16" fill="var(--color-tertiary-container)" opacity="0.15" stroke="var(--color-tertiary)" stroke-width="1.5"/>
-              <text x="560" y="90" text-anchor="middle" fill="var(--color-tertiary)" font-size="28" font-family="Material Symbols Outlined">home</text>
-              <text x="560" y="118" text-anchor="middle" fill="var(--color-on-surface)" font-size="11" font-weight="700" font-family="Manrope">House</text>
-              <text id="flow-load-w" x="560" y="135" text-anchor="middle" fill="var(--color-on-surface-variant)" font-size="10" font-family="Inter">0 W</text>
+              <rect x="440" y="15" width="130" height="95" rx="16" fill="var(--color-error-container)" opacity="0.15" stroke="var(--color-error)" stroke-width="1.5"/>
+              <text x="505" y="50" text-anchor="middle" fill="var(--color-error)" font-size="26" font-family="Material Symbols Outlined">electrical_services</text>
+              <text x="505" y="74" text-anchor="middle" fill="var(--color-on-surface)" font-size="11" font-weight="700" font-family="Manrope">Eskom / Grid</text>
+              <text id="flow-grid-w" x="505" y="92" text-anchor="middle" fill="var(--color-on-surface-variant)" font-size="10" font-family="Inter">0 W</text>
             </g>
 
-            <!-- Grid -->
+            <!-- Battery (bottom-left) -->
             <g>
-              <rect x="660" y="55" width="120" height="90" rx="16" fill="var(--color-error-container)" opacity="0.15" stroke="var(--color-error)" stroke-width="1.5"/>
-              <text x="720" y="90" text-anchor="middle" fill="var(--color-error)" font-size="28" font-family="Material Symbols Outlined">electrical_services</text>
-              <text x="720" y="118" text-anchor="middle" fill="var(--color-on-surface)" font-size="11" font-weight="700" font-family="Manrope">Grid</text>
-              <text id="flow-grid-w" x="720" y="135" text-anchor="middle" fill="var(--color-on-surface-variant)" font-size="10" font-family="Inter">0 W</text>
+              <rect x="30" y="210" width="130" height="95" rx="16" fill="var(--color-primary-fixed)" opacity="0.15" stroke="var(--color-primary)" stroke-width="1.5"/>
+              <text x="95" y="245" text-anchor="middle" fill="var(--color-primary)" font-size="26" font-family="Material Symbols Outlined">battery_charging_full</text>
+              <text x="95" y="269" text-anchor="middle" fill="var(--color-on-surface)" font-size="11" font-weight="700" font-family="Manrope">Battery</text>
+              <text id="flow-batt-soc" x="70" y="289" fill="var(--color-on-surface)" font-size="10" font-weight="700" font-family="Inter">—%</text>
+              <text id="flow-batt-w" x="130" y="289" text-anchor="end" fill="var(--color-on-surface-variant)" font-size="10" font-family="Inter">0 W</text>
             </g>
 
-            <!-- Battery (below inverter) -->
+            <!-- House (bottom-right) -->
             <g>
-              <rect x="260" y="165" width="120" height="30" rx="10" fill="var(--color-primary-fixed)" opacity="0.15" stroke="var(--color-primary)" stroke-width="1.5"/>
-              <text x="290" y="186" fill="var(--color-primary)" font-size="14" font-family="Material Symbols Outlined">battery_horiz_075</text>
-              <text id="flow-batt-soc" x="310" y="186" fill="var(--color-on-surface)" font-size="10" font-weight="700" font-family="Inter">—%</text>
-              <text id="flow-batt-w" x="370" y="186" text-anchor="end" fill="var(--color-on-surface-variant)" font-size="9" font-family="Inter">0 W</text>
+              <rect x="440" y="210" width="130" height="95" rx="16" fill="var(--color-tertiary-container)" opacity="0.15" stroke="var(--color-tertiary)" stroke-width="1.5"/>
+              <text x="505" y="245" text-anchor="middle" fill="var(--color-tertiary)" font-size="26" font-family="Material Symbols Outlined">home</text>
+              <text x="505" y="269" text-anchor="middle" fill="var(--color-on-surface)" font-size="11" font-weight="700" font-family="Manrope">House</text>
+              <text id="flow-load-w" x="505" y="289" text-anchor="middle" fill="var(--color-on-surface-variant)" font-size="10" font-family="Inter">0 W</text>
             </g>
 
             <!-- === FLOW LINES === -->
-            <!-- Solar → Inverter -->
-            <line id="flow-line-solar" x1="140" y1="100" x2="260" y2="100"
+            <!-- Solar (bottom-right corner) → Inverter (top-left corner) -->
+            <line id="flow-line-solar" x1="160" y1="90" x2="235" y2="130"
               stroke="var(--color-primary)" stroke-width="2.5" class="flow-none"/>
 
-            <!-- Inverter → House -->
-            <line id="flow-line-load" x1="380" y1="100" x2="500" y2="100"
-              stroke="var(--color-tertiary)" stroke-width="2.5" class="flow-none"/>
-
-            <!-- House ↔ Grid -->
-            <line id="flow-line-grid" x1="620" y1="100" x2="660" y2="100"
+            <!-- Inverter (top-right corner) → Grid (bottom-left corner) -->
+            <line id="flow-line-grid" x1="365" y1="130" x2="440" y2="90"
               stroke="var(--color-error)" stroke-width="2.5" class="flow-none"/>
 
-            <!-- Inverter ↕ Battery -->
-            <line id="flow-line-batt" x1="320" y1="145" x2="320" y2="165"
+            <!-- Inverter (bottom-left corner) → Battery (top-right corner) -->
+            <line id="flow-line-batt" x1="235" y1="185" x2="160" y2="230"
               stroke="var(--color-primary)" stroke-width="2.5" class="flow-none"/>
+
+            <!-- Inverter (bottom-right corner) → House (top-left corner) -->
+            <line id="flow-line-load" x1="365" y1="185" x2="440" y2="230"
+              stroke="var(--color-tertiary)" stroke-width="2.5" class="flow-none"/>
           </svg>
         </div>
       </div>
@@ -1137,17 +1076,26 @@
     ></div>
 
     <script src="../Javascript/dashboard.js"></script>
+    <script src="../Javascript/chatbot.js"></script>
     <script>
+      // 8-click easter egg to reveal debug console
       (function(){
-        var s=localStorage.getItem("voltequilibrium-theme");
-        var p=window.matchMedia("(prefers-color-scheme:dark)").matches;
-        if(s==="dark"||(!s&&p)){document.documentElement.classList.add("dark");document.documentElement.classList.remove("light");var i=document.getElementById("theme-icon");if(i)i.textContent="light_mode";}
+        let clicks = 0, timer = null;
+        const logo = document.getElementById("logo-text");
+        const debugLink = document.getElementById("debug-link");
+        if (!logo || !debugLink) return;
+        logo.addEventListener("click", () => {
+          clicks++;
+          clearTimeout(timer);
+          timer = setTimeout(() => clicks = 0, 2000);
+          if (clicks >= 8) {
+            debugLink.classList.remove("hidden");
+            debugLink.classList.add("flex");
+            clicks = 0;
+          }
+        });
       })();
-      document.getElementById("theme-toggle")?.addEventListener("click",function(){
-        var d=document.documentElement.classList.contains("dark");
-        if(d){document.documentElement.classList.replace("dark","light");document.getElementById("theme-icon").textContent="dark_mode";localStorage.setItem("voltequilibrium-theme","light");}
-        else{document.documentElement.classList.replace("light","dark");document.getElementById("theme-icon").textContent="light_mode";localStorage.setItem("voltequilibrium-theme","dark");}
-      });
     </script>
+    <script src="../Javascript/theme.js"></script>
   </body>
 </html>

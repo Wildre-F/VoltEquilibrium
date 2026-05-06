@@ -4,6 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="view-transition" content="same-origin" />
     <title>VoltEquilibrium | Login</title>
     <link rel="stylesheet" href="../CSS/login_style.css" />
     <!-- Material Symbols Link -->
@@ -22,6 +23,7 @@
     />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" href="../CSS/theme.css" />
     <script id="tailwind-config">
       tailwind.config = {
         darkMode: "class",
@@ -113,11 +115,11 @@
   </head>
 
   <body
-    class="bg-surface dark:bg-slate-900 font-body text-on-surface dark:text-white antialiased min-h-screen flex items-center justify-center p-4 md:p-8"
+    class="bg-surface font-body text-on-surface antialiased min-h-screen flex items-center justify-center p-4 md:p-8"
   >
     <!-- Auth Container: Intentional Asymmetry Layout -->
     <main
-      class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-2xl shadow-xl bg-surface-container-lowest dark:bg-slate-800"
+      class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-0 overflow-hidden rounded-2xl shadow-xl bg-surface-container-lowest"
     >
       <!-- Left Column: Branding & Visual Anchor -->
       <section
@@ -189,7 +191,7 @@
       </section>
       <!-- Right Column: Form Canvas -->
       <section
-        class="lg:col-span-7 p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-surface-container-lowest dark:bg-slate-800 relative min-h-[600px]"
+        class="lg:col-span-7 p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-surface-container-lowest relative min-h-[600px]"
       >
         <!-- Theme Toggle -->
         <button

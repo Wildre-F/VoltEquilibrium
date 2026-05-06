@@ -1,0 +1,226 @@
+<!doctype html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta name="view-transition" content="same-origin" />
+  <title>VoltEquilibrium | Debug Console</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="../Javascript/tailwind-config.js"></script>
+  <script src="../Javascript/config.js"></script>
+  <link rel="stylesheet" href="../CSS/theme.css" />
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; line-height: 1; }
+    .mqtt-row { animation: slideIn 0.2s ease-out; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+    #mqtt-log { max-height: calc(100vh - 280px); }
+  </style>
+</head>
+<body class="bg-background text-on-surface">
+
+  <div class="max-w-6xl mx-auto p-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center">
+          <span class="material-symbols-outlined text-error" style="font-variation-settings:'FILL' 1;">bug_report</span>
+        </div>
+        <div>
+          <h1 class="text-2xl font-extrabold font-headline text-on-surface tracking-tight">Debug Console</h1>
+          <p class="text-xs text-on-surface-variant font-body">Live MQTT data stream</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-surface-container-low rounded-full">
+          <span id="status-dot" class="w-2 h-2 rounded-full bg-outline animate-pulse"></span>
+          <span id="status-text" class="text-xs font-bold font-label text-on-surface-variant">Connecting...</span>
+        </div>
+        <span id="msg-count" class="text-xs font-label text-on-surface-variant/60">0 messages</span>
+        <button onclick="clearLog()" class="p-2 hover:bg-surface-container rounded-full transition-colors" title="Clear log">
+          <span class="material-symbols-outlined text-on-surface-variant text-lg">delete_sweep</span>
+        </button>
+        <button onclick="togglePause()" id="pause-btn" class="p-2 hover:bg-surface-container rounded-full transition-colors" title="Pause/Resume">
+          <span id="pause-icon" class="material-symbols-outlined text-on-surface-variant text-lg">pause</span>
+        </button>
+        <a href="Dashboard.html" class="p-2 hover:bg-surface-container rounded-full transition-colors" title="Back to Dashboard">
+          <span class="material-symbols-outlined text-on-surface-variant text-lg">arrow_back</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <button class="filter-btn active px-3 py-1.5 rounded-full text-xs font-bold font-label border border-outline-variant/30 transition-colors" data-filter="all">All</button>
+      <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-bold font-label border border-outline-variant/30 text-on-surface-variant transition-colors" data-filter="solar">Solar</button>
+      <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-bold font-label border border-outline-variant/30 text-on-surface-variant transition-colors" data-filter="wind">Wind</button>
+      <button class="filter-btn px-3 py-1.5 rounded-full text-xs font-bold font-label border border-outline-variant/30 text-on-surface-variant transition-colors" data-filter="battery">Battery</button>
+    </div>
+
+    <!-- Log -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
+      <div class="bg-surface-container px-4 py-2 flex items-center gap-4 text-xs font-label font-bold text-on-surface-variant uppercase tracking-widest">
+        <span class="w-20">Time</span>
+        <span class="w-56">Topic</span>
+        <span class="flex-1">Payload</span>
+      </div>
+      <div id="mqtt-log" class="overflow-y-auto divide-y divide-outline-variant/10 font-mono text-xs">
+        <div class="text-center py-12 text-on-surface-variant/40">
+          <span class="material-symbols-outlined text-3xl block mb-2">sensors</span>
+          Waiting for MQTT messages...
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Theme
+    (function(){
+      var s=localStorage.getItem("voltequilibrium-theme");
+      var p=window.matchMedia("(prefers-color-scheme:dark)").matches;
+      if(s==="dark"||(!s&&p)){document.documentElement.classList.add("dark");document.documentElement.classList.remove("light");}
+    })();
+
+    const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+    if (!token) window.location.replace("login.html");
+
+    const API = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+      ? "http://localhost:3000" : "";
+
+    const log = document.getElementById("mqtt-log");
+    let msgCount = 0;
+    let paused = false;
+    let activeFilter = "all";
+    let allMessages = [];
+
+    // Filter buttons
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".filter-btn").forEach(b => {
+          b.classList.remove("active");
+          b.classList.add("text-on-surface-variant");
+        });
+        btn.classList.add("active");
+        btn.classList.remove("text-on-surface-variant");
+        activeFilter = btn.dataset.filter;
+        renderLog();
+      });
+    });
+
+    // Add filter-btn active style
+    const style = document.createElement("style");
+    style.textContent = ".filter-btn.active{background:var(--color-primary);color:var(--color-on-primary);border-color:var(--color-primary);}";
+    document.head.appendChild(style);
+
+    function getTypeColor(topic) {
+      if (topic.includes("solar")) return "text-tertiary";
+      if (topic.includes("wind")) return "text-secondary";
+      if (topic.includes("battery")) return "text-primary";
+      return "text-on-surface-variant";
+    }
+
+    function getTypeBg(topic) {
+      if (topic.includes("solar")) return "bg-tertiary/5";
+      if (topic.includes("wind")) return "bg-secondary/5";
+      if (topic.includes("battery")) return "bg-primary/5";
+      return "";
+    }
+
+    function formatPayload(raw) {
+      try {
+        const obj = JSON.parse(raw);
+        const keys = Object.keys(obj);
+        if (keys.length === 0) return raw;
+        return keys.map(k => {
+          const v = typeof obj[k] === "number" ? obj[k].toFixed(2) : obj[k];
+          return `<span class="text-on-surface-variant/60">${k}:</span><span class="text-on-surface font-bold">${v}</span>`;
+        }).join("  ");
+      } catch { return raw; }
+    }
+
+    function renderLog() {
+      const filtered = activeFilter === "all"
+        ? allMessages
+        : allMessages.filter(m => m.topic.toLowerCase().includes(activeFilter));
+
+      if (filtered.length === 0) {
+        log.innerHTML = `<div class="text-center py-12 text-on-surface-variant/40">
+          <span class="material-symbols-outlined text-3xl block mb-2">filter_alt</span>
+          No ${activeFilter} messages yet
+        </div>`;
+        return;
+      }
+
+      log.innerHTML = filtered.slice(-200).map(m => {
+        const time = new Date(m.ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+        const shortTopic = m.topic.split("/").slice(-2).join("/");
+        return `<div class="mqtt-row flex items-start gap-4 px-4 py-2 hover:bg-surface-container-low/50 ${getTypeBg(m.topic)}">
+          <span class="w-20 text-on-surface-variant/60 shrink-0">${time}</span>
+          <span class="w-56 shrink-0 ${getTypeColor(m.topic)} font-bold truncate" title="${m.topic}">${shortTopic}</span>
+          <span class="flex-1 break-all leading-relaxed">${formatPayload(m.payload)}</span>
+        </div>`;
+      }).join("");
+
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function addMessage(entry) {
+      allMessages.push(entry);
+      if (allMessages.length > 500) allMessages.shift();
+      msgCount++;
+      document.getElementById("msg-count").textContent = `${msgCount} messages`;
+      if (!paused) renderLog();
+    }
+
+    function clearLog() {
+      allMessages = [];
+      msgCount = 0;
+      document.getElementById("msg-count").textContent = "0 messages";
+      log.innerHTML = `<div class="text-center py-12 text-on-surface-variant/40">
+        <span class="material-symbols-outlined text-3xl block mb-2">sensors</span>
+        Log cleared — waiting for messages...
+      </div>`;
+    }
+
+    function togglePause() {
+      paused = !paused;
+      document.getElementById("pause-icon").textContent = paused ? "play_arrow" : "pause";
+      if (!paused) renderLog();
+    }
+
+    // Load buffer first
+    fetch(`${API}/api/debug/mqtt/buffer`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(r => r.json())
+      .then(data => {
+        if (data.success && data.data.length) {
+          data.data.forEach(m => addMessage(m));
+        }
+      })
+      .catch(() => {});
+
+    // Connect SSE stream
+    const evtSource = new EventSource(`${API}/api/debug/mqtt/stream?token=${token}`);
+
+    evtSource.onopen = () => {
+      document.getElementById("status-dot").className = "w-2 h-2 rounded-full bg-tertiary-fixed animate-pulse shadow-[0_0_6px_#bdf447]";
+      document.getElementById("status-text").textContent = "Live";
+      document.getElementById("status-text").className = "text-xs font-bold font-label text-primary";
+    };
+
+    evtSource.onmessage = (e) => {
+      try {
+        const entry = JSON.parse(e.data);
+        if (entry.connected) return; // initial handshake
+        addMessage(entry);
+      } catch {}
+    };
+
+    evtSource.onerror = () => {
+      document.getElementById("status-dot").className = "w-2 h-2 rounded-full bg-error animate-pulse";
+      document.getElementById("status-text").textContent = "Disconnected";
+      document.getElementById("status-text").className = "text-xs font-bold font-label text-error";
+    };
+  </script>
+</body>
+</html>

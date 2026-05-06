@@ -3,75 +3,18 @@
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="view-transition" content="same-origin" />
   <title>VoltEquilibrium | Community Sharing</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "inverse-on-surface": "var(--color-inverse-on-surface)",
-            primary: "var(--color-primary)",
-            "secondary-fixed": "var(--color-secondary-fixed)",
-            "on-secondary-fixed-variant": "#00468c",
-            "on-tertiary-container": "#b5eb3e",
-            "on-surface": "var(--color-on-surface)",
-            error: "var(--color-error)",
-            "tertiary-fixed": "var(--color-tertiary-fixed)",
-            "on-background": "var(--color-on-background)",
-            "surface-variant": "#e0e3e2",
-            "surface-container": "var(--color-surface-container)",
-            "tertiary-container": "var(--color-tertiary-container)",
-            "primary-fixed-dim": "var(--color-primary-fixed-dim)",
-            "surface-bright": "var(--color-surface-bright)",
-            "inverse-primary": "#83d5c5",
-            "surface-dim": "var(--color-surface-dim)",
-            "on-primary-fixed": "var(--color-on-primary-fixed)",
-            "error-container": "var(--color-error-container)",
-            "on-error": "var(--color-on-error)",
-            "on-primary": "var(--color-on-primary)",
-            tertiary: "var(--color-tertiary)",
-            "on-surface-variant": "var(--color-on-surface-variant)",
-            background: "var(--color-background)",
-            surface: "var(--color-surface)",
-            "on-tertiary-fixed-variant": "#374e00",
-            "primary-fixed": "var(--color-primary-fixed)",
-            "surface-container-low": "var(--color-surface-container-low)",
-            "on-secondary-fixed": "#001b3d",
-            "on-tertiary": "var(--color-on-tertiary)",
-            "on-error-container": "var(--color-on-error-container)",
-            "on-primary-fixed-variant": "#005046",
-            "secondary-fixed-dim": "#a9c7ff",
-            "on-secondary": "var(--color-on-secondary)",
-            "primary-container": "var(--color-primary-container)",
-            "on-primary-container": "var(--color-on-primary-container)",
-            "surface-container-high": "var(--color-surface-container-high)",
-            "secondary-container": "var(--color-secondary-container)",
-            "on-tertiary-fixed": "#141f00",
-            "surface-tint": "#006b5e",
-            "surface-container-lowest": "var(--color-surface-container-lowest)",
-            "outline-variant": "var(--color-outline-variant)",
-            outline: "var(--color-outline)",
-            "surface-container-highest": "var(--color-surface-container-highest)",
-            "inverse-surface": "var(--color-inverse-surface)",
-            secondary: "var(--color-secondary)",
-            "tertiary-fixed-dim": "#a2d729",
-            "on-secondary-container": "#00376f",
-          },
-          fontFamily: { headline: ["Manrope"], body: ["Plus Jakarta Sans"], label: ["Inter"] },
-          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "1.5rem", full: "9999px" },
-        },
-      },
-    };
-  </script>
+  <script src="../Javascript/tailwind-config.js"></script>
+  <script src="../Javascript/config.js"></script>
   <link rel="stylesheet" href="../CSS/theme.css" />
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; line-height: 1; }
     .tab-btn { transition: all 0.15s ease; }
-    .tab-btn.active { background: #005147; color: #fff; }
+    .tab-btn.active { background: var(--color-primary); color: var(--color-on-primary); }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
   </style>
@@ -204,58 +147,81 @@
         </div>
       </div>
 
+      <!-- ── Quick Actions ─────────────────────────────────────────────────── -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
+        <button id="open-sale-modal"
+          class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">sell</span>
+          </div>
+          <p class="text-sm font-bold font-headline text-on-surface">Sell Energy</p>
+          <p class="text-[10px] text-on-surface-variant font-body mt-1">List your excess power for sale</p>
+        </button>
+
+        <button onclick="showView('sales')"
+          class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
+          <div class="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center mb-3 group-hover:bg-secondary/20 transition-colors">
+            <span class="material-symbols-outlined text-secondary" style="font-variation-settings:'FILL' 1;">shopping_cart</span>
+          </div>
+          <p class="text-sm font-bold font-headline text-on-surface">Buy Energy</p>
+          <p class="text-[10px] text-on-surface-variant font-body mt-1">Browse available energy to purchase</p>
+        </button>
+
+        <button id="open-request-modal"
+          class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
+          <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center mb-3 group-hover:bg-error/20 transition-colors">
+            <span class="material-symbols-outlined text-error" style="font-variation-settings:'FILL' 1;">electric_bolt</span>
+          </div>
+          <p class="text-sm font-bold font-headline text-on-surface">Request Help</p>
+          <p class="text-[10px] text-on-surface-variant font-body mt-1">Ask the community for energy</p>
+        </button>
+
+        <button onclick="showView('requests')"
+          class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 text-left hover:shadow-md hover:-translate-y-0.5 transition-all group">
+          <div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center mb-3 group-hover:bg-tertiary/20 transition-colors">
+            <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1;">volunteer_activism</span>
+          </div>
+          <p class="text-sm font-bold font-headline text-on-surface">Donate</p>
+          <p class="text-[10px] text-on-surface-variant font-body mt-1">Help a neighbour in need</p>
+        </button>
+      </div>
+
       <!-- ── Community Board ─────────────────────────────────────────────────── -->
       <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden mb-8">
-        <!-- Tab bar -->
+        <!-- View toggle -->
         <div class="flex border-b border-outline-variant/20 px-6 pt-4 gap-2">
           <button class="tab-btn active px-5 py-2 rounded-full text-sm font-bold font-label uppercase tracking-wider" data-tab="sales">
-            Sales
+            <span class="material-symbols-outlined text-xs align-middle mr-1">storefront</span>For Sale
           </button>
           <button class="tab-btn px-5 py-2 rounded-full text-sm font-bold font-label uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-low" data-tab="requests">
-            Requests
+            <span class="material-symbols-outlined text-xs align-middle mr-1">handshake</span>Requests
+          </button>
+          <button class="tab-btn px-5 py-2 rounded-full text-sm font-bold font-label uppercase tracking-wider text-on-surface-variant hover:bg-surface-container-low" data-tab="my">
+            <span class="material-symbols-outlined text-xs align-middle mr-1">person</span>My Listings
           </button>
         </div>
 
         <div class="p-6">
-
-          <!-- ── Sales Tab ── -->
+          <!-- ── Sales view ── -->
           <div id="tab-sales" class="tab-panel active">
-            <div class="flex justify-end mb-4">
-              <button id="open-sale-modal"
-                class="flex items-center gap-2 bg-primary text-white px-5 py-2.5 rounded-full font-bold text-sm font-label uppercase tracking-widest hover:opacity-90 transition-opacity">
-                <span class="material-symbols-outlined text-base">add</span>List for Sale
-              </button>
-            </div>
             <div id="sales-list" class="space-y-3">
               <p class="text-on-surface-variant text-sm text-center py-8">Loading sales…</p>
             </div>
           </div>
 
-          <!-- ── Requests Tab ── -->
+          <!-- ── Requests view ── -->
           <div id="tab-requests" class="tab-panel">
-            <div class="flex items-center justify-between mb-4">
-              <p class="text-xs text-on-surface-variant/60 font-label">Post a request for energy, or donate to a neighbour in need.</p>
-              <button id="open-request-modal"
-                class="flex items-center gap-2 bg-secondary text-white px-5 py-2.5 rounded-full font-bold text-sm font-label uppercase tracking-widest hover:opacity-90 transition-opacity">
-                <span class="material-symbols-outlined text-base">add</span>Post Request
-              </button>
-            </div>
             <div id="requests-list" class="space-y-3">
               <p class="text-on-surface-variant text-sm text-center py-8">Loading requests…</p>
             </div>
           </div>
 
-        </div>
-      </div>
-
-      <!-- ── My Listings ─────────────────────────────────────────────────────── -->
-      <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6">
-        <h3 class="text-base font-bold font-headline text-on-surface mb-4 flex items-center gap-2">
-          <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">manage_accounts</span>
-          My Active Listings
-        </h3>
-        <div id="my-listings" class="space-y-3">
-          <p class="text-on-surface-variant text-sm text-center py-6">Loading your listings…</p>
+          <!-- ── My Listings view ── -->
+          <div id="tab-my" class="tab-panel">
+            <div id="my-listings" class="space-y-3">
+              <p class="text-on-surface-variant text-sm text-center py-6">Loading your listings…</p>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -292,8 +258,14 @@
             <label class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant">Amount (kWh)</label>
             <span id="modal-kwh-hint" class="text-xs text-on-surface-variant/60 font-label"></span>
           </div>
-          <input id="modal-kwh" type="number" min="0.1" step="0.01" placeholder="e.g. 5.0"
-            class="w-full bg-surface-container-low border border-outline-variant/40 rounded-xl px-4 py-3 text-sm font-body focus:outline-none focus:border-primary" />
+          <div class="flex gap-2">
+            <input id="modal-kwh" type="number" min="0.1" step="0.01" placeholder="e.g. 5.0"
+              class="flex-1 bg-surface-container-low border border-outline-variant/40 rounded-xl px-4 py-3 text-sm font-body focus:outline-none focus:border-primary" />
+            <button id="modal-fill-btn" type="button" class="hidden px-3 py-2 bg-primary/10 text-primary rounded-xl text-xs font-label font-bold hover:bg-primary/20 transition-colors whitespace-nowrap"
+              title="Request enough to fill your battery to 100%">
+              <span class="material-symbols-outlined text-sm align-middle mr-0.5">battery_full</span>Fill to 100%
+            </button>
+          </div>
         </div>
         <!-- Price field (sales only) -->
         <div id="modal-price-wrap" class="hidden">
@@ -384,581 +356,8 @@
   <!-- Toast -->
   <div id="toast-container" class="fixed top-20 right-4 z-50 flex flex-col gap-2"></div>
 
-  <script>
-  (function () {
-    const API   = "http://localhost:3000";
-    const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
-    if (!token) { window.location.replace("login.html"); return; }
-    if (!sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
-
-    // Decode JWT to get current user id
-    function myId() {
-      try { return JSON.parse(atob(token.split(".")[1])).id; } catch { return null; }
-    }
-
-    // ── Sign out ───────────────────────────────────────────────────────────────
-    document.getElementById("sign-out").addEventListener("click", (e) => {
-      e.preventDefault();
-      sessionStorage.removeItem("authToken");
-      localStorage.removeItem("authToken");
-      window.location.href = "login.html";
-    });
-
-    // ── Toast ──────────────────────────────────────────────────────────────────
-    function toast(msg, type = "info") {
-      const colors = { info: "bg-primary text-white", success: "bg-tertiary-container text-white",
-                       error: "bg-error text-white", warning: "bg-secondary text-white" };
-      const el = document.createElement("div");
-      el.className = `${colors[type]} px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 min-w-[220px] translate-x-full transition-transform duration-300 text-sm font-semibold`;
-      el.innerHTML = `<span class="material-symbols-outlined text-sm">${type === "error" ? "error" : type === "success" ? "check_circle" : "info"}</span>${msg}`;
-      document.getElementById("toast-container").appendChild(el);
-      requestAnimationFrame(() => el.classList.remove("translate-x-full"));
-      setTimeout(() => { el.classList.add("translate-x-full"); setTimeout(() => el.remove(), 300); }, 3500);
-    }
-
-    // ── State ──────────────────────────────────────────────────────────────────
-    let currentSoc      = null;
-    let canShare        = false;
-    let activeTab       = "sales";
-    let batteryCapacity = null; // kWh
-    let eskomRate       = null; // R per kWh
-
-    // ── Status Bar ─────────────────────────────────────────────────────────────
-    async function loadStatus() {
-      // Load shedding (no auth needed)
-      fetch(`${API}/api/loadshedding`)
-        .then(r => r.json())
-        .then(json => {
-          const stage = json.success ? json.stage : null;
-          const lsVal  = document.getElementById("ls-val");
-          const lsIcon = document.getElementById("ls-icon");
-          if (stage === null) { lsVal.textContent = "N/A"; return; }
-          if (stage === 0) {
-            lsVal.textContent = "None";
-            lsIcon.className = "w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0";
-            lsIcon.querySelector("span").className = "material-symbols-outlined text-primary text-lg";
-          } else if (stage <= 2) {
-            lsVal.textContent = `Stage ${stage}`;
-            lsIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#fef9c3;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
-            lsIcon.querySelector("span").style.color = "#854d0e";
-          } else if (stage <= 4) {
-            lsVal.textContent = `Stage ${stage}`;
-            lsIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#ffedd5;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
-            lsIcon.querySelector("span").style.color = "#9a3412";
-          } else {
-            lsVal.textContent = `Stage ${stage}`;
-            lsIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#ffdad6;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
-            lsIcon.querySelector("span").style.color = "#ba1a1a";
-          }
-        }).catch(() => { document.getElementById("ls-val").textContent = "N/A"; });
-
-      // Power stats (auth required)
-      try {
-        const [rRes, cRes] = await Promise.all([
-          fetch(`${API}/api/readings/latest`, { headers: { Authorization: `Bearer ${token}` } }),
-          fetch(`${API}/api/co2`,             { headers: { Authorization: `Bearer ${token}` } }),
-        ]);
-        const rJson = await rRes.json();
-        const cJson = await cRes.json();
-
-        if (rJson.success) {
-          const all     = rJson.data?.all || [];
-          const battRow = all.find(r => r.state_of_charge != null);
-          if (battRow) {
-            currentSoc = parseFloat(battRow.state_of_charge);
-            const socEl   = document.getElementById("soc-val");
-            const socIcon = document.getElementById("soc-icon");
-            socEl.textContent = `${currentSoc.toFixed(1)}%`;
-            if (currentSoc > 60) {
-              socIcon.style.cssText = "";
-              socIcon.className = "w-10 h-10 rounded-full bg-tertiary-fixed flex items-center justify-center shrink-0";
-              socIcon.querySelector("span").className = "material-symbols-outlined text-primary text-lg";
-            } else if (currentSoc > 30) {
-              socIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#fef9c3;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
-              socIcon.querySelector("span").style.color = "#854d0e";
-            } else {
-              socIcon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#ffdad6;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
-              socIcon.querySelector("span").style.color = "#ba1a1a";
-            }
-            updateEligibility();
-          }
-        }
-        if (cJson.success) {
-          document.getElementById("today-kwh").textContent = `${cJson.data.todayKwh.toFixed(2)} kWh`;
-        }
-      } catch { /* silent */ }
-    }
-
-    function updateEligibility() {
-      canShare = currentSoc !== null && currentSoc > 30;
-      const icon = document.getElementById("elig-icon");
-      const sym  = document.getElementById("elig-sym");
-      const val  = document.getElementById("elig-val");
-      if (currentSoc === null) { val.textContent = "…"; return; }
-      if (canShare) {
-        icon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#bdf447;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
-        sym.className = "material-symbols-outlined text-lg";
-        sym.style.color = "#374e00";
-        sym.textContent = "check_circle";
-        val.textContent = "Can Share";
-        val.style.color = "#374e00";
-      } else {
-        icon.style.cssText = "width:2.5rem;height:2.5rem;border-radius:9999px;background:#ffdad6;display:flex;align-items:center;justify-content:center;flex-shrink:0;";
-        sym.className = "material-symbols-outlined text-lg";
-        sym.style.color = "#ba1a1a";
-        sym.textContent = "block";
-        val.textContent = "SOC Too Low";
-        val.style.color = "#ba1a1a";
-      }
-    }
-
-    // ── Modal ──────────────────────────────────────────────────────────────────
-    let modalType = null; // "donations" | "sales" | "requests"
-
-    const backdrop    = document.getElementById("modal-backdrop");
-    const modalTitle  = document.getElementById("modal-title");
-    const modalIcon   = document.getElementById("modal-icon");
-    const modalIconWrap = document.getElementById("modal-icon-wrap");
-    const modalSocWarn  = document.getElementById("modal-soc-warn");
-    const modalPriceWrap = document.getElementById("modal-price-wrap");
-    const modalConfirm  = document.getElementById("modal-confirm");
-    const modalKwh    = document.getElementById("modal-kwh");
-    const modalPrice  = document.getElementById("modal-price");
-
-    function openModal(type) {
-      modalType = type;
-      modalKwh.value   = "";
-      modalPrice.value = "";
-
-      const needsShare = type !== "requests";
-      modalSocWarn.classList.toggle("hidden", !needsShare || canShare);
-      modalPriceWrap.classList.toggle("hidden", type !== "sales");
-
-      // ── Compute kWh max & hint ─────────────────────────────────────────────
-      const kwhHint = document.getElementById("modal-kwh-hint");
-      let maxKwh = null;
-
-      if (type === "requests" && batteryCapacity === null) {
-        // No-battery user: community cap applies
-        maxKwh = 2;
-        modalKwh.max = maxKwh;
-        kwhHint.textContent = `Max ${maxKwh} kWh per request (community allowance, up to 10 kWh total outstanding)`;
-      } else if (batteryCapacity !== null && currentSoc !== null) {
-        if (type === "requests") {
-          // Max requestable = empty space in battery
-          maxKwh = parseFloat((batteryCapacity * (1 - currentSoc / 100)).toFixed(2));
-          kwhHint.textContent = `Max: ${maxKwh} kWh (battery space available)`;
-        } else {
-          // Max shareable = energy currently stored
-          maxKwh = parseFloat((batteryCapacity * (currentSoc / 100)).toFixed(2));
-          kwhHint.textContent = `Max: ${maxKwh} kWh (current charge)`;
-        }
-        modalKwh.max = maxKwh;
-      } else {
-        kwhHint.textContent = "";
-        modalKwh.removeAttribute("max");
-      }
-
-      // ── Eskom rate hint for sales ──────────────────────────────────────────
-      const eskomHint = document.getElementById("modal-eskom-hint");
-      if (type === "sales" && eskomRate !== null) {
-        eskomHint.textContent = `Eskom rate: R${eskomRate.toFixed(2)}/kWh`;
-      } else {
-        eskomHint.textContent = "";
-      }
-
-      if (type === "donations") {
-        modalTitle.textContent = "Donate Energy";
-        modalIcon.textContent  = "solar_power";
-        modalIcon.style.color  = "";
-        modalIconWrap.style.background = "#9ff2e1";
-        modalConfirm.className = "flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity";
-        modalConfirm.textContent = "Confirm Donation";
-      } else if (type === "sales") {
-        modalTitle.textContent = "List Energy for Sale";
-        modalIcon.textContent  = "sell";
-        modalIcon.style.color  = "";
-        modalIconWrap.style.background = "#9ff2e1";
-        modalConfirm.className = "flex-1 bg-primary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity";
-        modalConfirm.textContent = "List for Sale";
-      } else {
-        modalTitle.textContent = "Post Energy Request";
-        modalIcon.textContent  = "electric_bolt";
-        modalIconWrap.style.background = "#d6e3ff";
-        modalIcon.style.color  = "#005db6";
-        modalConfirm.className = "flex-1 bg-secondary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity";
-        modalConfirm.textContent = "Post Request";
-      }
-
-      backdrop.classList.remove("hidden");
-      setTimeout(() => modalKwh.focus(), 50);
-    }
-
-    function closeModal() {
-      backdrop.classList.add("hidden");
-      modalType = null;
-      document.getElementById("modal-comment").value = "";
-    }
-
-    document.getElementById("modal-close").addEventListener("click", closeModal);
-    document.getElementById("modal-cancel").addEventListener("click", closeModal);
-    backdrop.addEventListener("click", (e) => { if (e.target === backdrop) closeModal(); });
-
-    document.getElementById("open-sale-modal").addEventListener("click",    () => openModal("sales"));
-    document.getElementById("open-request-modal").addEventListener("click", () => openModal("requests"));
-
-    modalConfirm.addEventListener("click", async () => {
-      const kwh   = parseFloat(modalKwh.value);
-      const price = parseFloat(modalPrice.value);
-
-      if (!kwh || kwh <= 0) { toast("Enter a valid kWh amount.", "warning"); return; }
-      const maxAllowed = modalKwh.max ? parseFloat(modalKwh.max) : null;
-      if (maxAllowed !== null && kwh > maxAllowed) {
-        toast(`Maximum allowed is ${maxAllowed} kWh.`, "warning"); return;
-      }
-      if (modalType === "sales" && (!price || price <= 0)) { toast("Enter a valid price.", "warning"); return; }
-      if (modalType !== "requests" && !canShare) { toast("Battery SOC too low to share energy.", "error"); return; }
-
-      const comment = document.getElementById("modal-comment").value.trim();
-      const body = modalType === "sales"
-        ? { amount_kwh: kwh, price_per_kwh: price, comment: comment || undefined }
-        : { amount_kwh: kwh, comment: comment || undefined };
-
-      try {
-        const res  = await authFetch(`${API}/api/community/${modalType}`, { method: "POST", body: JSON.stringify(body) });
-        const json = await res.json();
-        if (!json.success) throw new Error(json.message);
-        const labels = { sales: "Sale listed!", requests: "Request posted!" };
-        toast(labels[modalType] || "Done!", "success");
-        closeModal();
-        loadTab(modalType);
-        loadMyListings();
-      } catch (err) { toast(err.message, "error"); }
-    });
-
-    // ── Tabs ───────────────────────────────────────────────────────────────────
-    document.querySelectorAll(".tab-btn").forEach(btn => {
-      btn.addEventListener("click", () => {
-        activeTab = btn.dataset.tab;
-        document.querySelectorAll(".tab-btn").forEach(b => {
-          const isActive = b.dataset.tab === activeTab;
-          b.classList.toggle("active", isActive);
-          if (!isActive) {
-            b.classList.add("text-on-surface-variant", "hover:bg-surface-container-low");
-            b.classList.remove("text-white");
-          } else {
-            b.classList.remove("text-on-surface-variant", "hover:bg-surface-container-low");
-          }
-        });
-        document.querySelectorAll(".tab-panel").forEach(p => p.classList.toggle("active", p.id === `tab-${activeTab}`));
-        loadTab(activeTab);
-      });
-    });
-
-    // ── Helpers ────────────────────────────────────────────────────────────────
-    function relTime(iso) {
-      const diff = Date.now() - new Date(iso).getTime();
-      const m = Math.floor(diff / 60000);
-      if (m < 1)  return "just now";
-      if (m < 60) return `${m}m ago`;
-      const h = Math.floor(m / 60);
-      if (h < 24) return `${h}h ago`;
-      return `${Math.floor(h / 24)}d ago`;
-    }
-
-    function authFetch(url, opts = {}) {
-      return fetch(url, { ...opts, headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json", ...(opts.headers || {}) } });
-    }
-
-    // ── Render listing rows ────────────────────────────────────────────────────
-    function renderRow(item, type) {
-      const mine    = Number(item.user_id) === Number(myId());
-      const isSale  = type === "sales";
-
-      let actionBtn;
-      if (mine) {
-        actionBtn = `<button data-action="delete" data-type="${type}" data-id="${item.id}"
-             class="text-error hover:bg-error-container rounded-full p-1 transition-colors" title="Cancel">
-             <span class="material-symbols-outlined text-base">close</span></button>`;
-      } else {
-        // Both sales and requests open a Details modal first
-        actionBtn = `<button data-action="details" data-type="${type}" data-id="${item.id}"
-             data-username="${(item.username || '').replace(/"/g,'&quot;')}"
-             data-amount="${item.amount_kwh}"
-             data-price="${item.price_per_kwh || ''}"
-             data-comment="${(item.comment || '').replace(/"/g,'&quot;')}"
-             data-created="${item.created_at}"
-             class="bg-surface-container-high text-on-surface text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full hover:bg-surface-container-highest transition-colors whitespace-nowrap flex items-center gap-1">
-             <span class="material-symbols-outlined text-sm">info</span>Details</button>`;
-      }
-
-      const displayUser = item.username || "Unknown";
-      const sub = isSale
-        ? `<span class="text-xs text-on-surface-variant font-label">${item.amount_kwh} kWh &nbsp;·&nbsp; R${parseFloat(item.price_per_kwh).toFixed(2)}/kWh</span>`
-        : `<span class="text-xs text-on-surface-variant font-label">${item.amount_kwh} kWh needed${mine ? "" : " — donate for free"}</span>`;
-
-      const rowLabel = isSale ? "Energy Sale" : "Energy Request";
-
-      const badge = mine
-        ? `<span class="text-[10px] font-bold bg-primary-fixed text-primary px-2 py-0.5 rounded-full font-label uppercase">Mine</span>`
-        : "";
-
-      return `
-        <div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl hover:bg-surface-container transition-colors" data-row-id="${item.id}">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-full ${mine ? "bg-primary-fixed" : "bg-surface-container-highest"} flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-base ${mine ? "text-primary" : "text-on-surface-variant"}">person</span>
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <p class="text-sm font-semibold text-on-surface">${rowLabel}</p>
-                ${badge}
-              </div>
-              <p class="text-xs text-on-surface-variant/70 font-label">${mine ? "You" : displayUser}</p>
-              ${sub}
-            </div>
-          </div>
-          <div class="flex items-center gap-3">
-            <span class="text-xs text-on-surface-variant/60 font-label hidden sm:block">${relTime(item.created_at)}</span>
-            ${actionBtn}
-          </div>
-        </div>`;
-    }
-
-    // ── Load tab listings ──────────────────────────────────────────────────────
-    async function loadTab(type) {
-      const listEl = document.getElementById(`${type}-list`);
-      listEl.innerHTML = `<p class="text-on-surface-variant text-sm text-center py-8">Loading…</p>`;
-
-      // Donations tab shows others' open requests (donate to someone who needs it)
-      const fetchType = type === "donations" ? "requests" : type;
-
-      try {
-        const res  = await authFetch(`${API}/api/community/${fetchType}`);
-        const json = await res.json();
-        if (!json.success) {
-          listEl.innerHTML = `<div class="text-center py-8">
-            <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">inbox</span>
-            <p class="text-on-surface-variant text-sm">No ${type} available right now.</p>
-            <p class="text-on-surface-variant/50 text-xs mt-1">Make sure your location is set in your profile.</p>
-          </div>`;
-          return;
-        }
-
-        let rows = json.data;
-
-        // For requests tab, show all (own ones will render with delete, others with Details)
-
-        if (!rows.length) {
-          const emptyMsg = type === "donations"
-            ? "No neighbours need energy right now."
-            : `No open ${type} in your area yet.`;
-          const emptyHint = type === "donations"
-            ? "Check back later — when someone posts a request you can donate to them here."
-            : "Be the first to post one above.";
-          listEl.innerHTML = `<div class="text-center py-8">
-            <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">inbox</span>
-            <p class="text-on-surface-variant text-sm">${emptyMsg}</p>
-            <p class="text-on-surface-variant/50 text-xs mt-1">${emptyHint}</p>
-          </div>`;
-          return;
-        }
-        listEl.innerHTML = rows.map(r => renderRow(r, type)).join("");
-        listEl.querySelectorAll("button[data-action]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            if (btn.dataset.action === "details") openDetails(btn);
-            else handleAction(btn.dataset.action, btn.dataset.type, btn.dataset.id);
-          });
-        });
-      } catch {
-        listEl.innerHTML = `<div class="text-center py-8">
-          <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">wifi_off</span>
-          <p class="text-on-surface-variant text-sm">Could not reach the server.</p>
-        </div>`;
-      }
-    }
-
-    // ── Details modal ──────────────────────────────────────────────────────────
-    let detailsItemId   = null;
-    let detailsItemType = null;
-
-    const detailsBackdrop = document.getElementById("details-backdrop");
-    document.getElementById("details-close").addEventListener("click",  () => detailsBackdrop.classList.add("hidden"));
-    document.getElementById("details-cancel").addEventListener("click", () => detailsBackdrop.classList.add("hidden"));
-    detailsBackdrop.addEventListener("click", (e) => { if (e.target === detailsBackdrop) detailsBackdrop.classList.add("hidden"); });
-
-    document.getElementById("details-buy").addEventListener("click", async () => {
-      if (!detailsItemId) return;
-      const donorComment = document.getElementById("det-donor-comment").value.trim();
-      detailsBackdrop.classList.add("hidden");
-      await handleAction("fill", detailsItemType, detailsItemId, donorComment || null);
-    });
-
-    function openDetails(btn) {
-      const username  = btn.dataset.username || "Unknown";
-      const amount    = parseFloat(btn.dataset.amount);
-      const price     = btn.dataset.price ? parseFloat(btn.dataset.price) : null;
-      const comment   = btn.dataset.comment || "";
-      const createdAt = btn.dataset.created;
-      const isSale    = btn.dataset.type === "sales";
-      detailsItemId   = btn.dataset.id;
-      detailsItemType = btn.dataset.type;
-
-      // Icon + title
-      document.getElementById("det-title").textContent        = isSale ? "Sale Details" : "Request Details";
-      document.getElementById("det-icon").textContent         = isSale ? "sell" : "electric_bolt";
-      document.getElementById("det-icon-wrap").style.background = isSale ? "#9ff2e1" : "#d6e3ff";
-      document.getElementById("det-icon").style.color          = isSale ? "#005147" : "#005db6";
-      document.getElementById("det-user-label").textContent    = isSale ? "Seller" : "Requester";
-
-      document.getElementById("det-username").textContent = username;
-      document.getElementById("det-amount").textContent   = `${amount} kWh`;
-      document.getElementById("det-time").textContent     = relTime(createdAt);
-
-      // Price / total (sales only)
-      document.getElementById("det-price-row").classList.toggle("hidden", !isSale);
-      document.getElementById("det-total-row").classList.toggle("hidden", !isSale);
-      if (isSale && price !== null) {
-        document.getElementById("det-price").textContent = `R${price.toFixed(2)}`;
-        document.getElementById("det-total").textContent = `R${(amount * price).toFixed(2)}`;
-      }
-
-      // Their comment
-      const commentRow = document.getElementById("det-comment-row");
-      if (comment) {
-        document.getElementById("det-comment").textContent = comment;
-        commentRow.classList.remove("hidden");
-      } else {
-        commentRow.classList.add("hidden");
-      }
-
-      // Donor comment field (requests only)
-      const donorWrap = document.getElementById("det-donor-comment-wrap");
-      donorWrap.classList.toggle("hidden", isSale);
-      document.getElementById("det-donor-comment").value = "";
-
-      // Action button label
-      document.getElementById("details-buy").textContent = isSale ? "Buy Now" : "Donate";
-      document.getElementById("details-buy").className   = isSale
-        ? "flex-1 bg-secondary text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity"
-        : "flex-1 bg-tertiary-container text-white py-3 rounded-xl font-bold text-sm hover:opacity-90 transition-opacity";
-
-      detailsBackdrop.classList.remove("hidden");
-    }
-
-    // ── Handle fill / delete ───────────────────────────────────────────────────
-    async function handleAction(action, type, id, comment = null) {
-      // Check SOC before donating/selling (not needed for requests — buyer is receiver)
-      if (action === "fill" && type === "sales" && !canShare) {
-        toast("Battery SOC too low to share energy.", "error"); return;
-      }
-      try {
-        let res;
-        if (action === "fill") {
-          const body = comment ? { comment } : {};
-          res = await authFetch(`${API}/api/community/${type}/${id}/fill`, { method: "POST", body: JSON.stringify(body) });
-        } else {
-          res = await authFetch(`${API}/api/community/${type}/${id}`, { method: "DELETE" });
-        }
-        const json = await res.json();
-        if (!json.success) throw new Error(json.message);
-        const successMsg = action === "fill"
-          ? (type === "requests" ? "Donation sent! Thank you." : "Purchase complete!")
-          : "Listing removed.";
-        toast(successMsg, "success");
-        loadTab(activeTab);
-        loadMyListings();
-        loadStatus();
-      } catch (err) {
-        toast(err.message, "error");
-      }
-    }
-
-
-    // ── My Listings ────────────────────────────────────────────────────────────
-    async function loadMyListings() {
-      const el = document.getElementById("my-listings");
-      try {
-        const [sRes, rRes] = await Promise.all([
-          authFetch(`${API}/api/community/sales`),
-          authFetch(`${API}/api/community/requests`),
-        ]);
-        const [sJson, rJson] = await Promise.all([sRes.json(), rRes.json()]);
-        const uid  = Number(myId());
-        const mine = [
-          ...(sJson.data || []).filter(r => Number(r.user_id) === uid).map(r => ({ ...r, _type: "sales" })),
-          ...(rJson.data || []).filter(r => Number(r.user_id) === uid).map(r => ({ ...r, _type: "requests" })),
-        ];
-        if (!mine.length) {
-          el.innerHTML = `<p class="text-on-surface-variant text-sm text-center py-6">You have no active listings.</p>`;
-          return;
-        }
-        el.innerHTML = mine.map(item => {
-          const typeLabel = item._type === "donations" ? "Donation" : item._type === "sales" ? "Sale" : "Request";
-          const detail    = item._type === "sales"
-            ? `${item.amount_kwh} kWh @ R${parseFloat(item.price_per_kwh).toFixed(2)}/kWh`
-            : `${item.amount_kwh} kWh`;
-          return `
-            <div class="flex items-center justify-between p-4 bg-surface-container-low rounded-xl" data-row-id="${item.id}">
-              <div class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center shrink-0">
-                  <span class="material-symbols-outlined text-primary text-base">${item._type === "requests" ? "electric_bolt" : "solar_power"}</span>
-                </div>
-                <div>
-                  <p class="text-sm font-semibold text-on-surface">${typeLabel}</p>
-                  <p class="text-xs text-on-surface-variant font-label">${detail} &nbsp;·&nbsp; ${relTime(item.created_at)}</p>
-                </div>
-              </div>
-              <button data-action="delete" data-type="${item._type}" data-id="${item.id}"
-                class="text-error hover:bg-error-container rounded-full p-1 transition-colors" title="Cancel">
-                <span class="material-symbols-outlined text-base">close</span>
-              </button>
-            </div>`;
-        }).join("");
-        el.querySelectorAll("button[data-action]").forEach(btn => {
-          btn.addEventListener("click", () => handleAction("delete", btn.dataset.type, btn.dataset.id));
-        });
-      } catch {
-        el.innerHTML = `<div class="text-center py-6">
-          <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">wifi_off</span>
-          <p class="text-on-surface-variant text-sm">Could not load your listings.</p>
-        </div>`;
-      }
-    }
-
-    // ── Fetch battery capacity + Eskom rate once on load ──────────────────────
-    async function loadBatteryMeta() {
-      try {
-        const [bRes, cRes] = await Promise.all([
-          authFetch(`${API}/api/battery`),
-          authFetch(`${API}/api/co2`),
-        ]);
-        const bJson = await bRes.json();
-        const cJson = await cRes.json();
-        if (bJson.success) batteryCapacity = bJson.data.capacityKwh;
-        if (cJson.success) eskomRate = cJson.data.constants.randsPerKwh;
-      } catch { /* silent */ }
-    }
-
-    // ── Boot ───────────────────────────────────────────────────────────────────
-    loadBatteryMeta();
-    loadStatus();
-    loadTab("donations");
-    loadMyListings();
-    setInterval(loadStatus, 60000); // refresh status every minute
-  })();
-  </script>
-  <script>
-    (function(){
-      var s=localStorage.getItem("voltequilibrium-theme");
-      var p=window.matchMedia("(prefers-color-scheme:dark)").matches;
-      if(s==="dark"||(!s&&p)){document.documentElement.classList.add("dark");document.documentElement.classList.remove("light");var i=document.getElementById("theme-icon");if(i)i.textContent="light_mode";}
-    })();
-    document.getElementById("theme-toggle")?.addEventListener("click",function(){
-      var d=document.documentElement.classList.contains("dark");
-      if(d){document.documentElement.classList.replace("dark","light");document.getElementById("theme-icon").textContent="dark_mode";localStorage.setItem("voltequilibrium-theme","light");}
-      else{document.documentElement.classList.replace("light","dark");document.getElementById("theme-icon").textContent="light_mode";localStorage.setItem("voltequilibrium-theme","dark");}
-    });
-  </script>
+  <script src="../Javascript/community.js"></script>
+  <script src="../Javascript/theme.js"></script>
+  <script src="../Javascript/chatbot.js"></script>
 </body>
 </html>

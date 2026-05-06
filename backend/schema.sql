@@ -185,6 +185,15 @@ CREATE TABLE IF NOT EXISTS payfast_payments (
     created_at    TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- ── Chat History ─────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id         SERIAL PRIMARY KEY,
+    user_id    INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    role       VARCHAR(10) NOT NULL CHECK (role IN ('user', 'assistant')),
+    content    TEXT NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- ── Community Energy Sharing ──────────────────────────────────────────────────
 
 CREATE TABLE IF NOT EXISTS donations (

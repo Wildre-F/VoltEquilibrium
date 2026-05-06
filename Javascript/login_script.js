@@ -346,7 +346,7 @@
       }
 
       setTimeout(() => {
-        window.location.href = "../frontend/setup.html";
+        window.location.href = "../frontend/splash.html";
       }, 1500);
     } catch (err) {
       showToast(err.message, "error");
@@ -489,6 +489,7 @@
         showToast(result.message, "error");
       }
     } catch (error) {
+      console.error("[login] forgot password error:", error.message);
       showToast("Something went wrong. Please try again.", "error");
     }
   }

@@ -1,0 +1,190 @@
+<!doctype html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta name="view-transition" content="same-origin" />
+  <title>VoltEquilibrium</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../CSS/theme.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--color-background);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Manrope', sans-serif;
+      overflow: hidden;
+    }
+
+    .splash-logo {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+      color: var(--color-primary);
+      opacity: 0;
+      transform: scale(0.8);
+      animation: logoIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+    }
+
+    .splash-tagline {
+      font-size: 0.85rem;
+      color: var(--color-on-surface-variant);
+      margin-top: 8px;
+      opacity: 0;
+      animation: fadeUp 0.5s ease-out 0.6s forwards;
+    }
+
+    .splash-spinner {
+      margin-top: 40px;
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--color-outline-variant);
+      border-top-color: var(--color-primary);
+      border-radius: 50%;
+      opacity: 0;
+      animation: fadeIn 0.3s ease-out 0.8s forwards, spin 0.8s linear 0.8s infinite;
+    }
+
+    .splash-status {
+      margin-top: 16px;
+      font-size: 0.75rem;
+      color: var(--color-on-surface-variant);
+      opacity: 0;
+      animation: fadeIn 0.3s ease-out 1s forwards;
+      letter-spacing: 0.05em;
+    }
+
+    .splash-bar {
+      margin-top: 24px;
+      width: 200px;
+      height: 3px;
+      background: var(--color-outline-variant);
+      border-radius: 4px;
+      overflow: hidden;
+      opacity: 0;
+      animation: fadeIn 0.3s ease-out 0.8s forwards;
+    }
+    .splash-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--color-primary);
+      border-radius: 4px;
+      transition: width 0.4s ease-out;
+    }
+
+    @keyframes logoIn {
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash-logo">VoltEquilibrium</div>
+  <div class="splash-tagline">Powering a greener future</div>
+  <div class="splash-spinner"></div>
+  <div class="splash-status" id="status">Connecting...</div>
+  <div class="splash-bar"><div class="splash-bar-fill" id="bar"></div></div>
+
+  <script>
+    (function () {
+      // Apply saved theme
+      const saved = localStorage.getItem("voltequilibrium-theme");
+      const prefersDark = window.matchMedia("(prefers-color-scheme:dark)").matches;
+      if (saved === "dark" || (!saved && prefersDark)) {
+        document.documentElement.classList.add("dark");
+        document.documentElement.classList.remove("light");
+      }
+
+      // Handle OAuth token from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const oauthToken = urlParams.get("token");
+      if (oauthToken) {
+        localStorage.setItem("authToken", oauthToken);
+        sessionStorage.setItem("authToken", oauthToken);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+
+      const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+      const status = document.getElementById("status");
+      const bar = document.getElementById("bar");
+
+      if (!token) {
+        status.textContent = "Redirecting to login...";
+        bar.style.width = "100%";
+        setTimeout(() => window.location.replace("login.html"), 1000);
+        return;
+      }
+
+      const API = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+        ? "http://localhost:3000" : "";
+
+      async function load() {
+        try {
+          // Step 1: Verify token
+          status.textContent = "Verifying session...";
+          bar.style.width = "25%";
+
+          const profileRes = await fetch(`${API}/api/profile`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (profileRes.status === 401 || profileRes.status === 403) {
+            sessionStorage.removeItem("authToken");
+            localStorage.removeItem("authToken");
+            status.textContent = "Session expired...";
+            bar.style.width = "100%";
+            setTimeout(() => window.location.replace("login.html"), 800);
+            return;
+          }
+
+          // Step 2: Check setup status
+          status.textContent = "Loading your system...";
+          bar.style.width = "50%";
+
+          const setupRes = await fetch(`${API}/api/setup/status`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          const setupData = await setupRes.json();
+
+          // Step 3: Prepare dashboard
+          status.textContent = "Preparing dashboard...";
+          bar.style.width = "75%";
+          await new Promise(r => setTimeout(r, 400));
+
+          // Step 4: Redirect
+          bar.style.width = "100%";
+          if (setupData.success && setupData.hasSetup) {
+            status.textContent = "Welcome back!";
+            await new Promise(r => setTimeout(r, 500));
+            window.location.replace("Dashboard.html");
+          } else {
+            status.textContent = "Let's set up your system...";
+            await new Promise(r => setTimeout(r, 500));
+            window.location.replace("setup.html");
+          }
+        } catch {
+          status.textContent = "Connection error — retrying...";
+          bar.style.width = "0%";
+          setTimeout(load, 2000);
+        }
+      }
+
+      // Start after the animations settle
+      setTimeout(load, 1200);
+    })();
+  </script>
+</body>
+</html>

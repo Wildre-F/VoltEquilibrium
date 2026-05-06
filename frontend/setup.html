@@ -1,761 +1,541 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Setup - VoltEquilibrium</title>
-    <style>
-      * {
-        box-sizing: border-box;
-        margin: 0;
-        padding: 0;
-      }
-      body {
-        font-family: Arial, sans-serif;
-        background-color: #f0f0f0;
-        min-height: 100vh;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-      }
-      .container {
-        background: white;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
-        width: 100%;
-        max-width: 600px;
-      }
-      .header {
-        text-align: center;
-        margin-bottom: 2rem;
-      }
-      .header h1 {
-        color: #005147;
-        font-size: 1.8rem;
-        margin-bottom: 0.5rem;
-      }
-      .header p {
-        color: #666;
-        font-size: 0.95rem;
-      }
-      .location-card {
-        border: 2px solid #005147;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        background: #f0faf8;
-      }
-      .location-card h3 {
-        color: #005147;
-        margin-bottom: 1rem;
-      }
-      .inverter-card {
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-        transition: border-color 0.2s;
-      }
-      .inverter-card.added {
-        border-color: #005147;
-        background-color: #f0faf8;
-      }
-      .inverter-card h3 {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1rem;
-        color: #333;
-      }
-      .badge {
-        background: #005147;
-        color: white;
-        font-size: 0.7rem;
-        padding: 2px 8px;
-        border-radius: 20px;
-      }
-      .badge.optional {
-        background: #999;
-      }
-      .field {
-        margin-bottom: 1rem;
-      }
-      label {
-        display: block;
-        font-size: 0.8rem;
-        font-weight: bold;
-        color: #666;
-        margin-bottom: 0.3rem;
-        text-transform: uppercase;
-      }
-      input,
-      select {
-        width: 100%;
-        padding: 0.65rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        font-size: 0.95rem;
-        background: white;
-      }
-      input:focus,
-      select:focus {
-        outline: none;
-        border-color: #005147;
-      }
-      .grid-2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-      }
-      .btn {
-        padding: 0.65rem 1.5rem;
-        border: none;
-        border-radius: 4px;
-        font-size: 0.9rem;
-        cursor: pointer;
-        font-weight: bold;
-      }
-      .btn-primary {
-        background: #005147;
-        color: white;
-      }
-      .btn-primary:hover {
-        background: #003d36;
-      }
-      .btn-danger {
-        background: #dc3545;
-        color: white;
-      }
-      .btn-danger:hover {
-        background: #c82333;
-      }
-      .btn-success {
-        width: 100%;
-        padding: 1rem;
-        background: #005147;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        font-size: 1rem;
-        font-weight: bold;
-        cursor: pointer;
-        margin-top: 1rem;
-      }
-      .btn-success:hover {
-        background: #003d36;
-      }
-      .btn-success:disabled {
-        background: #ccc;
-        cursor: not-allowed;
-      }
-      .added-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem;
-        background: #e8f5e9;
-        border-radius: 6px;
-        margin-top: 0.5rem;
-      }
-      .added-info span {
-        color: #2e7d32;
-        font-weight: bold;
-        font-size: 0.9rem;
-      }
-      .profile-info {
-        margin-top: 0.75rem;
-        padding: 0.65rem;
-        background: #e8f4fd;
-        border-radius: 4px;
-        font-size: 0.82rem;
-        color: #1565c0;
-        border-left: 3px solid #1976d2;
-      }
-      .message {
-        padding: 0.75rem;
-        border-radius: 4px;
-        text-align: center;
-        margin-bottom: 1rem;
-        display: none;
-      }
-      .success {
-        background-color: #d4edda;
-        color: #155724;
-        display: block;
-      }
-      .error {
-        background-color: #f8d7da;
-        color: #721c24;
-        display: block;
-      }
-      .skip-link {
-        text-align: center;
-        margin-top: 1rem;
-      }
-      .skip-link a {
-        color: #999;
-        font-size: 0.85rem;
-        text-decoration: none;
-      }
-      .skip-link a:hover {
-        color: #666;
-        text-decoration: underline;
-      }
-      .form-section {
-        display: block;
-      }
-      .form-section.hidden {
-        display: none;
-      }
-      .api-key-box {
-        margin-top: 0.75rem;
-        padding: 0.65rem;
-        background: #fff8e1;
-        border-radius: 4px;
-        font-size: 0.82rem;
-        color: #555;
-        border-left: 3px solid #ffc107;
-        word-break: break-all;
-      }
-      .api-key-box strong {
-        color: #333;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <div class="header">
-        <h1>⚡ VoltEquilibrium</h1>
-        <p>
-          Let's set up your energy sources. You can add solar, wind, or both.
-        </p>
+<html class="light" lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="view-transition" content="same-origin" />
+  <title>Setup - VoltEquilibrium</title>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="../Javascript/tailwind-config.js"></script>
+  <script src="../Javascript/config.js"></script>
+  <link rel="stylesheet" href="../CSS/theme.css" />
+  <style>
+    .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; line-height: 1; }
+    .wizard-step { display: none; }
+    .wizard-step.active { display: block; animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .system-card { transition: all 0.2s; cursor: pointer; }
+    .system-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+    .system-card.selected { border-color: var(--color-primary) !important; background: var(--color-primary-fixed); }
+  </style>
+</head>
+<body class="bg-background text-on-surface min-h-screen flex items-center justify-center p-4">
+
+  <!-- Toast -->
+  <div id="message" class="hidden fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl font-semibold text-sm shadow-lg font-body"></div>
+
+  <div class="w-full max-w-xl">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-extrabold tracking-tighter text-primary font-headline">VoltEquilibrium</h1>
+      <p class="text-on-surface-variant text-sm font-body mt-1">Let's get your energy system set up</p>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="flex items-center gap-3 mb-8 px-4">
+      <div class="flex items-center gap-2 flex-1">
+        <div id="step-dot-1" class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold font-label">1</div>
+        <span id="step-label-1" class="text-xs font-bold font-label text-primary hidden md:block">Location</span>
       </div>
+      <div class="flex-1 h-0.5 bg-outline-variant rounded-full"><div id="progress-1" class="h-full bg-primary rounded-full transition-all duration-500" style="width:0%"></div></div>
+      <div class="flex items-center gap-2 flex-1">
+        <div id="step-dot-2" class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center text-xs font-bold font-label">2</div>
+        <span id="step-label-2" class="text-xs font-bold font-label text-on-surface-variant hidden md:block">System</span>
+      </div>
+      <div class="flex-1 h-0.5 bg-outline-variant rounded-full"><div id="progress-2" class="h-full bg-primary rounded-full transition-all duration-500" style="width:0%"></div></div>
+      <div class="flex items-center gap-2 flex-1">
+        <div id="step-dot-3" class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center text-xs font-bold font-label">3</div>
+        <span id="step-label-3" class="text-xs font-bold font-label text-on-surface-variant hidden md:block">Configure</span>
+      </div>
+    </div>
 
-      <div id="message" class="message"></div>
+    <!-- Card container -->
+    <div class="bg-surface-container-lowest rounded-2xl shadow-xl p-8">
 
-      <!-- Generation Site Location -->
-      <div class="location-card">
-        <h3>📍 Energy Generation Site</h3>
-        <div class="field">
-          <label>Quick Select (Demo)</label>
-          <select id="location-preset" onchange="applyPreset()">
-            <option value="">— Pick a demo location —</option>
-            <option value="-33.9249|18.4241|Cape Town, South Africa">
-              🇿🇦 Cape Town, South Africa
-            </option>
-            <option value="51.5074|-0.1278|London, United Kingdom">
-              🇬🇧 London, United Kingdom
-            </option>
-            <option value="35.6762|139.6503|Tokyo, Japan">
-              🇯🇵 Tokyo, Japan
-            </option>
-            <option value="-33.8688|151.2093|Sydney, Australia">
-              🇦🇺 Sydney, Australia
-            </option>
-            <option value="40.7128|-74.0060|New York, USA">
-              🇺🇸 New York, USA
-            </option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Or enter manually</label>
-          <div style="display: flex; gap: 0.5rem">
-            <input
-              type="text"
-              id="site-location"
-              placeholder="e.g. Johannesburg, Sandton"
-            />
-            <button
-              class="btn btn-primary"
-              onclick="getLocation()"
-              id="location-btn"
-              style="white-space: nowrap"
-            >
-              📍 Use My Location
-            </button>
+      <!-- ════ STEP 1: Location ════ -->
+      <div id="step-1" class="wizard-step active">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">location_on</span>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold font-headline text-on-surface">Where are you located?</h2>
+            <p class="text-xs text-on-surface-variant font-body">Used for weather data and community matching</p>
           </div>
         </div>
-        <p
-          id="location-status"
-          style="font-size: 0.8rem; color: #666; margin-top: 0.5rem"
-        >
-          This will be used to fetch live weather data for your generation site.
-        </p>
-      </div>
 
-      <!-- Solar Inverter Card -->
-      <div class="inverter-card" id="solar-card">
-        <h3>☀️ Solar Inverter <span class="badge optional">Optional</span></h3>
-        <div class="form-section" id="solar-form">
-          <div class="grid-2">
-            <div class="field">
-              <label>Inverter Name</label>
-              <input
-                type="text"
-                id="solar-name"
-                placeholder="e.g. Rooftop Solar"
-              />
-            </div>
-            <div class="field">
-              <label>Capacity (kW)</label>
-              <input
-                type="number"
-                id="solar-capacity"
-                placeholder="e.g. 5"
-                step="0.1"
-                min="0"
-              />
-            </div>
-          </div>
-          <!-- NEW: Profile dropdown -->
-          <div class="field">
-            <label>Simulation Profile</label>
-            <select id="solar-profile" onchange="updateProfileInfo('solar')">
-              <option value="">— Select a profile —</option>
-              <option value="solar-small">
-                Small household (1–3 kW) · weather-sensitive
-              </option>
-              <option value="solar-large">
-                Large array (5–10 kW) · weather-sensitive
-              </option>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Quick Select</label>
+            <select id="location-preset" onchange="applyPreset()"
+              class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40">
+              <option value="">— Pick a demo location —</option>
+              <option value="-25.7479|28.2293|Pretoria, South Africa">🇿🇦 Pretoria, South Africa</option>
+              <option value="-33.9249|18.4241|Cape Town, South Africa">🇿🇦 Cape Town, South Africa</option>
+              <option value="-26.2041|28.0473|Johannesburg, South Africa">🇿🇦 Johannesburg, South Africa</option>
+              <option value="51.5074|-0.1278|London, United Kingdom">🇬🇧 London, United Kingdom</option>
+              <option value="35.6762|139.6503|Tokyo, Japan">🇯🇵 Tokyo, Japan</option>
+              <option value="-33.8688|151.2093|Sydney, Australia">🇦🇺 Sydney, Australia</option>
+              <option value="40.7128|-74.0060|New York, USA">🇺🇸 New York, USA</option>
             </select>
           </div>
-          <div class="profile-info hidden" id="solar-profile-info"></div>
-          <button
-            class="btn btn-primary"
-            onclick="addInverter('solar')"
-            style="margin-top: 0.5rem"
-          >
+
+          <div class="relative">
+            <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Or Enter Manually</label>
+            <div class="flex gap-2">
+              <input type="text" id="site-location" placeholder="e.g. Sandton, Johannesburg"
+                class="flex-1 px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40" />
+              <button onclick="getLocation()" id="location-btn"
+                class="px-4 py-3 bg-primary text-on-primary rounded-xl font-label font-bold text-sm hover:opacity-90 transition-opacity whitespace-nowrap flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-sm">my_location</span> Detect
+              </button>
+            </div>
+          </div>
+
+          <p id="location-status" class="text-xs text-on-surface-variant/60 font-body">
+            This will be used to fetch live weather data for your generation site.
+          </p>
+        </div>
+
+        <button onclick="goToStep(2)" id="btn-step1-next"
+          class="w-full mt-6 py-3 bg-primary text-on-primary rounded-xl font-label font-bold text-sm hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+          Continue <span class="material-symbols-outlined text-sm">arrow_forward</span>
+        </button>
+      </div>
+
+      <!-- ════ STEP 2: Choose System Type ════ -->
+      <div id="step-2" class="wizard-step">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">bolt</span>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold font-headline text-on-surface">What's your setup?</h2>
+            <p class="text-xs text-on-surface-variant font-body">Pick the system type that matches yours</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 gap-3" id="system-choices">
+          <!-- Solar -->
+          <div class="system-card border-2 border-outline-variant/30 rounded-2xl p-5 flex items-center gap-4" data-system="solar" onclick="selectSystem('solar')">
+            <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center flex-shrink-0">
+              <span class="material-symbols-outlined text-primary text-2xl" style="font-variation-settings:'FILL' 1;">solar_power</span>
+            </div>
+            <div>
+              <p class="font-bold font-headline text-on-surface text-sm">Solar Inverter</p>
+              <p class="text-xs text-on-surface-variant font-body">Rooftop or ground-mounted solar panels</p>
+            </div>
+            <span class="material-symbols-outlined text-outline ml-auto">chevron_right</span>
+          </div>
+
+          <!-- Wind -->
+          <div class="system-card border-2 border-outline-variant/30 rounded-2xl p-5 flex items-center gap-4" data-system="wind" onclick="selectSystem('wind')">
+            <div class="w-12 h-12 rounded-xl bg-secondary-container/30 flex items-center justify-center flex-shrink-0">
+              <span class="material-symbols-outlined text-secondary text-2xl" style="font-variation-settings:'FILL' 1;">air</span>
+            </div>
+            <div>
+              <p class="font-bold font-headline text-on-surface text-sm">Wind Turbine</p>
+              <p class="text-xs text-on-surface-variant font-body">Small or large wind energy turbine</p>
+            </div>
+            <span class="material-symbols-outlined text-outline ml-auto">chevron_right</span>
+          </div>
+
+          <!-- Battery Only -->
+          <div class="system-card border-2 border-outline-variant/30 rounded-2xl p-5 flex items-center gap-4" data-system="battery" onclick="selectSystem('battery')">
+            <div class="w-12 h-12 rounded-xl bg-tertiary-fixed/30 flex items-center justify-center flex-shrink-0">
+              <span class="material-symbols-outlined text-tertiary text-2xl" style="font-variation-settings:'FILL' 1;">battery_charging_full</span>
+            </div>
+            <div>
+              <p class="font-bold font-headline text-on-surface text-sm">Battery Only</p>
+              <p class="text-xs text-on-surface-variant font-body">No generation — store energy from the community</p>
+            </div>
+            <span class="material-symbols-outlined text-outline ml-auto">chevron_right</span>
+          </div>
+        </div>
+
+        <button onclick="goToStep(1)" class="w-full mt-4 py-2.5 text-on-surface-variant text-sm font-label font-bold hover:text-primary transition-colors flex items-center justify-center gap-1">
+          <span class="material-symbols-outlined text-sm">arrow_back</span> Back
+        </button>
+      </div>
+
+      <!-- ════ STEP 3: Configure ════ -->
+      <div id="step-3" class="wizard-step">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center">
+            <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">tune</span>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold font-headline text-on-surface" id="step3-title">Configure</h2>
+            <p class="text-xs text-on-surface-variant font-body" id="step3-desc">Set up your system details</p>
+          </div>
+        </div>
+
+        <!-- Solar config -->
+        <div id="config-solar" class="hidden space-y-4">
+          <div>
+            <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Inverter Name</label>
+            <input type="text" id="solar-name" placeholder="e.g. Rooftop Solar"
+              class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Capacity (kW)</label>
+              <input type="number" id="solar-capacity" placeholder="e.g. 5" step="0.1" min="0"
+                class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Profile</label>
+              <select id="solar-profile" onchange="updateProfileInfo('solar')"
+                class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40">
+                <option value="">— Select —</option>
+                <option value="solar-small">Small (1–3 kW)</option>
+                <option value="solar-large">Large (5–10 kW)</option>
+              </select>
+            </div>
+          </div>
+          <div id="solar-profile-info" class="hidden bg-secondary-container/20 text-secondary rounded-xl px-4 py-3 text-xs font-body"></div>
+          <div id="solar-added" class="hidden bg-primary-fixed rounded-xl px-4 py-3 flex items-center justify-between">
+            <span id="solar-added-text" class="text-sm font-bold text-primary font-label"></span>
+            <button onclick="removeInverter('solar')" class="text-xs text-error font-bold font-label hover:underline">Remove</button>
+          </div>
+          <div id="solar-apikey-box" class="hidden bg-tertiary-fixed/20 rounded-xl px-4 py-3 text-xs font-body text-on-surface-variant">
+            <strong>API Key:</strong> <span id="solar-apikey-value"></span>
+          </div>
+          <button id="solar-add-btn" onclick="addInverter('solar')"
+            class="w-full py-3 bg-primary text-on-primary rounded-xl font-label font-bold text-sm hover:opacity-90 transition-opacity">
             Add Solar Inverter
           </button>
         </div>
-        <div class="form-section hidden" id="solar-added">
-          <div class="added-info">
-            <span id="solar-added-text">✅ Solar inverter added</span>
-            <button class="btn btn-danger" onclick="removeInverter('solar')">
-              Remove
-            </button>
-          </div>
-          <div class="api-key-box" id="solar-apikey-box" style="display: none">
-            <strong>Your API Key:</strong> <span id="solar-apikey-value"></span
-            ><br />
-            <span style="color: #888"
-              >Saved automatically — your simulator will use this.</span
-            >
-          </div>
-        </div>
-      </div>
 
-      <!-- Wind Inverter Card -->
-      <div class="inverter-card" id="wind-card">
-        <h3>💨 Wind Inverter <span class="badge optional">Optional</span></h3>
-        <div class="form-section" id="wind-form">
-          <div class="grid-2">
-            <div class="field">
-              <label>Inverter Name</label>
-              <input
-                type="text"
-                id="wind-name"
-                placeholder="e.g. Backyard Turbine"
-              />
+        <!-- Wind config -->
+        <div id="config-wind" class="hidden space-y-4">
+          <div>
+            <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Turbine Name</label>
+            <input type="text" id="wind-name" placeholder="e.g. Backyard Turbine"
+              class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Capacity (kW)</label>
+              <input type="number" id="wind-capacity" placeholder="e.g. 2" step="0.1" min="0"
+                class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40" />
             </div>
-            <div class="field">
-              <label>Capacity (kW)</label>
-              <input
-                type="number"
-                id="wind-capacity"
-                placeholder="e.g. 2"
-                step="0.1"
-                min="0"
-              />
+            <div>
+              <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Profile</label>
+              <select id="wind-profile" onchange="updateProfileInfo('wind')"
+                class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40">
+                <option value="">— Select —</option>
+                <option value="wind-small">Small (1–2 kW)</option>
+                <option value="wind-large">Large (5–15 kW)</option>
+              </select>
             </div>
           </div>
-          <!-- NEW: Profile dropdown -->
-          <div class="field">
-            <label>Simulation Profile</label>
-            <select id="wind-profile" onchange="updateProfileInfo('wind')">
-              <option value="">— Select a profile —</option>
-              <option value="wind-small">
-                Small turbine (1–2 kW) · wind-speed driven
-              </option>
-              <option value="wind-large">
-                Large turbine (5–15 kW) · wind-speed driven
-              </option>
-            </select>
+          <div id="wind-profile-info" class="hidden bg-secondary-container/20 text-secondary rounded-xl px-4 py-3 text-xs font-body"></div>
+          <div id="wind-added" class="hidden bg-primary-fixed rounded-xl px-4 py-3 flex items-center justify-between">
+            <span id="wind-added-text" class="text-sm font-bold text-primary font-label"></span>
+            <button onclick="removeInverter('wind')" class="text-xs text-error font-bold font-label hover:underline">Remove</button>
           </div>
-          <div class="profile-info hidden" id="wind-profile-info"></div>
-          <button
-            class="btn btn-primary"
-            onclick="addInverter('wind')"
-            style="margin-top: 0.5rem"
-          >
-            Add Wind Inverter
+          <div id="wind-apikey-box" class="hidden bg-tertiary-fixed/20 rounded-xl px-4 py-3 text-xs font-body text-on-surface-variant">
+            <strong>API Key:</strong> <span id="wind-apikey-value"></span>
+          </div>
+          <button id="wind-add-btn" onclick="addInverter('wind')"
+            class="w-full py-3 bg-primary text-on-primary rounded-xl font-label font-bold text-sm hover:opacity-90 transition-opacity">
+            Add Wind Turbine
           </button>
         </div>
-        <div class="form-section hidden" id="wind-added">
-          <div class="added-info">
-            <span id="wind-added-text">✅ Wind inverter added</span>
-            <button class="btn btn-danger" onclick="removeInverter('wind')">
-              Remove
-            </button>
-          </div>
-          <div class="api-key-box" id="wind-apikey-box" style="display: none">
-            <strong>Your API Key:</strong> <span id="wind-apikey-value"></span
-            ><br />
-            <span style="color: #888"
-              >Saved automatically — your simulator will use this.</span
-            >
-          </div>
-        </div>
-      </div>
 
-      <!-- Battery Only Card -->
-      <div class="inverter-card" id="battery-card">
-        <h3>🔋 Battery Only <span class="badge optional">No Generation</span></h3>
-        <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">
-          I don't have solar or wind — I just want a battery to store energy from the community.
-        </p>
-        <div class="form-section" id="battery-form">
-          <div class="field">
-            <label>Battery Capacity</label>
-            <select id="battery-capacity">
+        <!-- Battery config -->
+        <div id="config-battery" class="hidden space-y-4">
+          <div>
+            <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Inverter Name <span class="text-outline normal-case">(optional)</span></label>
+            <input type="text" id="battery-name" placeholder="e.g. Home Inverter"
+              class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40" />
+          </div>
+          <div>
+            <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Battery Capacity</label>
+            <select id="battery-capacity"
+              class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40">
               <option value="5">5 kWh — Small home</option>
               <option value="10" selected>10 kWh — Standard home</option>
               <option value="20">20 kWh — Large home</option>
             </select>
           </div>
-          <button
-            class="btn btn-primary"
-            onclick="setupBatteryOnly()"
-            style="margin-top: 0.5rem"
-          >
-            Set Up Battery Only
+          <div id="battery-added" class="hidden bg-primary-fixed rounded-xl px-4 py-3">
+            <span id="battery-added-text" class="text-sm font-bold text-primary font-label"></span>
+          </div>
+          <button id="battery-add-btn" onclick="setupBatteryOnly()"
+            class="w-full py-3 bg-primary text-on-primary rounded-xl font-label font-bold text-sm hover:opacity-90 transition-opacity">
+            Set Up Battery
           </button>
         </div>
-        <div class="form-section hidden" id="battery-added">
-          <div class="added-info">
-            <span id="battery-added-text">✅ Battery set up</span>
-          </div>
+
+        <!-- Navigation -->
+        <div class="flex gap-3 mt-6">
+          <button onclick="goToStep(2)" class="flex-1 py-3 border-2 border-outline-variant/30 text-on-surface-variant rounded-xl font-label font-bold text-sm hover:bg-surface-container transition-colors flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-sm">arrow_back</span> Back
+          </button>
+          <button onclick="proceedToDashboard()" id="proceed-btn" disabled
+            class="flex-1 py-3 bg-primary text-on-primary rounded-xl font-label font-bold text-sm hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1">
+            Go to Dashboard <span class="material-symbols-outlined text-sm">arrow_forward</span>
+          </button>
         </div>
       </div>
 
-      <button
-        class="btn-success"
-        id="proceed-btn"
-        onclick="proceedToDashboard()"
-        disabled
-      >
-        Proceed to Dashboard
-      </button>
     </div>
+  </div>
 
-    <script>
-      // Handle OAuth token from URL
-      const urlParams = new URLSearchParams(window.location.search);
-      const oauthToken = urlParams.get("token");
-      if (oauthToken) {
-        localStorage.setItem("authToken", oauthToken);
-        sessionStorage.setItem("authToken", oauthToken);
-        window.history.replaceState(
-          {},
-          document.title,
-          window.location.pathname,
-        );
+  <script>
+    // ── Auth ──────────────────────────────────────────────────────────────────
+    const urlParams = new URLSearchParams(window.location.search);
+    const oauthToken = urlParams.get("token");
+    if (oauthToken) {
+      localStorage.setItem("authToken", oauthToken);
+      sessionStorage.setItem("authToken", oauthToken);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    const API_BASE = "http://localhost:3000";
+    const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+    if (token && !sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
+    if (!token) window.location.href = "../frontend/login.html";
+
+    let addedInverters = { solar: null, wind: null };
+    let batteryOnlySetup = false;
+    let selectedSystem = null;
+    let currentStep = 1;
+
+    // ── Wizard navigation ────────────────────────────────────────────────────
+    function goToStep(step) {
+      // Validate step 1 → 2
+      if (step === 2 && currentStep === 1) {
+        const loc = document.getElementById("site-location").value.trim();
+        if (!loc) { showMessage("Please select or enter your location first", "error"); return; }
       }
 
-      const API_BASE = "http://localhost:3000";
-      const token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
-      if (token && !sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken", token);
-      let addedInverters = { solar: null, wind: null };
-      let batteryOnlySetup = false;
+      document.querySelectorAll(".wizard-step").forEach(s => s.classList.remove("active"));
+      document.getElementById(`step-${step}`).classList.add("active");
 
-      if (!token) window.location.href = "../frontend/login.html";
-
-      // Profile descriptions shown below dropdown
-      const profileDescriptions = {
-        "solar-small":
-          "Simulates a small rooftop solar setup. Peak output ~3 kW at midday. Output scales down with cloud cover from Open-Meteo weather data.",
-        "solar-large":
-          "Simulates a large solar array. Peak output ~10 kW at midday. Output scales down with cloud cover from Open-Meteo weather data.",
-        "wind-small":
-          "Simulates a small domestic wind turbine. Output scales up with live wind speed. Rated at ~2 kW at 12 m/s wind.",
-        "wind-large":
-          "Simulates a large wind turbine. Output scales up with live wind speed. Rated at ~15 kW at 12 m/s wind.",
-      };
-
-      function updateProfileInfo(type) {
-        const profile = document.getElementById(`${type}-profile`).value;
-        const infoBox = document.getElementById(`${type}-profile-info`);
-        if (profile && profileDescriptions[profile]) {
-          infoBox.textContent = "💡 " + profileDescriptions[profile];
-          infoBox.classList.remove("hidden");
+      // Update progress dots
+      for (let i = 1; i <= 3; i++) {
+        const dot = document.getElementById(`step-dot-${i}`);
+        const label = document.getElementById(`step-label-${i}`);
+        if (i <= step) {
+          dot.className = "w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center text-xs font-bold font-label";
+          if (label) label.className = "text-xs font-bold font-label text-primary hidden md:block";
         } else {
-          infoBox.classList.add("hidden");
+          dot.className = "w-8 h-8 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center text-xs font-bold font-label";
+          if (label) label.className = "text-xs font-bold font-label text-on-surface-variant hidden md:block";
         }
       }
+      // Progress bars
+      document.getElementById("progress-1").style.width = step >= 2 ? "100%" : "0%";
+      document.getElementById("progress-2").style.width = step >= 3 ? "100%" : "0%";
 
-      function getLocation() {
-        const btn = document.getElementById("location-btn");
-        const status = document.getElementById("location-status");
-        if (!navigator.geolocation) {
-          status.textContent = "Geolocation is not supported by your browser.";
-          status.style.color = "#dc3545";
-          return;
-        }
-        btn.textContent = "⏳ Getting location...";
-        btn.disabled = true;
-        status.textContent = "Requesting location access...";
-        status.style.color = "#666";
+      currentStep = step;
+    }
 
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            const lat = position.coords.latitude.toFixed(6);
-            const lng = position.coords.longitude.toFixed(6);
-            try {
-              const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
-              );
-              const data = await response.json();
-              const city =
-                data.address.city ||
-                data.address.town ||
-                data.address.suburb ||
-                data.address.village;
-              const suburb = data.address.suburb || "";
-              const locationName = suburb ? `${suburb}, ${city}` : city;
-              document.getElementById("site-location").value = locationName;
-              status.textContent = `✅ Location detected: ${locationName} (${lat}, ${lng})`;
-              status.style.color = "#2e7d32";
-              document.getElementById("site-location").dataset.lat = lat;
-              document.getElementById("site-location").dataset.lng = lng;
-            } catch (error) {
-              document.getElementById("site-location").value = `${lat}, ${lng}`;
-              status.textContent = `✅ Location detected: ${lat}, ${lng}`;
-              status.style.color = "#2e7d32";
-            }
-            btn.textContent = "📍 Use My Location";
-            btn.disabled = false;
-          },
-          (error) => {
-            btn.textContent = "📍 Use My Location";
-            btn.disabled = false;
-            switch (error.code) {
-              case error.PERMISSION_DENIED:
-                status.textContent =
-                  "❌ Location access denied. Please enter your location manually.";
-                break;
-              case error.POSITION_UNAVAILABLE:
-                status.textContent =
-                  "❌ Location unavailable. Please enter your location manually.";
-                break;
-              default:
-                status.textContent =
-                  "❌ Could not get location. Please enter manually.";
-            }
-            status.style.color = "#dc3545";
-          },
-        );
+    function selectSystem(type) {
+      selectedSystem = type;
+      // Highlight selected card
+      document.querySelectorAll(".system-card").forEach(c => c.classList.remove("selected"));
+      document.querySelector(`.system-card[data-system="${type}"]`).classList.add("selected");
+
+      // Show correct config panel
+      document.getElementById("config-solar").classList.add("hidden");
+      document.getElementById("config-wind").classList.add("hidden");
+      document.getElementById("config-battery").classList.add("hidden");
+
+      const titles = { solar: "Configure Solar", wind: "Configure Wind", battery: "Configure Battery" };
+      const descs = { solar: "Set up your solar inverter details", wind: "Set up your wind turbine details", battery: "Choose your battery capacity" };
+      document.getElementById("step3-title").textContent = titles[type];
+      document.getElementById("step3-desc").textContent = descs[type];
+      document.getElementById(`config-${type}`).classList.remove("hidden");
+
+      setTimeout(() => goToStep(3), 200);
+    }
+
+    // ── Profile descriptions ─────────────────────────────────────────────────
+    const profileDescriptions = {
+      "solar-small": "Simulates a small rooftop solar setup. Peak ~3 kW. Weather-sensitive output.",
+      "solar-large": "Simulates a large array. Peak ~10 kW. Weather-sensitive. Includes 3.5 months historic data.",
+      "wind-small": "Simulates a small domestic turbine. Rated ~2 kW at 12 m/s wind.",
+      "wind-large": "Simulates a large turbine. Rated ~15 kW at 12 m/s wind.",
+    };
+
+    function updateProfileInfo(type) {
+      const profile = document.getElementById(`${type}-profile`).value;
+      const infoBox = document.getElementById(`${type}-profile-info`);
+      if (profile && profileDescriptions[profile]) {
+        infoBox.textContent = profileDescriptions[profile];
+        infoBox.classList.remove("hidden");
+      } else {
+        infoBox.classList.add("hidden");
       }
+    }
 
-      function applyPreset() {
-        const val = document.getElementById("location-preset").value;
-        if (!val) return;
-        // Use | as separator to avoid conflict with commas in location names
-        const parts = val.split("|");
-        const lat = parts[0];
-        const lng = parts[1];
-        const name = parts[2];
-        const input = document.getElementById("site-location");
-        input.value = name;
-        input.dataset.lat = lat;
-        input.dataset.lng = lng;
-        const status = document.getElementById("location-status");
-        status.textContent = `✅ ${name} (${parseFloat(lat).toFixed(4)}, ${parseFloat(lng).toFixed(4)})`;
-        status.style.color = "#2e7d32";
-      }
+    // ── Location ─────────────────────────────────────────────────────────────
+    function getLocation() {
+      const btn = document.getElementById("location-btn");
+      const status = document.getElementById("location-status");
+      if (!navigator.geolocation) { status.textContent = "Geolocation not supported."; return; }
+      btn.innerHTML = '<span class="material-symbols-outlined text-sm animate-spin">progress_activity</span> Detecting...';
+      btn.disabled = true;
 
-      async function addInverter(type) {
-        const name = document.getElementById(`${type}-name`).value.trim();
-        const capacity = document.getElementById(`${type}-capacity`).value;
-        const profile = document.getElementById(`${type}-profile`).value;
-        const locationInput = document.getElementById("site-location");
-        const location = locationInput.value.trim();
-        const lat = locationInput.dataset.lat || null;
-        const lng = locationInput.dataset.lng || null;
-
-        if (!name) {
-          showMessage("Please enter a name for your inverter", "error");
-          return;
-        }
-        if (!profile) {
-          showMessage("Please select a simulation profile", "error");
-          return;
-        }
-        if (!location) {
-          showMessage("Please enter or detect your location first", "error");
-          return;
-        }
-
-        try {
-          const response = await fetch(`${API_BASE}/api/setup/inverter`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              name,
-              type,
-              capacity: capacity || null,
-              location,
-              lat,
-              lng,
-              profile,
-            }),
-          });
-
-          const result = await response.json();
-
-          if (result.success) {
-            addedInverters[type] = result.data;
-
-            // Save api_key and profile to localStorage for the simulator to use
-            if (result.apiKey) {
-              localStorage.setItem("apiKey", result.apiKey);
-              localStorage.setItem("userLat", lat);
-              localStorage.setItem("userLng", lng);
-              // Show the API key to the user
-              document.getElementById(`${type}-apikey-value`).textContent =
-                result.apiKey;
-              document.getElementById(`${type}-apikey-box`).style.display =
-                "block";
-            }
-            // Save the chosen profile
-            localStorage.setItem(`${type}Profile`, profile);
-
-            showInverterAdded(type, name, capacity, profile);
-            updateProceedButton();
-            showMessage(
-              `${type.charAt(0).toUpperCase() + type.slice(1)} inverter added!`,
-              "success",
-            );
-          } else {
-            showMessage(result.message, "error");
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const lat = pos.coords.latitude.toFixed(6);
+          const lng = pos.coords.longitude.toFixed(6);
+          try {
+            const r = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`);
+            const d = await r.json();
+            const city = d.address.city || d.address.town || d.address.suburb || d.address.village;
+            const suburb = d.address.suburb || "";
+            const name = suburb ? `${suburb}, ${city}` : city;
+            document.getElementById("site-location").value = name;
+            document.getElementById("site-location").dataset.lat = lat;
+            document.getElementById("site-location").dataset.lng = lng;
+            status.textContent = `Location detected: ${name}`;
+            status.className = "text-xs text-primary font-body font-bold";
+          } catch {
+            document.getElementById("site-location").value = `${lat}, ${lng}`;
+            document.getElementById("site-location").dataset.lat = lat;
+            document.getElementById("site-location").dataset.lng = lng;
+            status.textContent = `Location: ${lat}, ${lng}`;
           }
-        } catch (error) {
-          showMessage("Error adding inverter", "error");
-        }
-      }
+          btn.innerHTML = '<span class="material-symbols-outlined text-sm">my_location</span> Detect';
+          btn.disabled = false;
+        },
+        () => {
+          btn.innerHTML = '<span class="material-symbols-outlined text-sm">my_location</span> Detect';
+          btn.disabled = false;
+          status.textContent = "Could not detect location. Please enter manually.";
+          status.className = "text-xs text-error font-body";
+        },
+      );
+    }
 
-      async function removeInverter(type) {
-        const inverterId = addedInverters[type]?.id;
-        if (!inverterId) return;
+    function applyPreset() {
+      const val = document.getElementById("location-preset").value;
+      if (!val) return;
+      const [lat, lng, name] = val.split("|");
+      const input = document.getElementById("site-location");
+      input.value = name;
+      input.dataset.lat = lat;
+      input.dataset.lng = lng;
+      const status = document.getElementById("location-status");
+      status.textContent = `Selected: ${name}`;
+      status.className = "text-xs text-primary font-body font-bold";
+    }
 
-        try {
-          const response = await fetch(
-            `${API_BASE}/api/setup/inverter/${inverterId}`,
-            {
-              method: "DELETE",
-              headers: { Authorization: `Bearer ${token}` },
-            },
-          );
-          const result = await response.json();
-          if (result.success) {
-            addedInverters[type] = null;
-            localStorage.removeItem(`${type}Profile`);
-            document.getElementById(`${type}-form`).classList.remove("hidden");
-            document.getElementById(`${type}-added`).classList.add("hidden");
-            document.getElementById(`${type}-card`).classList.remove("added");
-            document.getElementById(`${type}-name`).value = "";
-            document.getElementById(`${type}-capacity`).value = "";
-            document.getElementById(`${type}-profile`).value = "";
-            document
-              .getElementById(`${type}-profile-info`)
-              .classList.add("hidden");
-            document.getElementById(`${type}-apikey-box`).style.display =
-              "none";
-            updateProceedButton();
-            showMessage(
-              `${type.charAt(0).toUpperCase() + type.slice(1)} inverter removed`,
-              "success",
-            );
+    // ── Add / remove inverter ────────────────────────────────────────────────
+    async function addInverter(type) {
+      const name = document.getElementById(`${type}-name`).value.trim();
+      const capacity = document.getElementById(`${type}-capacity`).value;
+      const profile = document.getElementById(`${type}-profile`).value;
+      const locationInput = document.getElementById("site-location");
+      const location = locationInput.value.trim();
+      const lat = locationInput.dataset.lat || null;
+      const lng = locationInput.dataset.lng || null;
+
+      if (!name) { showMessage("Please enter a name", "error"); return; }
+      if (!profile) { showMessage("Please select a profile", "error"); return; }
+
+      const btn = document.getElementById(`${type}-add-btn`);
+      btn.disabled = true;
+      btn.textContent = "Adding...";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/setup/inverter`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ name, type, capacity: capacity || null, location, lat, lng, profile }),
+        });
+        const result = await res.json();
+        if (result.success) {
+          addedInverters[type] = result.data;
+          if (result.apiKey) {
+            localStorage.setItem("apiKey", result.apiKey);
+            document.getElementById(`${type}-apikey-value`).textContent = result.apiKey;
+            document.getElementById(`${type}-apikey-box`).classList.remove("hidden");
           }
-        } catch (error) {
-          showMessage("Error removing inverter", "error");
-        }
-      }
-
-      function showInverterAdded(type, name, capacity, profile) {
-        document.getElementById(`${type}-form`).classList.add("hidden");
-        document.getElementById(`${type}-added`).classList.remove("hidden");
-        document.getElementById(`${type}-card`).classList.add("added");
-        const profileLabel = profile ? ` · ${profile}` : "";
-        document.getElementById(`${type}-added-text`).textContent =
-          `✅ ${name}${capacity ? ` • ${capacity} kW` : ""}${profileLabel}`;
-      }
-
-      function updateProceedButton() {
-        const hasAny = addedInverters.solar || addedInverters.wind || batteryOnlySetup;
-        document.getElementById("proceed-btn").disabled = !hasAny;
-      }
-
-      async function setupBatteryOnly() {
-        const capacity = document.getElementById("battery-capacity").value;
-        const locationInput = document.getElementById("site-location");
-        const location = locationInput.value.trim();
-        const lat = locationInput.dataset.lat;
-        const lng = locationInput.dataset.lng;
-
-        try {
-          const res = await fetch(`${API_BASE}/api/setup/battery-only`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-            body: JSON.stringify({ capacity_kwh: capacity, location, lat, lng }),
-          });
-          const result = await res.json();
-          if (!result.success) { showMessage(result.message, "error"); return; }
-
-          batteryOnlySetup = true;
-          document.getElementById("battery-form").classList.add("hidden");
-          document.getElementById("battery-added").classList.remove("hidden");
-          document.getElementById("battery-card").classList.add("added");
-          document.getElementById("battery-added-text").textContent = `✅ Battery · ${capacity} kWh`;
+          localStorage.setItem(`${type}Profile`, profile);
+          const profileLabel = profile ? ` · ${profile}` : "";
+          document.getElementById(`${type}-added-text`).textContent = `${name}${capacity ? ` · ${capacity} kW` : ""}${profileLabel}`;
+          document.getElementById(`${type}-added`).classList.remove("hidden");
+          btn.classList.add("hidden");
           updateProceedButton();
-          showMessage("Battery set up successfully!", "success");
-        } catch (err) {
-          showMessage("Error setting up battery", "error");
+          showMessage(`${type.charAt(0).toUpperCase() + type.slice(1)} inverter added!`, "success");
+        } else {
+          showMessage(result.message, "error");
         }
-      }
+      } catch { showMessage("Error adding inverter", "error"); }
+      btn.disabled = false;
+      btn.textContent = type === "solar" ? "Add Solar Inverter" : "Add Wind Turbine";
+    }
 
-      function proceedToDashboard() {
-        window.location.href = "../frontend/Dashboard.html";
-      }
-
-      function showMessage(msg, type) {
-        const el = document.getElementById("message");
-        el.textContent = msg;
-        el.className = `message ${type}`;
-        setTimeout(() => {
-          el.className = "message";
-        }, 3000);
-      }
-
-      async function checkExistingSetup() {
-        try {
-          const response = await fetch(`${API_BASE}/api/setup/status`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-          const result = await response.json();
-          if (result.hasSetup)
-            window.location.href = "../frontend/Dashboard.html";
-        } catch (error) {
-          console.error("Error checking setup:", error);
+    async function removeInverter(type) {
+      const id = addedInverters[type]?.id;
+      if (!id) return;
+      try {
+        const res = await fetch(`${API_BASE}/api/setup/inverter/${id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
+        const result = await res.json();
+        if (result.success) {
+          addedInverters[type] = null;
+          document.getElementById(`${type}-added`).classList.add("hidden");
+          document.getElementById(`${type}-apikey-box`).classList.add("hidden");
+          document.getElementById(`${type}-add-btn`).classList.remove("hidden");
+          document.getElementById(`${type}-name`).value = "";
+          document.getElementById(`${type}-capacity`).value = "";
+          document.getElementById(`${type}-profile`).value = "";
+          document.getElementById(`${type}-profile-info`).classList.add("hidden");
+          updateProceedButton();
+          showMessage("Removed", "success");
         }
-      }
+      } catch { showMessage("Error removing", "error"); }
+    }
 
-      checkExistingSetup();
-    </script>
-  </body>
+    // ── Battery only ─────────────────────────────────────────────────────────
+    async function setupBatteryOnly() {
+      const capacity = document.getElementById("battery-capacity").value;
+      const name = document.getElementById("battery-name").value.trim() || "Home Inverter";
+      const locationInput = document.getElementById("site-location");
+      const btn = document.getElementById("battery-add-btn");
+      btn.disabled = true;
+      btn.textContent = "Setting up...";
+
+      try {
+        const res = await fetch(`${API_BASE}/api/setup/battery-only`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ capacity_kwh: capacity, name, location: locationInput.value.trim(), lat: locationInput.dataset.lat, lng: locationInput.dataset.lng }),
+        });
+        const result = await res.json();
+        if (!result.success) { showMessage(result.message, "error"); btn.disabled = false; btn.textContent = "Set Up Battery"; return; }
+        batteryOnlySetup = true;
+        document.getElementById("battery-added-text").textContent = `${name} · ${capacity} kWh`;
+        document.getElementById("battery-added").classList.remove("hidden");
+        btn.classList.add("hidden");
+        updateProceedButton();
+        showMessage("Battery set up!", "success");
+      } catch { showMessage("Error setting up battery", "error"); btn.disabled = false; btn.textContent = "Set Up Battery"; }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function updateProceedButton() {
+      const hasAny = addedInverters.solar || addedInverters.wind || batteryOnlySetup;
+      document.getElementById("proceed-btn").disabled = !hasAny;
+    }
+
+    function proceedToDashboard() { window.location.href = "../frontend/Dashboard.html"; }
+
+    function showMessage(msg, type) {
+      const el = document.getElementById("message");
+      el.textContent = msg;
+      el.className = `fixed top-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl font-semibold text-sm shadow-lg font-body ${type === "success" ? "bg-primary-fixed text-primary" : "bg-error-container text-error"}`;
+      clearTimeout(el._t);
+      el._t = setTimeout(() => el.className = "hidden", 3000);
+    }
+  </script>
+</body>
 </html>
