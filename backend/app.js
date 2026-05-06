@@ -108,6 +108,13 @@ pool.query(`
 // Keyed by "lat,lng" for current weather and "forecast:lat,lng" for forecasts.
 // Each entry: { fetchedAt: <epoch ms>, data: <response object> }
 const weatherCache = {};
+// Prune stale weather cache entries every 10 minutes
+setInterval(() => {
+  const maxAge = 30 * 60 * 1000;
+  for (const [key, val] of Object.entries(weatherCache)) {
+    if (Date.now() - val.fetchedAt > maxAge) delete weatherCache[key];
+  }
+}, 10 * 60 * 1000);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Middleware

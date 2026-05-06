@@ -8,66 +8,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <script id="tailwind-config">
-    tailwind.config = {
-      darkMode: "class",
-      theme: {
-        extend: {
-          colors: {
-            "inverse-on-surface": "var(--color-inverse-on-surface)",
-            primary: "var(--color-primary)",
-            "secondary-fixed": "var(--color-secondary-fixed)",
-            "on-secondary-fixed-variant": "#00468c",
-            "on-tertiary-container": "#b5eb3e",
-            "on-surface": "var(--color-on-surface)",
-            error: "var(--color-error)",
-            "tertiary-fixed": "var(--color-tertiary-fixed)",
-            "on-background": "var(--color-on-background)",
-            "surface-variant": "#e0e3e2",
-            "surface-container": "var(--color-surface-container)",
-            "tertiary-container": "var(--color-tertiary-container)",
-            "primary-fixed-dim": "var(--color-primary-fixed-dim)",
-            "surface-bright": "var(--color-surface-bright)",
-            "inverse-primary": "#83d5c5",
-            "surface-dim": "var(--color-surface-dim)",
-            "on-primary-fixed": "var(--color-on-primary-fixed)",
-            "error-container": "var(--color-error-container)",
-            "on-error": "var(--color-on-error)",
-            "on-primary": "var(--color-on-primary)",
-            tertiary: "var(--color-tertiary)",
-            "on-surface-variant": "var(--color-on-surface-variant)",
-            background: "var(--color-background)",
-            surface: "var(--color-surface)",
-            "on-tertiary-fixed-variant": "#374e00",
-            "primary-fixed": "var(--color-primary-fixed)",
-            "surface-container-low": "var(--color-surface-container-low)",
-            "on-secondary-fixed": "#001b3d",
-            "on-tertiary": "var(--color-on-tertiary)",
-            "on-error-container": "var(--color-on-error-container)",
-            "on-primary-fixed-variant": "#005046",
-            "secondary-fixed-dim": "#a9c7ff",
-            "on-secondary": "var(--color-on-secondary)",
-            "primary-container": "var(--color-primary-container)",
-            "on-primary-container": "var(--color-on-primary-container)",
-            "surface-container-high": "var(--color-surface-container-high)",
-            "secondary-container": "var(--color-secondary-container)",
-            "on-tertiary-fixed": "#141f00",
-            "surface-tint": "#006b5e",
-            "surface-container-lowest": "var(--color-surface-container-lowest)",
-            "outline-variant": "var(--color-outline-variant)",
-            outline: "var(--color-outline)",
-            "surface-container-highest": "var(--color-surface-container-highest)",
-            "inverse-surface": "var(--color-inverse-surface)",
-            secondary: "var(--color-secondary)",
-            "tertiary-fixed-dim": "#a2d729",
-            "on-secondary-container": "#00376f",
-          },
-          fontFamily: { headline: ["Manrope"], body: ["Plus Jakarta Sans"], label: ["Inter"] },
-          borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "1.5rem", full: "9999px" },
-        },
-      },
-    };
-  </script>
+  <script src="../Javascript/tailwind-config.js"></script>
+  <script src="../Javascript/config.js"></script>
   <link rel="stylesheet" href="../CSS/theme.css" />
   <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; display: inline-block; line-height: 1; }
@@ -817,18 +759,7 @@
     loadProfile();
     loadInverters();
   </script>
-  <script>
-    (function(){
-      var s=localStorage.getItem("voltequilibrium-theme");
-      var p=window.matchMedia("(prefers-color-scheme:dark)").matches;
-      if(s==="dark"||(!s&&p)){document.documentElement.classList.add("dark");document.documentElement.classList.remove("light");var i=document.getElementById("theme-icon");if(i)i.textContent="light_mode";}
-    })();
-    document.getElementById("theme-toggle")?.addEventListener("click",function(){
-      var d=document.documentElement.classList.contains("dark");
-      if(d){document.documentElement.classList.replace("dark","light");document.getElementById("theme-icon").textContent="dark_mode";localStorage.setItem("voltequilibrium-theme","light");}
-      else{document.documentElement.classList.replace("light","dark");document.getElementById("theme-icon").textContent="light_mode";localStorage.setItem("voltequilibrium-theme","dark");}
-    });
-  </script>
+  <script src="../Javascript/theme.js"></script>
   <script src="../Javascript/chatbot.js"></script>
 </body>
 </html>
