@@ -90,13 +90,13 @@ function fmtTime(isoString) {
 // ── Electrical tile (large, 3-per-row) ────────────────────────────────────
 function buildElecTile(label, value, unit, icon, iconColor) {
   return `
-    <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5 flex flex-col gap-3">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 flex flex-col gap-3">
       <div class="flex items-center justify-between">
         <span class="text-xs font-bold font-label uppercase tracking-widest text-on-surface-variant/60 text-on-surface-variant/60">${label}</span>
         <span class="material-symbols-outlined text-xl" style="color:${iconColor}">${icon}</span>
       </div>
       <div class="flex items-end gap-1.5">
-        <span class="text-3xl font-extrabold font-headline text-on-surface dark:text-white leading-none">${value}</span>
+        <span class="text-3xl font-extrabold font-headline text-on-surface text-on-surface leading-none">${value}</span>
         <span class="text-sm font-label text-on-surface-variant/60 text-on-surface-variant/60 mb-0.5">${unit}</span>
       </div>
     </div>`;
@@ -148,7 +148,7 @@ async function loadSummary() {
   // Device cards
   const cardsEl = document.getElementById("inverter-cards");
   if (inverters.length === 0) {
-    cardsEl.innerHTML = `<div class="flex items-center justify-center h-40 bg-white dark:bg-slate-800 rounded-2xl shadow-sm text-on-surface-variant/40 text-sm font-label col-span-2">No inverters found.</div>`;
+    cardsEl.innerHTML = `<div class="flex items-center justify-center h-40 bg-surface-container-lowest rounded-2xl shadow-sm text-on-surface-variant/40 text-sm font-label col-span-2">No inverters found.</div>`;
     return;
   }
 
@@ -159,68 +159,68 @@ async function loadSummary() {
     const windRows  = isWind ? `
       <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
         <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Wind Speed</span>
-        <span class="font-semibold font-label dark:text-white">${inv.liveWindSpeed != null ? inv.liveWindSpeed + " m/s" : "—"}</span>
+        <span class="font-semibold font-label text-on-surface">${inv.liveWindSpeed != null ? inv.liveWindSpeed + " m/s" : "—"}</span>
       </div>
       <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
         <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Rotor RPM</span>
-        <span class="font-semibold font-label dark:text-white">${inv.liveRotorRpm != null ? fmt(inv.liveRotorRpm, 1) : "—"}</span>
+        <span class="font-semibold font-label text-on-surface">${inv.liveRotorRpm != null ? fmt(inv.liveRotorRpm, 1) : "—"}</span>
       </div>
       <div class="flex justify-between text-sm py-1">
         <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Pitch Angle</span>
-        <span class="font-semibold font-label dark:text-white">${inv.livePitchAngle != null ? fmt(inv.livePitchAngle, 1) + "°" : "—"}</span>
+        <span class="font-semibold font-label text-on-surface">${inv.livePitchAngle != null ? fmt(inv.livePitchAngle, 1) + "°" : "—"}</span>
       </div>` : "";
 
     return `
-      <div class="bg-white dark:bg-slate-800 rounded-2xl shadow-sm p-5">
+      <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-5">
         <div class="flex items-start justify-between mb-4">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:${typeColor}18">
               <span class="material-symbols-outlined" style="color:${typeColor}">${typeIcon}</span>
             </div>
             <div>
-              <p class="font-bold font-headline text-on-surface dark:text-white">${inv.name}</p>
+              <p class="font-bold font-headline text-on-surface text-on-surface">${inv.name}</p>
               <p class="text-xs text-on-surface-variant/60 text-on-surface-variant/60 font-label capitalize">${inv.profile || inv.type}</p>
             </div>
           </div>
           <div class="text-right">
             <p class="text-xl font-extrabold font-headline text-primary">${inv.livePowerW != null ? fmt(inv.livePowerW, 0) + " W" : "—"}</p>
-            <p class="text-xs text-on-surface-variant/40 dark:text-slate-500 font-label">live output</p>
+            <p class="text-xs text-on-surface-variant/40 text-on-surface-variant/50 font-label">live output</p>
           </div>
         </div>
         <div class="grid grid-cols-2 gap-x-6 mb-4">
           <div>
-            <p class="text-xs text-on-surface-variant/50 dark:text-slate-500 font-label uppercase tracking-widest mb-0.5">Serial</p>
-            <p class="text-sm font-semibold font-label text-on-surface dark:text-white">${inv.serialNumber || "—"}</p>
+            <p class="text-xs text-on-surface-variant/50 text-on-surface-variant/50 font-label uppercase tracking-widest mb-0.5">Serial</p>
+            <p class="text-sm font-semibold font-label text-on-surface text-on-surface">${inv.serialNumber || "—"}</p>
           </div>
           <div>
-            <p class="text-xs text-on-surface-variant/50 dark:text-slate-500 font-label uppercase tracking-widest mb-0.5">Firmware</p>
-            <p class="text-sm font-semibold font-label text-on-surface dark:text-white">${inv.firmwareVersion || "—"}</p>
+            <p class="text-xs text-on-surface-variant/50 text-on-surface-variant/50 font-label uppercase tracking-widest mb-0.5">Firmware</p>
+            <p class="text-sm font-semibold font-label text-on-surface text-on-surface">${inv.firmwareVersion || "—"}</p>
           </div>
           <div class="mt-2">
-            <p class="text-xs text-on-surface-variant/50 dark:text-slate-500 font-label uppercase tracking-widest mb-0.5">Capacity</p>
-            <p class="text-sm font-semibold font-label text-on-surface dark:text-white">${inv.capacity ? inv.capacity + " kW" : "—"}</p>
+            <p class="text-xs text-on-surface-variant/50 text-on-surface-variant/50 font-label uppercase tracking-widest mb-0.5">Capacity</p>
+            <p class="text-sm font-semibold font-label text-on-surface text-on-surface">${inv.capacity ? inv.capacity + " kW" : "—"}</p>
           </div>
           <div class="mt-2">
-            <p class="text-xs text-on-surface-variant/50 dark:text-slate-500 font-label uppercase tracking-widest mb-0.5">Last Seen</p>
-            <p class="text-sm font-semibold font-label text-on-surface dark:text-white">${fmtTime(inv.lastSeen)}</p>
+            <p class="text-xs text-on-surface-variant/50 text-on-surface-variant/50 font-label uppercase tracking-widest mb-0.5">Last Seen</p>
+            <p class="text-sm font-semibold font-label text-on-surface text-on-surface">${fmtTime(inv.lastSeen)}</p>
           </div>
         </div>
         <div class="border-t border-outline-variant/20 pt-3">
           <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
             <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Today Generated</span>
-            <span class="font-semibold font-label dark:text-white">${fmt(inv.todayKwh, 3)} kWh</span>
+            <span class="font-semibold font-label text-on-surface">${fmt(inv.todayKwh, 3)} kWh</span>
           </div>
           <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
             <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Today Load</span>
-            <span class="font-semibold font-label dark:text-white">${fmt(inv.todayLoadKwh, 3)} kWh</span>
+            <span class="font-semibold font-label text-on-surface">${fmt(inv.todayLoadKwh, 3)} kWh</span>
           </div>
           <div class="flex justify-between text-sm py-1 border-b border-outline-variant/10">
             <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Today Grid</span>
-            <span class="font-semibold font-label dark:text-white">${fmt(inv.todayGridKwh, 3)} kWh</span>
+            <span class="font-semibold font-label text-on-surface">${fmt(inv.todayGridKwh, 3)} kWh</span>
           </div>
           <div class="flex justify-between text-sm py-1 ${isWind ? "border-b border-outline-variant/10" : ""}">
             <span class="text-on-surface-variant/60 text-on-surface-variant/60 font-label">Temperature</span>
-            <span class="font-semibold font-label dark:text-white">${inv.liveTemp != null ? fmt(inv.liveTemp, 1) + " °C" : "—"}</span>
+            <span class="font-semibold font-label text-on-surface">${inv.liveTemp != null ? fmt(inv.liveTemp, 1) + " °C" : "—"}</span>
           </div>
           ${windRows}
         </div>
@@ -230,12 +230,12 @@ async function loadSummary() {
             <span class="text-xs font-bold font-label text-on-surface-variant/60 text-on-surface-variant/60 uppercase tracking-widest">Battery</span>
             <span class="text-sm font-extrabold font-headline text-primary">${fmt(battery.soc, 1)}%</span>
           </div>
-          <div class="w-full h-2 bg-surface-container dark:bg-slate-700 rounded-full overflow-hidden">
+          <div class="w-full h-2 bg-surface-container bg-surface-container rounded-full overflow-hidden">
             <div class="h-full rounded-full transition-all duration-700"
               style="width:${Math.min(100, Math.max(0, battery.soc))}%;background:${battery.soc > 50 ? "#005147" : battery.soc > 20 ? "#374e00" : "#ba1a1a"}">
             </div>
           </div>
-          <div class="flex justify-between text-xs font-label text-on-surface-variant/50 dark:text-slate-500 mt-1">
+          <div class="flex justify-between text-xs font-label text-on-surface-variant/50 text-on-surface-variant/50 mt-1">
             <span>${fmt(battery.voltage, 2)} V · ${fmt(battery.powerW, 1)} W</span>
             <span>${fmt(battery.temperature, 1)} °C</span>
           </div>
@@ -266,12 +266,12 @@ document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeHelp(
 
 // Populate help modal content
 document.getElementById("help-content").innerHTML = HELP_TILES.map((t, i) => `
-  <div class="bg-surface-container-low dark:bg-slate-700 rounded-xl p-4">
+  <div class="bg-surface-container-low bg-surface-container rounded-xl p-4">
     <div class="flex items-start gap-3 mb-2">
       <span class="text-xs font-bold font-label bg-primary text-white rounded-full w-5 h-5 flex items-center justify-center flex-shrink-0 mt-0.5">${i + 1}</span>
-      <p class="font-bold font-headline text-on-surface dark:text-white text-sm">${t.title}</p>
+      <p class="font-bold font-headline text-on-surface text-on-surface text-sm">${t.title}</p>
     </div>
-    <p class="text-sm text-on-surface-variant dark:text-slate-300 font-body mb-2 ml-8">${t.desc}</p>
+    <p class="text-sm text-on-surface-variant text-on-surface-variant font-body mb-2 ml-8">${t.desc}</p>
     <p class="text-xs text-on-surface-variant/60 text-on-surface-variant/60 font-label italic ml-8">📐 ${t.calc}</p>
   </div>`).join("");
 

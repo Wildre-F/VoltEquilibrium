@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="view-transition" content="same-origin" />
   <title>VoltEquilibrium | Recommendations</title>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -150,197 +151,225 @@
 
     <!-- Main Content -->
     <main class="flex-1 md:ml-64 p-8 min-h-screen">
-      <div class="max-w-6xl mx-auto space-y-10">
-        <!-- Hero Header -->
-        <section class="flex flex-col md:flex-row justify-between items-end gap-8">
-          <div class="space-y-4 max-w-2xl">
-            <span class="px-3 py-1 bg-tertiary-fixed text-on-tertiary-fixed-variant rounded-full text-[10px] font-bold uppercase tracking-widest font-label">AI Insights Active</span>
-            <h1 class="text-5xl font-extrabold text-on-surface font-headline tracking-tighter leading-none">
-              Optimize Your <br /><span class="text-primary italic">Energy Velocity.</span>
-            </h1>
-            <p class="text-on-surface-variant text-lg font-body leading-relaxed">
-              Based on your real-time consumption patterns and local grid health, we've identified 4 key optimizations to reduce your carbon footprint and costs.
-            </p>
-          </div>
-          <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm border border-outline-variant/10 flex items-center gap-6">
-            <div class="text-right">
-              <p class="text-xs text-outline font-label uppercase font-bold tracking-widest">Est. Monthly Savings</p>
-              <p class="text-4xl font-headline font-extrabold text-primary">R 42.80</p>
-            </div>
-            <div class="w-14 h-14 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-              <span class="material-symbols-outlined text-3xl">trending_down</span>
-            </div>
-          </div>
-        </section>
+      <div class="max-w-5xl mx-auto">
 
-        <!-- Recommendations Bento Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <!-- Primary Recommendation (large) -->
-          <div class="md:col-span-2 bg-surface-container-lowest rounded-xl p-8 flex flex-col justify-between relative overflow-hidden group">
-            <div class="absolute top-0 right-0 p-4">
-              <span class="px-4 py-2 bg-primary text-white rounded-full text-xs font-bold font-label flex items-center gap-2">
-                <span class="material-symbols-outlined text-sm">bolt</span> High Impact
-              </span>
-            </div>
-            <div class="space-y-6">
-              <div class="flex items-center gap-4">
-                <div class="w-16 h-16 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary">
-                  <span class="material-symbols-outlined text-4xl" style="font-variation-settings:'FILL' 1;">solar_power</span>
-                </div>
-                <div>
-                  <h3 class="text-2xl font-bold font-headline text-on-surface">Peak Solar Alignment</h3>
-                  <p class="text-on-surface-variant font-body">Utility Management</p>
-                </div>
-              </div>
-              <p class="text-xl font-body leading-snug text-on-surface/80">
-                Use high-energy appliances like <span class="text-secondary font-bold">washers and dishwashers at 2 PM</span> to leverage your solar peak. This avoids drawing from the grid during high-tariff periods.
-              </p>
-              <div class="flex flex-wrap gap-4">
-                <div class="bg-surface-container-low px-4 py-3 rounded-xl flex items-center gap-3">
-                  <span class="material-symbols-outlined text-tertiary">payments</span>
-                  <div>
-                    <p class="text-[10px] text-outline uppercase font-bold tracking-tighter">Savings</p>
-                    <p class="text-sm font-bold text-on-surface">R 12.50 / mo</p>
-                  </div>
-                </div>
-                <div class="bg-surface-container-low px-4 py-3 rounded-xl flex items-center gap-3">
-                  <span class="material-symbols-outlined text-secondary">schedule</span>
-                  <div>
-                    <p class="text-[10px] text-outline uppercase font-bold tracking-tighter">Window</p>
-                    <p class="text-sm font-bold text-on-surface">1:00 PM – 3:30 PM</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="mt-8 flex gap-4">
-              <button class="bg-gradient-to-r from-primary to-primary-container text-white px-8 py-3 rounded-full font-label font-bold text-sm uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all">
-                Apply Automation
-              </button>
-              <button class="px-6 py-3 rounded-full font-label font-bold text-sm uppercase tracking-widest text-on-surface-variant hover:bg-surface-container-high transition-colors">
-                Dismiss
-              </button>
-            </div>
-            <div class="absolute -bottom-12 -right-12 w-48 h-48 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors"></div>
+        <!-- Page Header -->
+        <div class="flex items-end justify-between mb-8">
+          <div>
+            <h1 class="text-3xl font-extrabold font-headline tracking-tight text-on-surface">Energy Recommendations</h1>
+            <p class="text-sm text-on-surface-variant font-body mt-1">Smart insights to optimize your energy usage</p>
           </div>
+          <button id="recs-help-btn" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 hover:bg-primary/20 transition-colors">
+            <span class="material-symbols-outlined text-primary text-base">help</span>
+            <span class="text-xs font-bold font-label text-primary hidden sm:inline">How it works</span>
+          </button>
+        </div>
 
-          <!-- HVAC Card -->
-          <div class="bg-primary text-on-primary rounded-xl p-8 flex flex-col justify-between shadow-xl">
-            <div class="space-y-4">
-              <span class="material-symbols-outlined text-4xl text-primary-fixed">thermostat</span>
-              <h3 class="text-xl font-bold font-headline leading-tight">HVAC Smart Shift</h3>
-              <p class="text-primary-fixed-dim font-body text-sm leading-relaxed">Lowering your thermostat by 2°C during sleep hours could reduce your HVAC energy load by 8% this week.</p>
+        <!-- Help panel (hidden by default) -->
+        <div id="recs-help-panel" class="hidden mb-8 bg-surface-container-lowest rounded-2xl shadow-sm p-6 border border-outline-variant/20">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-bold font-headline text-on-surface flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-base">menu_book</span> Understanding Your Recommendations
+            </h3>
+            <button id="recs-help-close" class="p-1 hover:bg-surface-container rounded-full transition-colors">
+              <span class="material-symbols-outlined text-on-surface-variant text-lg">close</span>
+            </button>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-surface-container-low rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
+                <span class="text-xs font-bold font-label text-tertiary uppercase">Green — Great Time</span>
+              </div>
+              <p class="text-xs text-on-surface-variant font-body">Battery is above 80% and your system is generating well. Run heavy appliances like washing machines, geysers, and ovens now to use free solar/wind power.</p>
             </div>
-            <div class="mt-8 space-y-4">
-              <div class="flex justify-between items-center text-xs font-label">
-                <span class="opacity-70">Projected Yield</span>
-                <span class="font-bold text-tertiary-fixed">+14 kWh saved</span>
+            <div class="bg-surface-container-low rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
+                <span class="text-xs font-bold font-label text-secondary uppercase">Orange — Moderate</span>
               </div>
-              <div class="w-full bg-white/10 h-1.5 rounded-full overflow-hidden">
-                <div class="bg-tertiary-fixed h-full w-[65%]"></div>
+              <p class="text-xs text-on-surface-variant font-body">Battery is between 40–80%. Use appliances cautiously. Consider waiting for better generation or charge levels before running high-draw devices.</p>
+            </div>
+            <div class="bg-surface-container-low rounded-xl p-4">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="material-symbols-outlined text-error text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
+                <span class="text-xs font-bold font-label text-error uppercase">Red — Avoid Now</span>
               </div>
-              <button class="w-full py-3 bg-white text-primary rounded-full font-label font-bold text-sm uppercase tracking-widest hover:bg-primary-fixed transition-colors">
-                Acknowledge
-              </button>
+              <p class="text-xs text-on-surface-variant font-body">Battery is below 30% or no generation happening. Delay heavy appliances to avoid draining your battery or drawing expensive power from the grid.</p>
             </div>
           </div>
-
-          <!-- EV Charging -->
-          <div class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/10 space-y-4">
-            <div class="flex justify-between items-start">
-              <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-tertiary shadow-sm">
-                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">battery_charging_full</span>
-              </div>
-              <span class="text-[10px] font-bold text-tertiary px-2 py-1 bg-tertiary-fixed rounded">EFFICIENT</span>
-            </div>
-            <h4 class="font-bold font-headline text-on-surface">EV Smart Charging</h4>
-            <p class="text-sm text-on-surface-variant font-body">Charge between 2 AM – 5 AM for off-peak grid rates.</p>
-            <div class="pt-2 flex items-center justify-between">
-              <span class="text-xs font-bold text-primary">R 18.20 Potential Savings</span>
-              <button class="text-secondary hover:underline text-xs font-bold font-label uppercase tracking-tighter">View Setup</button>
-            </div>
-          </div>
-
-          <!-- Phantom Load -->
-          <div class="bg-surface-container-low rounded-xl p-6 border border-outline-variant/10 space-y-4">
-            <div class="flex justify-between items-start">
-              <div class="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-secondary shadow-sm">
-                <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1;">lightbulb</span>
-              </div>
-              <span class="text-[10px] font-bold text-outline px-2 py-1 bg-surface-container-high rounded">MAINTENANCE</span>
-            </div>
-            <h4 class="font-bold font-headline text-on-surface">Phantom Load Alert</h4>
-            <p class="text-sm text-on-surface-variant font-body">Unplug 4 "always-on" entertainment devices while travelling.</p>
-            <div class="pt-2 flex items-center justify-between">
-              <span class="text-xs font-bold text-primary">R 4.10 Potential Savings</span>
-              <button class="text-secondary hover:underline text-xs font-bold font-label uppercase tracking-tighter">I've Done This</button>
-            </div>
-          </div>
-
-          <!-- Efficiency Score -->
-          <div class="bg-surface-container-lowest rounded-xl p-6 border border-outline-variant/10 flex flex-col justify-center items-center text-center space-y-2 group">
-            <div class="relative w-20 h-20 mb-2">
-              <div class="absolute inset-0 border-4 border-surface-container rounded-full"></div>
-              <div class="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-[spin_3s_linear_infinite]"></div>
-              <div class="absolute inset-0 flex items-center justify-center">
-                <span class="text-xl font-headline font-extrabold text-primary">82%</span>
-              </div>
-            </div>
-            <h4 class="font-bold font-headline text-on-surface text-sm uppercase tracking-widest">Efficiency Score</h4>
-            <p class="text-[10px] text-outline font-label">Performing better than 75% of your local grid neighbours</p>
+          <div class="mt-4 bg-surface-container-low rounded-xl p-4">
+            <p class="text-xs font-bold font-label text-on-surface mb-2">Other features on this page:</p>
+            <ul class="text-xs text-on-surface-variant font-body space-y-1.5">
+              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-primary mt-0.5">health_and_safety</span><b>Maintenance Health</b> — (coming soon) Compares your actual panel output to expected output and calculates lost savings when panels need cleaning or repair.</li>
+              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-tertiary mt-0.5">eco</span><b>Carbon to Action</b> — (coming soon) Converts your CO2 savings into real-world equivalents like LED bulb replacements and trees planted.</li>
+              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-secondary mt-0.5">cloud</span><b>6-Hour Forecast</b> — Shows predicted conditions for the next 6 hours. Green blocks = good generation windows, red = poor conditions.</li>
+            </ul>
           </div>
         </div>
 
-        <!-- Historical Yields -->
-        <section class="space-y-6">
-          <div class="flex justify-between items-center">
-            <h2 class="text-2xl font-bold font-headline text-on-surface">Historical Yields</h2>
-            <div class="flex gap-2">
-              <button class="p-2 bg-surface-container-low rounded-full text-on-surface-variant hover:bg-primary hover:text-white transition-all">
-                <span class="material-symbols-outlined">chevron_left</span>
-              </button>
-              <button class="p-2 bg-surface-container-low rounded-full text-on-surface-variant hover:bg-primary hover:text-white transition-all">
-                <span class="material-symbols-outlined">chevron_right</span>
-              </button>
+        <!-- 3-Feature Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          <!-- ════ Feature 2: Appliance Shift (REAL — 2 cols) ════ -->
+          <div class="md:col-span-2 bg-surface-container-lowest rounded-2xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1;">schedule</span>
+                <div>
+                  <h2 class="text-base font-bold font-headline text-on-surface">Best Time for Heavy Appliances</h2>
+                  <p class="text-[10px] text-on-surface-variant font-label mt-0.5">Based on battery SOC + weather forecast</p>
+                </div>
+              </div>
+              <span id="shift-updated" class="text-[10px] text-on-surface-variant/50 font-label">—</span>
+            </div>
+
+            <!-- Traffic light + status -->
+            <div class="flex items-center gap-6 mb-6">
+              <div class="flex flex-col items-center gap-2">
+                <div id="shift-light" class="w-16 h-16 rounded-full transition-all duration-700 flex items-center justify-center" style="background:var(--color-outline);">
+                  <span id="shift-face" class="material-symbols-outlined text-white text-3xl" style="font-variation-settings:'FILL' 1;">sentiment_neutral</span>
+                </div>
+                <span id="shift-label" class="text-sm font-extrabold font-headline">—</span>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center gap-2 mb-2">
+                  <span id="shift-icon" class="material-symbols-outlined text-lg" style="font-variation-settings:'FILL' 1;">hourglass_empty</span>
+                  <p id="shift-message" class="text-sm text-on-surface font-body">Loading recommendation...</p>
+                </div>
+                <!-- SOC bar -->
+                <div class="w-full h-2.5 bg-surface-container rounded-full overflow-hidden">
+                  <div id="shift-soc-bar" class="h-full rounded-full transition-all duration-700" style="width:0%;background:var(--color-outline);"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats row -->
+            <div class="grid grid-cols-4 gap-3 mb-6">
+              <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Battery</p>
+                <p id="shift-soc" class="text-lg font-extrabold font-headline text-primary mt-1">—</p>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Generation</p>
+                <p id="shift-gen" class="text-lg font-extrabold font-headline text-tertiary mt-1">—</p>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Load</p>
+                <p id="shift-load" class="text-lg font-extrabold font-headline text-secondary mt-1">—</p>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Grid</p>
+                <p id="shift-grid" class="text-lg font-extrabold font-headline text-error mt-1">—</p>
+              </div>
+            </div>
+
+            <!-- 6-hour forecast timeline -->
+            <div>
+              <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Next 6 Hours — Cloud Cover Forecast</p>
+              <div id="shift-timeline" class="flex gap-2">
+                <p class="text-xs text-on-surface-variant/40 text-center py-4 w-full">Loading forecast...</p>
+              </div>
             </div>
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="p-6 bg-surface-container-lowest rounded-xl shadow-sm space-y-2 border-l-4 border-tertiary">
-              <p class="text-[10px] font-bold text-outline uppercase tracking-widest">Last Monday</p>
-              <p class="text-2xl font-headline font-extrabold text-on-surface">14.2 kWh</p>
-              <p class="text-xs text-tertiary font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">arrow_upward</span> 12% vs Avg</p>
+
+          <!-- ════ Feature 1: Maintenance Health — PLACEHOLDER ════ -->
+          <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6 opacity-60">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">health_and_safety</span>
+              <h2 class="text-sm font-bold font-headline text-on-surface">Maintenance Health</h2>
             </div>
-            <div class="p-6 bg-surface-container-lowest rounded-xl shadow-sm space-y-2 border-l-4 border-primary">
-              <p class="text-[10px] font-bold text-outline uppercase tracking-widest">Last Tuesday</p>
-              <p class="text-2xl font-headline font-extrabold text-on-surface">11.8 kWh</p>
-              <p class="text-xs text-primary font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">horizontal_rule</span> 0% vs Avg</p>
+            <span class="inline-block px-2.5 py-0.5 bg-surface-container rounded-full text-[10px] font-bold font-label text-on-surface-variant mb-3">Coming Soon — Data Science</span>
+            <p class="text-xs text-on-surface-variant/60 font-body mb-4">
+              Compares actual panel output vs expected output based on weather conditions. Alerts when efficiency drops below 70% and calculates potential savings lost due to maintenance issues.
+            </p>
+            <div class="bg-surface-container-low rounded-xl p-4">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Potential Savings Lost</span>
+                <span class="text-lg font-extrabold font-headline text-on-surface-variant/30">R—/mo</span>
+              </div>
+              <div class="w-full h-2 bg-surface-container rounded-full mt-2">
+                <div class="h-full w-0 rounded-full bg-outline-variant"></div>
+              </div>
             </div>
-            <div class="p-6 bg-surface-container-lowest rounded-xl shadow-sm space-y-2 border-l-4 border-error">
-              <p class="text-[10px] font-bold text-outline uppercase tracking-widest">Last Wednesday</p>
-              <p class="text-2xl font-headline font-extrabold text-on-surface">18.5 kWh</p>
-              <p class="text-xs text-error font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">arrow_downward</span> 22% vs Avg</p>
-            </div>
-            <div class="p-6 bg-surface-container-lowest rounded-xl shadow-sm space-y-2 border-l-4 border-tertiary">
-              <p class="text-[10px] font-bold text-outline uppercase tracking-widest">Last Thursday</p>
-              <p class="text-2xl font-headline font-extrabold text-on-surface">13.1 kWh</p>
-              <p class="text-xs text-tertiary font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">arrow_upward</span> 5% vs Avg</p>
+            <div class="bg-surface-container-low rounded-xl p-4 mt-3">
+              <div class="flex justify-between items-center">
+                <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Panel Health Score</span>
+                <span class="text-lg font-extrabold font-headline text-on-surface-variant/30">—%</span>
+              </div>
             </div>
           </div>
-        </section>
+
+          <!-- ════ Smart Power Schedule ════ -->
+          <div id="schedule-widget" class="md:col-span-2 bg-surface-container-lowest rounded-2xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-5">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-secondary text-xl" style="font-variation-settings:'FILL' 1;">electric_meter</span>
+                <div>
+                  <h2 class="text-base font-bold font-headline text-on-surface">Smart Power Schedule</h2>
+                  <p class="text-[10px] text-on-surface-variant font-label mt-0.5">When to use Eskom vs Battery based on tariffs</p>
+                </div>
+              </div>
+              <span id="schedule-updated" class="text-[10px] text-on-surface-variant/50 font-label">—</span>
+            </div>
+
+            <!-- Current recommendation -->
+            <div id="schedule-current" class="bg-surface-container-low rounded-xl p-4 mb-5">
+              <p class="text-xs text-on-surface-variant/60 text-center py-2">Loading schedule...</p>
+            </div>
+
+            <!-- 24-hour timeline -->
+            <div>
+              <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">24-Hour Tariff Schedule</p>
+              <div id="schedule-timeline" class="flex gap-1">
+                <p class="text-xs text-on-surface-variant/40 text-center py-4 w-full">Loading...</p>
+              </div>
+              <div id="schedule-legend" class="flex gap-4 mt-3 flex-wrap"></div>
+            </div>
+
+            <!-- Estimated savings -->
+            <div class="mt-4 bg-primary/5 rounded-xl px-4 py-3 flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1;">savings</span>
+              <p id="schedule-savings" class="text-xs font-label text-primary font-bold">Calculating savings...</p>
+            </div>
+          </div>
+
+          <!-- ════ Feature 3: Carbon to Action — PLACEHOLDER ════ -->
+          <div class="md:col-span-3 bg-surface-container-lowest rounded-2xl shadow-sm p-6 opacity-60">
+            <div class="flex items-center gap-2 mb-4">
+              <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1;">eco</span>
+              <h2 class="text-sm font-bold font-headline text-on-surface">Carbon to Action Converter</h2>
+              <span class="ml-auto px-2.5 py-0.5 bg-surface-container rounded-full text-[10px] font-bold font-label text-on-surface-variant">Coming Soon — Data Science</span>
+            </div>
+            <p class="text-xs text-on-surface-variant/60 font-body mb-4">
+              Converts your CO2 savings into real-world equivalents. Shows actionable tips like replacing 60W bulbs with 10W LEDs (saves ~0.05 kWh/hour = 0.046 kg CO2/hour) and tracks your progress toward sustainability milestones.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="bg-surface-container-low rounded-xl p-4 text-center">
+                <span class="material-symbols-outlined text-2xl text-on-surface-variant/30 block mb-1">lightbulb</span>
+                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">LED Replacement Savings</p>
+                <p class="text-lg font-extrabold font-headline text-on-surface-variant/30 mt-1">— kg CO2</p>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-4 text-center">
+                <span class="material-symbols-outlined text-2xl text-on-surface-variant/30 block mb-1">park</span>
+                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Trees Equivalent</p>
+                <p class="text-lg font-extrabold font-headline text-on-surface-variant/30 mt-1">— trees</p>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-4 text-center">
+                <span class="material-symbols-outlined text-2xl text-on-surface-variant/30 block mb-1">tips_and_updates</span>
+                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Did You Know?</p>
+                <p class="text-sm text-on-surface-variant/30 font-body mt-1">Tips will appear here based on your savings milestones</p>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
+
     </main>
   </div>
 
-  <script>
-    const signOut = document.getElementById("sign-out");
-    if (signOut) {
-      signOut.addEventListener("click", (e) => {
-        e.preventDefault();
-        sessionStorage.removeItem("authToken");
-        localStorage.removeItem("authToken");
-        window.location.href = "login.html";
-      });
-    }
-  </script>
+  <script src="../Javascript/recommendations.js"></script>
   <script>
     (function(){
       var s=localStorage.getItem("voltequilibrium-theme");
@@ -353,5 +382,6 @@
       else{document.documentElement.classList.replace("light","dark");document.getElementById("theme-icon").textContent="light_mode";localStorage.setItem("voltequilibrium-theme","dark");}
     });
   </script>
+  <script src="../Javascript/chatbot.js"></script>
 </body>
 </html>

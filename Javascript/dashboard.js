@@ -257,12 +257,29 @@ window.addEventListener("pageshow", async () => {
 
     // Update energy flow for battery-only (no solar node)
     const el = (id) => document.getElementById(id);
+    const setFlow = (id, cls) => { const l = el(id); if (l) l.setAttribute("class", cls); };
+    const loadW = parseFloat(d.load_watts) || 0;
+    const gridW = parseFloat(d.grid_watts) || 0;
+
+    // Hide solar node and line
     if (el("flow-solar-node")) el("flow-solar-node").style.display = "none";
     if (el("flow-line-solar")) el("flow-line-solar").style.display = "none";
     if (el("flow-solar-w")) el("flow-solar-w").textContent = "";
-    if (el("flow-load-w")) el("flow-load-w").textContent = fmt(Math.abs(parseFloat(d.load_watts) || 0));
+
+    // Update labels
+    if (el("flow-inv-w")) el("flow-inv-w").textContent = fmt(loadW);
+    if (el("flow-load-w")) el("flow-load-w").textContent = fmt(loadW);
+    if (el("flow-grid-w")) el("flow-grid-w").textContent = gridW > 0 ? fmt(gridW) : "0 W";
     if (el("flow-batt-soc")) el("flow-batt-soc").textContent = `${soc.toFixed(0)}%`;
-    if (el("flow-batt-w")) el("flow-batt-w").textContent = fmt(Math.abs(power));
+    if (el("flow-batt-w")) el("flow-batt-w").textContent = power !== 0 ? fmt(Math.abs(power)) : "0 W";
+
+    // Animate flow lines
+    // Grid → Inverter (power coming in from Eskom)
+    setFlow("flow-line-grid", gridW > 10 ? "flow-left" : "flow-none");
+    // Inverter → House (load consumption)
+    setFlow("flow-line-load", loadW > 10 ? "flow-right" : "flow-none");
+    // Battery: charging (inverter → battery) or discharging (battery → inverter)
+    setFlow("flow-line-batt", Math.abs(power) > 10 ? (power > 0 ? "flow-right" : "flow-left") : "flow-none");
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -423,18 +440,37 @@ window.addEventListener("pageshow", async () => {
     if (el("flow-solar-w"))   el("flow-solar-w").textContent   = fmt(pvW);
     if (el("flow-inv-w"))     el("flow-inv-w").textContent     = fmt(pvW);
     if (el("flow-load-w"))    el("flow-load-w").textContent    = fmt(loadW);
-    if (el("flow-grid-w"))    el("flow-grid-w").textContent    = gridW > 0 ? fmt(gridW) : "0 W";
+    if (el("flow-grid-w"))    el("flow-grid-w").textContent    = gridW !== 0 ? fmt(Math.abs(gridW)) : "0 W";
     if (el("flow-batt-soc"))  el("flow-batt-soc").textContent  = `${battSOC.toFixed(0)}%`;
     if (el("flow-batt-w"))    el("flow-batt-w").textContent    = battW !== 0 ? fmt(Math.abs(battW)) : "0 W";
 
     // Animate flow lines
     const setFlow = (id, cls) => { const l = el(id); if (l) l.setAttribute("class", cls); };
 
-    setFlow("flow-line-solar", pvW > 10    ? "flow-right" : "flow-none");
-    setFlow("flow-line-load",  loadW > 10  ? "flow-right" : "flow-none");
-    setFlow("flow-line-grid",  gridW > 10  ? "flow-left"  : "flow-none");
-    // Battery: positive = charging (flow down), negative = discharging (flow up)
-    setFlow("flow-line-batt",  Math.abs(battW) > 10 ? (battW > 0 ? "flow-right" : "flow-left") : "flow-none");
+    // Solar → Inverter (always solar-to-inverter direction)
+    setFlow("flow-line-solar", pvW > 10 ? "flow-right" : "flow-none");
+
+    // Inverter → House (always inverter-to-house direction)
+    setFlow("flow-line-load", loadW > 10 ? "flow-right" : "flow-none");
+
+    // Grid: positive = importing from Eskom (grid → inverter), negative = exporting/sharing (inverter → grid)
+    // Hold export animation for 60s after a transfer is detected
+    if (gridW < -10) {
+      window._lastGridExport = Date.now();
+      window._lastGridDir = "flow-right";
+      if (el("flow-grid-w")) el("flow-grid-w").textContent = fmt(Math.abs(gridW)) + " out";
+    }
+    const gridHeld = window._lastGridExport && (Date.now() - window._lastGridExport < 60000);
+    if (Math.abs(gridW) > 10) {
+      setFlow("flow-line-grid", gridW > 0 ? "flow-left" : "flow-right");
+    } else if (gridHeld) {
+      setFlow("flow-line-grid", window._lastGridDir || "flow-right");
+    } else {
+      setFlow("flow-line-grid", "flow-none");
+    }
+
+    // Battery: positive = charging (inverter → battery), negative = discharging (battery → inverter)
+    setFlow("flow-line-batt", Math.abs(battW) > 10 ? (battW > 0 ? "flow-right" : "flow-left") : "flow-none");
   }
 
   function setText(id, val) {
