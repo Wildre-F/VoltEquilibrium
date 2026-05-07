@@ -68,14 +68,16 @@ router.get("/generation", authenticateToken, async (req, res) => {
       const tempCoeff = 1 - Math.max(0, (temps[i] - TEMP_BASE) * TEMP_COEFF);
 
       // Solar: GHI-based
+      // GHI is in W/m². Standard Test Conditions (STC) irradiance = 1000 W/m².
+      // Panel rated capacity is at STC, so: output = capacity × (GHI / 1000) × adjustments
       let solarKwh = 0;
       if (solarCapacity > 0 && ghi[i] > 0) {
-        solarKwh = (ghi[i] * solarCapacity * tempCoeff * SYSTEM_EFFICIENCY) / 1000;
+        solarKwh = solarCapacity * (ghi[i] / 1000) * tempCoeff * SYSTEM_EFFICIENCY;
       }
 
-      // Wind: cube law
+      // Wind: cube law with cut-out
       let windKwh = 0;
-      if (windCapacity > 0 && winds[i] >= WIND_CUT_IN) {
+      if (windCapacity > 0 && winds[i] >= WIND_CUT_IN && winds[i] <= 20) {
         const normalized = Math.min(1, (winds[i] - WIND_CUT_IN) / (WIND_RATED - WIND_CUT_IN));
         windKwh = windCapacity * Math.pow(normalized, 3);
       }
