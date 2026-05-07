@@ -589,6 +589,39 @@ window.addEventListener("pageshow", async () => {
     co2Chart.update();
   }
 
+  // ── Welcome card ───────────────────────────────────────────────────────────
+  async function loadWelcomeCard() {
+    try {
+      const [profileRes, co2Res] = await Promise.all([
+        fetch(`${API_BASE}/api/profile`, { headers: { Authorization: `Bearer ${token}` } }),
+        fetch(`${API_BASE}/api/co2`, { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+      const profile = await profileRes.json();
+      const co2 = await co2Res.json();
+
+      const hour = new Date().getHours();
+      const timeGreeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+      const name = profile.success ? profile.data.username.split(" ")[0] : "there";
+
+      const greetEl = document.getElementById("welcome-greeting");
+      if (greetEl) greetEl.textContent = `${timeGreeting}, ${name}!`;
+
+      if (co2.success) {
+        const d = co2.data;
+        const summaryEl = document.getElementById("welcome-summary");
+        if (summaryEl) {
+          const parts = [];
+          if (d.todayKwh > 0) parts.push(`Generated ${d.todayKwh.toFixed(1)} kWh today`);
+          if (d.todayRands > 0) parts.push(`saved R${d.todayRands.toFixed(2)}`);
+          if (d.todayCo2Kg > 0) parts.push(`offset ${d.todayCo2Kg.toFixed(1)} kg CO2`);
+          summaryEl.textContent = parts.length > 0 ? parts.join(" · ") : "Your energy system is running. Data will appear as generation starts.";
+        }
+      }
+    } catch (err) {
+      console.warn("[dashboard] welcome card:", err.message);
+    }
+  }
+
   async function loadCo2() {
     try {
       const res = await fetch(`${API_BASE}/api/co2`, {
@@ -741,6 +774,7 @@ window.addEventListener("pageshow", async () => {
     setInterval(loadCo2, 5 * 60 * 1000); // refresh CO2 every 5 min
     setInterval(loadForecast, 15 * 60 * 1000); // refresh forecast every 15 min
     setTimeout(() => toast.show("Welcome to VoltEquilibrium", "success"), 600);
+    loadWelcomeCard();
   }
 
   if (document.readyState === "loading") {

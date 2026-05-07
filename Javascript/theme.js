@@ -10,10 +10,26 @@
     document.documentElement.classList.remove("light");
   }
 
-  // 2. Inject loading overlay (hides FOUC — flash of unstyled content)
+  // 2. Inject favicon if missing
+  if (!document.querySelector('link[rel="icon"]')) {
+    var fav = document.createElement("link");
+    fav.rel = "icon";
+    fav.type = "image/svg+xml";
+    fav.href = "../favicon.svg";
+    document.head.appendChild(fav);
+  }
+
+  // 3. Inject loading overlay (hides FOUC — flash of unstyled content)
   var style = document.createElement("style");
   style.id = "ve-loader-style";
   style.textContent = `
+    .skeleton {
+      background: linear-gradient(90deg, var(--color-surface-container, #ebeeed) 25%, var(--color-surface-container-high, #e6e9e8) 50%, var(--color-surface-container, #ebeeed) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-shimmer 1.5s ease-in-out infinite;
+      border-radius: 8px;
+    }
+    @keyframes skeleton-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     #ve-loader {
       position: fixed; inset: 0; z-index: 99999;
       background: var(--color-background, #f7faf9);
