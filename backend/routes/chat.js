@@ -149,7 +149,7 @@ APP NAVIGATION — use ONLY these when giving directions:
 
     // Get recent chat history for context
     const historyRes = await pool.query(
-      "SELECT role, content FROM chat_messages WHERE user_id = $1 ORDER BY created_at DESC LIMIT 10",
+      "SELECT role, content FROM chat_messages WHERE user_id = $1 ORDER BY created_at DESC LIMIT 5",
       [req.user.id],
     );
     const chatHistory = historyRes.rows.reverse();
@@ -170,6 +170,11 @@ APP NAVIGATION — use ONLY these when giving directions:
           ...messages,
         ],
         stream: false,
+        options: {
+          num_ctx: 1024,
+          num_predict: 200,
+          temperature: 0.3,
+        },
       }),
     });
 
