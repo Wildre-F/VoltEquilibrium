@@ -143,13 +143,20 @@ document.getElementById("sign-out")?.addEventListener("click", (e) => {
   window.location.replace("../frontend/login.html");
 });
 
-// ── Help panel toggle ────────────────────────────────────────────────────────
-document.getElementById("recs-help-btn")?.addEventListener("click", () => {
-  document.getElementById("recs-help-panel").classList.toggle("hidden");
-});
-document.getElementById("recs-help-close")?.addEventListener("click", () => {
-  document.getElementById("recs-help-panel").classList.add("hidden");
-});
+// ── Help panel with fade in/out ──────────────────────────────────────────────
+function openHelp() {
+  const panel = document.getElementById("recs-help-panel");
+  panel.classList.remove("hidden", "hiding");
+  panel.classList.add("showing");
+}
+function closeHelp() {
+  const panel = document.getElementById("recs-help-panel");
+  panel.classList.remove("showing");
+  panel.classList.add("hiding");
+  setTimeout(() => { panel.classList.add("hidden"); panel.classList.remove("hiding"); }, 250);
+}
+document.getElementById("recs-help-btn")?.addEventListener("click", openHelp);
+document.getElementById("recs-help-close")?.addEventListener("click", closeHelp);
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Maintenance Health (reuses /api/inverter/efficiency endpoint)

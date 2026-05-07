@@ -111,8 +111,18 @@
 
         <!-- Help panel (hidden by default) -->
         <!-- Help overlay -->
+        <style>
+          @keyframes helpFadeIn { from { opacity: 0; } to { opacity: 1; } }
+          @keyframes helpSlideIn { from { opacity: 0; transform: scale(0.95) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+          @keyframes helpFadeOut { from { opacity: 1; } to { opacity: 0; } }
+          @keyframes helpSlideOut { from { opacity: 1; transform: scale(1) translateY(0); } to { opacity: 0; transform: scale(0.95) translateY(10px); } }
+          #recs-help-panel.showing { animation: helpFadeIn 0.25s ease-out forwards; }
+          #recs-help-panel.showing .help-card { animation: helpSlideIn 0.3s ease-out forwards; }
+          #recs-help-panel.hiding { animation: helpFadeOut 0.2s ease-in forwards; }
+          #recs-help-panel.hiding .help-card { animation: helpSlideOut 0.2s ease-in forwards; }
+        </style>
         <div id="recs-help-panel" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-          <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6" style="animation: fadeIn 0.25s ease-out;">
+          <div class="help-card bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6">
             <div class="flex items-center justify-between mb-5">
               <h3 class="text-base font-bold font-headline text-on-surface flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">menu_book</span> How It Works
@@ -125,28 +135,28 @@
             <p class="text-xs text-on-surface-variant font-body mb-5">This page gives you actionable energy recommendations based on your live system data.</p>
 
             <!-- Traffic light section -->
-            <h4 class="text-xs font-bold font-label text-on-surface uppercase tracking-widest mb-3">Appliance Shift — Traffic Light</h4>
+            <h4 class="text-xs font-bold font-label text-on-surface uppercase tracking-widest mb-3">Appliance Shift: Traffic Light</h4>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
               <div class="bg-surface-container-low rounded-xl p-4">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
-                  <span class="text-xs font-bold font-label text-tertiary uppercase">Green — Great Time</span>
+                  <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;color:#22c55e;">circle</span>
+                  <span class="text-xs font-bold font-label uppercase" style="color:#22c55e;">Optimal Time</span>
                 </div>
-                <p class="text-xs text-on-surface-variant font-body">Battery above 80% and generating well. Run heavy appliances (washing machine, geyser, oven) now.</p>
+                <p class="text-xs text-on-surface-variant font-body">Battery above 80% and generating well. Best time to run heavy appliances like washing machines, geysers, and ovens.</p>
               </div>
               <div class="bg-surface-container-low rounded-xl p-4">
                 <div class="flex items-center gap-2 mb-2">
-                  <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
-                  <span class="text-xs font-bold font-label text-secondary uppercase">Orange — Moderate</span>
+                  <span class="material-symbols-outlined text-sm" style="font-variation-settings:'FILL' 1;color:#f59e0b;">circle</span>
+                  <span class="text-xs font-bold font-label uppercase" style="color:#f59e0b;">Moderate Time</span>
                 </div>
-                <p class="text-xs text-on-surface-variant font-body">Battery between 40–80%. Use appliances cautiously. Wait for better conditions if possible.</p>
+                <p class="text-xs text-on-surface-variant font-body">Battery between 40 to 80%. Use appliances cautiously and wait for better conditions if possible.</p>
               </div>
               <div class="bg-surface-container-low rounded-xl p-4">
                 <div class="flex items-center gap-2 mb-2">
                   <span class="material-symbols-outlined text-error text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
-                  <span class="text-xs font-bold font-label text-error uppercase">Red — Avoid Now</span>
+                  <span class="text-xs font-bold font-label text-error uppercase">Avoid Using Battery</span>
                 </div>
-                <p class="text-xs text-on-surface-variant font-body">Battery below 30% or no generation. Delay heavy appliances to avoid grid draw.</p>
+                <p class="text-xs text-on-surface-variant font-body">Battery below 30% or no generation. Delay heavy appliances to preserve stored energy and avoid expensive grid draw.</p>
               </div>
             </div>
 
