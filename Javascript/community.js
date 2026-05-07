@@ -255,6 +255,12 @@
   // ── Tab switching ────────────────────────────────────────────────────────
   window.showView = showView;
   function showView(tab) {
+    // If already on this tab, show a friendly hint instead of reloading
+    if (activeTab === tab) {
+      const names = { sales: "Buy Energy", requests: "Requests", my: "My Listings" };
+      toast(`You're already viewing ${names[tab] || tab}`, "info");
+      return;
+    }
     activeTab = tab;
     document.querySelectorAll(".tab-btn").forEach(b => {
       const isActive = b.dataset.tab === activeTab;
