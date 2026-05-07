@@ -279,7 +279,21 @@
           <span id="forecast-status" class="text-[10px] text-on-surface-variant/60 font-label"></span>
         </div>
 
-        <!-- Summary stats -->
+        <!-- Loading state -->
+        <div id="fc-loading" class="text-center py-10">
+          <svg width="64" height="64" viewBox="0 0 64 64" class="mx-auto mb-3">
+            <circle cx="32" cy="32" r="28" fill="none" stroke="var(--color-outline-variant)" stroke-width="2" opacity="0.3"/>
+            <circle cx="32" cy="32" r="28" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"
+              stroke-dasharray="176" stroke-dashoffset="176" style="animation: fc-draw 1.5s ease-in-out infinite;">
+            </circle>
+            <text x="32" y="40" text-anchor="middle" font-family="Material Symbols Outlined" font-size="24" fill="var(--color-primary)" style="font-variation-settings:'FILL' 1;">electric_bolt</text>
+          </svg>
+          <p class="text-xs text-on-surface-variant font-body">Fetching 7-day weather forecast...</p>
+          <style>@keyframes fc-draw { 0% { stroke-dashoffset: 176; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -176; } }</style>
+        </div>
+
+        <!-- Summary stats (hidden until loaded) -->
+        <div id="fc-content" class="hidden">
         <div class="grid grid-cols-4 gap-3 mb-4">
           <div class="bg-surface-container-lowest dark:bg-surface-container-low rounded-xl p-3 text-center">
             <p id="fc-total-kwh" class="text-2xl font-extrabold font-headline text-primary">—</p>
@@ -317,6 +331,7 @@
           <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-secondary);"></span><span class="text-[9px] font-label text-on-surface-variant">Medium (2-4 days)</span></span>
           <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-outline);"></span><span class="text-[9px] font-label text-on-surface-variant">Low (5+ days)</span></span>
         </div>
+        </div><!-- /fc-content -->
       </div>
 
       <!-- ── ROI Calculator ────────────────────────────────────────────── -->

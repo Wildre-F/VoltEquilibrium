@@ -685,13 +685,21 @@ let forecastHourlyChart = null;
 
 async function loadForecast() {
   const statusEl = document.getElementById("forecast-status");
-  if (statusEl) statusEl.textContent = "Loading forecast...";
+  const loadingEl = document.getElementById("fc-loading");
+  const contentEl = document.getElementById("fc-content");
 
   const json = await apiFetch("/api/forecast/generation?days=7");
+
+  // Hide loading, show content (or error)
+  if (loadingEl) loadingEl.classList.add("hidden");
+
   if (!json || !json.success || !json.data || !json.data.summary) {
     if (statusEl) statusEl.textContent = json?.data?.message || "Forecast unavailable";
+    if (loadingEl) loadingEl.classList.remove("hidden");
     return;
   }
+
+  if (contentEl) contentEl.classList.remove("hidden");
 
   const { daily, hourly, summary } = json.data;
 
