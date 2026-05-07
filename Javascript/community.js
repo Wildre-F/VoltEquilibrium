@@ -9,13 +9,7 @@
     try { return JSON.parse(atob(token.split(".")[1])).id; } catch { return null; }
   }
 
-  // ── Sign out ───────────────────────────────────────────────────────────────
-  document.getElementById("sign-out").addEventListener("click", (e) => {
-    e.preventDefault();
-    sessionStorage.removeItem("authToken");
-    localStorage.removeItem("authToken");
-    window.location.href = "login.html";
-  });
+  // Sign out handled by theme.js
 
   // ── Toast ──────────────────────────────────────────────────────────────────
   function toast(msg, type = "info") {

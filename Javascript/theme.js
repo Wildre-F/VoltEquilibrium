@@ -82,4 +82,51 @@ document.addEventListener("DOMContentLoaded", function() {
       localStorage.setItem("voltequilibrium-theme", "dark");
     }
   });
+
+  // 5. Sign out with confirmation modal
+  document.getElementById("sign-out")?.addEventListener("click", function(e) {
+    e.preventDefault();
+
+    // Create overlay if not exists
+    if (document.getElementById("signout-overlay")) return;
+
+    var overlay = document.createElement("div");
+    overlay.id = "signout-overlay";
+    overlay.style.cssText = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.4);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.25s ease-out;";
+
+    overlay.innerHTML =
+      '<div id="signout-card" style="background:var(--color-surface-container-lowest,#fff);border-radius:20px;padding:32px;max-width:340px;width:90%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,0.25);transform:scale(0.9) translateY(10px);opacity:0;transition:transform 0.3s ease-out,opacity 0.3s ease-out;">' +
+        '<span class="material-symbols-outlined" style="font-size:48px;color:var(--color-error,#ba1a1a);margin-bottom:12px;display:block;font-variation-settings:\'FILL\' 1;">logout</span>' +
+        '<h2 style="font-weight:800;font-family:Manrope,sans-serif;font-size:18px;color:var(--color-on-surface,#181c1c);margin-bottom:8px;">Sign Out?</h2>' +
+        '<p style="font-size:13px;color:var(--color-on-surface-variant,#3e4946);margin-bottom:24px;line-height:1.5;font-family:\'Plus Jakarta Sans\',sans-serif;">Are you sure you want to sign out of VoltEquilibrium?</p>' +
+        '<div style="display:flex;gap:10px;">' +
+          '<button id="signout-cancel" style="flex:1;padding:12px;border-radius:12px;border:1.5px solid var(--color-outline-variant,#bec9c5);background:none;color:var(--color-on-surface,#181c1c);font-family:Inter,sans-serif;font-weight:700;font-size:13px;cursor:pointer;">Cancel</button>' +
+          '<button id="signout-confirm" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--color-error,#ba1a1a);color:var(--color-on-error,#fff);font-family:Inter,sans-serif;font-weight:700;font-size:13px;cursor:pointer;">Sign Out</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(overlay);
+
+    // Fade in
+    requestAnimationFrame(function() {
+      overlay.style.opacity = "1";
+      var card = document.getElementById("signout-card");
+      if (card) { card.style.transform = "scale(1) translateY(0)"; card.style.opacity = "1"; }
+    });
+
+    // Cancel
+    document.getElementById("signout-cancel").addEventListener("click", function() {
+      overlay.style.opacity = "0";
+      var card = document.getElementById("signout-card");
+      if (card) { card.style.transform = "scale(0.9) translateY(10px)"; card.style.opacity = "0"; }
+      setTimeout(function() { overlay.remove(); }, 300);
+    });
+
+    // Confirm
+    document.getElementById("signout-confirm").addEventListener("click", function() {
+      sessionStorage.removeItem("authToken");
+      localStorage.removeItem("authToken");
+      window.location.replace("../frontend/login.html");
+    });
+  });
 });

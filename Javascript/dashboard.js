@@ -63,14 +63,7 @@ window.addEventListener("pageshow", async () => {
     window.history.replaceState({}, "", window.location.pathname);
   }
 
-  // ── Sign out ───────────────────────────────────────────────────────────────
-  // The HTML uses id="sign-out" (not "sign-out-btn") so we target that directly.
-  document.getElementById("sign-out")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    sessionStorage.removeItem("authToken");
-    localStorage.removeItem("authToken");
-    window.location.href = "../frontend/login.html";
-  });
+  // Sign out handled by theme.js
 
   // ── Toast ──────────────────────────────────────────────────────────────────
   const toast = {

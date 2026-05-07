@@ -135,13 +135,7 @@ async function loadApplianceShift() {
     `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
-// ── Sign out ─────────────────────────────────────────────────────────────────
-document.getElementById("sign-out")?.addEventListener("click", (e) => {
-  e.preventDefault();
-  sessionStorage.removeItem("authToken");
-  localStorage.removeItem("authToken");
-  window.location.replace("../frontend/login.html");
-});
+// Sign out handled by theme.js
 
 // ── Help panel with fade in/out ──────────────────────────────────────────────
 function openHelp() {
