@@ -8,30 +8,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="stylesheet" href="../CSS/theme.css" />
-    <script>
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              primary: "#005147",
-              "primary-fixed": "#9ff2e1",
-              "surface-container-low": "#f1f4f3",
-              "surface-container": "#ebeeed",
-              "on-surface": "#181c1c",
-              "on-surface-variant": "#3e4946",
-              "outline-variant": "#bec9c5",
-              background: "#f7faf9",
-            },
-            fontFamily: { headline: ["Manrope"], body: ["Plus Jakarta Sans"], label: ["Inter"] },
-          },
-        },
-      };
-      const saved = localStorage.getItem("voltequilibrium-theme");
-      if (saved === "dark" || (!saved && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
-        document.documentElement.classList.replace("light", "dark");
-      }
-    </script>
+    <script src="../Javascript/tailwind-config.js"></script>
+    <script src="../Javascript/config.js"></script>
   </head>
   <body class="bg-background text-on-surface font-body min-h-screen">
     <div class="max-w-3xl mx-auto px-6 py-16">

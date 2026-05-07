@@ -24,76 +24,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link rel="stylesheet" href="../CSS/theme.css" />
-    <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "inverse-on-surface": "#eef1f0",
-              primary: "#005147",
-              "secondary-fixed": "#d6e3ff",
-              "on-secondary-fixed-variant": "#00468c",
-              "on-tertiary-container": "#b5eb3e",
-              "on-surface": "#181c1c",
-              error: "#ba1a1a",
-              "tertiary-fixed": "#bdf447",
-              "on-background": "#181c1c",
-              "surface-variant": "#e0e3e2",
-              "surface-container": "#ebeeed",
-              "tertiary-container": "#4b6800",
-              "primary-fixed-dim": "#83d5c5",
-              "surface-bright": "#f7faf9",
-              "inverse-primary": "#83d5c5",
-              "surface-dim": "#d7dbda",
-              "on-primary-fixed": "#00201b",
-              "error-container": "#ffdad6",
-              "on-error": "#ffffff",
-              "on-primary": "#ffffff",
-              tertiary: "#374e00",
-              "on-surface-variant": "#3e4946",
-              background: "#f7faf9",
-              surface: "#f7faf9",
-              "on-tertiary-fixed-variant": "#374e00",
-              "primary-fixed": "#9ff2e1",
-              "surface-container-low": "#f1f4f3",
-              "on-secondary-fixed": "#001b3d",
-              "on-tertiary": "#ffffff",
-              "on-error-container": "#93000a",
-              "on-primary-fixed-variant": "#005046",
-              "secondary-fixed-dim": "#a9c7ff",
-              "on-secondary": "#ffffff",
-              "primary-container": "#006b5e",
-              "on-primary-container": "#95e8d8",
-              "surface-container-high": "#e6e9e8",
-              "secondary-container": "#63a1ff",
-              "on-tertiary-fixed": "#141f00",
-              "surface-tint": "#006b5e",
-              "surface-container-lowest": "#ffffff",
-              "outline-variant": "#bec9c5",
-              outline: "#6e7976",
-              "surface-container-highest": "#e0e3e2",
-              "inverse-surface": "#2d3131",
-              secondary: "#005db6",
-              "tertiary-fixed-dim": "#a2d729",
-              "on-secondary-container": "#00376f",
-            },
-            fontFamily: {
-              headline: ["Manrope"],
-              body: ["Plus Jakarta Sans"],
-              label: ["Inter"],
-            },
-            borderRadius: {
-              DEFAULT: "0.25rem",
-              lg: "0.5rem",
-              xl: "0.75rem",
-              "2xl": "1.5rem",
-              full: "9999px",
-            },
-          },
-        },
-      };
-    </script>
+    <script src="../Javascript/tailwind-config.js"></script>
+    <script src="../Javascript/config.js"></script>
     <style>
       .material-symbols-outlined {
         font-variation-settings:
@@ -109,7 +41,7 @@
       }
 
       .kinetic-gradient {
-        background: linear-gradient(135deg, #005147 0%, #006b5e 100%);
+        background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-container) 100%);
       }
     </style>
   </head>
