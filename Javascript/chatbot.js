@@ -37,7 +37,12 @@
           Hi! I'm VoltBot, your energy assistant. Ask me anything about your solar system, battery, savings, or community energy sharing.
         </div>
       </div>
-      <div style="padding:10px 14px 14px;border-top:1px solid var(--color-outline-variant);display:flex;gap:8px;">
+      <div style="padding:4px 14px 0;text-align:center;">
+        <span style="font-size:9px;font-family:Inter,sans-serif;color:var(--color-primary);opacity:0.7;display:inline-flex;align-items:center;gap:3px;">
+          <span class="material-symbols-outlined" style="font-size:10px;font-variation-settings:'FILL' 1;">auto_awesome</span>Powered by Gemma
+        </span>
+      </div>
+      <div style="padding:6px 14px 14px;border-top:1px solid var(--color-outline-variant);display:flex;gap:8px;">
         <input id="chatbot-input" type="text" placeholder="Ask about your energy..."
           style="flex:1;padding:10px 14px;border-radius:12px;border:1px solid var(--color-outline-variant);background:var(--color-surface-container);color:var(--color-on-surface);font-size:13px;font-family:'Plus Jakarta Sans',sans-serif;outline:none;" />
         <button id="chatbot-send" style="width:40px;height:40px;border-radius:12px;background:var(--color-primary);color:var(--color-on-primary);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;">
