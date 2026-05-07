@@ -185,6 +185,8 @@ window.addEventListener("pageshow", async () => {
         b.classList.toggle("active", isActive);
       });
       showActivePanel();
+      // Instantly update energy flow with existing data (no API wait)
+      if (lastData) updateEnergyFlow(lastData.solar?.[0], lastData.wind?.[0]);
     });
   });
 
