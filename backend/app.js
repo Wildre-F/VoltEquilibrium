@@ -33,38 +33,7 @@ if (!process.env.JWT_SECRET) {
 }
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// South Africa grid emission factor (Eskom):
-//   CO2_KG_PER_KWH — every kWh generated at home instead of drawing from the
-//                    grid avoids 0.928 kg of CO2.
-//   RANDS_PER_KWH  — approximate Eskom tariff: generating 1 kWh yourself
-//                    saves roughly R2.50 you would otherwise have paid Eskom.
-const CO2_KG_PER_KWH = 0.928;
-const RANDS_PER_KWH  = 2.5;
-
-// PayFast sandbox config
-const PF_MERCHANT_ID  = process.env.PAYFAST_MERCHANT_ID  || "10000100";
-const PF_MERCHANT_KEY = process.env.PAYFAST_MERCHANT_KEY || "46f0cd694581a";
-const PF_PASSPHRASE   = process.env.PAYFAST_PASSPHRASE   || "jt7NOE43FZPn";
-const PF_SANDBOX      = process.env.PAYFAST_SANDBOX === "true";
-const PF_HOST         = PF_SANDBOX ? "https://sandbox.payfast.co.za/eng/process" : "https://www.payfast.co.za/eng/process";
-const PF_RETURN_URL   = process.env.PAYFAST_RETURN_URL  || "http://localhost:5500/frontend/Wallet.html?payment=success";
-const PF_CANCEL_URL   = process.env.PAYFAST_CANCEL_URL  || "http://localhost:5500/frontend/Wallet.html?payment=cancelled";
-const PF_NOTIFY_URL   = process.env.PAYFAST_NOTIFY_URL  || "http://localhost:3000/api/wallet/payfast/notify";
-
-function generatePayfastSignature(data) {
-  const pfOutput = [];
-  for (const [key, val] of Object.entries(data)) {
-    if (val !== undefined && val !== "") {
-      pfOutput.push(`${key}=${String(val).trim()}`);
-    }
-  }
-  let pfParamString = pfOutput.join("&");
-  if (PF_PASSPHRASE) {
-    pfParamString += `&passphrase=${PF_PASSPHRASE.trim()}`;
-  }
-  console.log("[PayFast] Signature string:", pfParamString);
-  return crypto.createHash("md5").update(pfParamString).digest("hex");
-}
+// Constants (CO2, tariffs, PayFast) are in helpers/constants.js
 
 // ── Create notifications table if it doesn't exist yet ───────────────────────
 pool.query(`
