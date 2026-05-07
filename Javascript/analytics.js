@@ -249,7 +249,6 @@ document.getElementById("battery-zoom-reset").addEventListener("click", () => {
 });
 
 // ── Theme toggle handled by theme.js ──────────────────────────────────────
-});
 
 // ── Sign out ───────────────────────────────────────────────────────────────
 document.getElementById("sign-out").addEventListener("click", (e) => {
