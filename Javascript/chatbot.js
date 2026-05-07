@@ -19,7 +19,10 @@
         <div style="display:flex;align-items:center;gap:8px;">
           <span class="material-symbols-outlined" style="font-size:22px;font-variation-settings:'FILL' 1;">smart_toy</span>
           <span style="font-weight:800;font-family:Manrope;font-size:14px;">VoltBot</span>
-          <span style="font-size:10px;opacity:0.7;font-family:Inter;">AI Energy Assistant</span>
+          <span id="chatbot-status" style="display:inline-flex;align-items:center;gap:4px;font-size:10px;font-family:Inter;opacity:0.8;">
+            <span id="chatbot-status-dot" style="width:6px;height:6px;border-radius:50%;background:#888;"></span>
+            <span id="chatbot-status-text">Checking...</span>
+          </span>
         </div>
         <button id="chatbot-clear" title="Clear chat" style="background:none;border:none;color:var(--color-on-primary);cursor:pointer;opacity:0.7;">
           <span class="material-symbols-outlined" style="font-size:18px;">delete_sweep</span>
@@ -45,6 +48,34 @@
   const input    = document.getElementById("chatbot-input");
   const sendBtn  = document.getElementById("chatbot-send");
   let isOpen = false;
+  let botOnline = false;
+
+  function updateBotStatus(online) {
+    botOnline = online;
+    const dot  = document.getElementById("chatbot-status-dot");
+    const text = document.getElementById("chatbot-status-text");
+    if (dot && text) {
+      dot.style.background = online ? "#4ade80" : "#f87171";
+      dot.style.boxShadow  = online ? "0 0 6px #4ade80" : "none";
+      text.textContent      = online ? "Online" : "Offline";
+    }
+    if (sendBtn) sendBtn.disabled = !online;
+  }
+
+  async function checkBotStatus() {
+    try {
+      const res = await fetch(`${API}/api/chat/history`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      updateBotStatus(res.ok);
+    } catch {
+      updateBotStatus(false);
+    }
+  }
+
+  // Check status on load and every 30s
+  checkBotStatus();
+  setInterval(checkBotStatus, 30000);
 
   document.getElementById("chatbot-toggle").addEventListener("click", () => {
     isOpen = !isOpen;
@@ -52,6 +83,7 @@
       panel.style.transform = "scale(1) translateY(0)";
       panel.style.opacity = "1";
       panel.style.pointerEvents = "auto";
+      checkBotStatus();
       loadHistory();
       input.focus();
     } else {
@@ -98,19 +130,28 @@
       </div>`;
   });
 
+  function formatBotMessage(text) {
+    return text
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')                     // **bold**
+      .replace(/\*\s(.+?)(?=\n|$)/g, '<div style="display:flex;gap:6px;margin:2px 0;"><span style="color:var(--color-primary);flex-shrink:0;">&#8226;</span><span>$1</span></div>') // * bullet
+      .replace(/^- (.+?)$/gm, '<div style="display:flex;gap:6px;margin:2px 0;"><span style="color:var(--color-primary);flex-shrink:0;">&#8226;</span><span>$1</span></div>')      // - bullet
+      .replace(/\n/g, '<br>');                                                // line breaks
+  }
+
   function addMessage(role, content, animate) {
     const div = document.createElement("div");
     if (role === "user") {
       div.style.cssText = "background:var(--color-primary);color:var(--color-on-primary);padding:10px 14px;border-radius:14px 14px 4px 14px;max-width:85%;align-self:flex-end;";
+      div.textContent = content;
     } else {
-      div.style.cssText = "background:var(--color-primary-fixed);color:var(--color-on-primary-fixed);padding:10px 14px;border-radius:14px 14px 14px 4px;max-width:85%;align-self:flex-start;";
+      div.style.cssText = "background:var(--color-primary-fixed);color:var(--color-on-primary-fixed);padding:12px 16px;border-radius:14px 14px 14px 4px;max-width:88%;align-self:flex-start;line-height:1.6;";
       if (animate) {
         div.style.opacity = "0";
         div.style.transform = "translateY(8px)";
         div.style.transition = "opacity 0.4s ease-out, transform 0.4s ease-out";
       }
+      div.innerHTML = formatBotMessage(content);
     }
-    div.textContent = content;
     messages.appendChild(div);
     if (animate) {
       requestAnimationFrame(() => requestAnimationFrame(() => {
@@ -174,6 +215,7 @@
       console.error("[chatbot] send message error:", err.message);
       removeTyping();
       addMessage("assistant", "Could not reach the AI assistant. Please try again.", true);
+      updateBotStatus(false);
     }
     sendBtn.disabled = false;
     input.focus();
