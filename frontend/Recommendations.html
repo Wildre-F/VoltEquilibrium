@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="../CSS/theme.css" />
   <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="../Javascript/tailwind-config.js"></script>
   <script src="../Javascript/config.js"></script>
   <script src="../Javascript/theme.js"></script>
@@ -243,37 +244,47 @@
             </div>
           </div>
 
-          <!-- ════ Smart Power Schedule ════ -->
-          <div id="schedule-widget" class="md:col-span-2 bg-surface-container-lowest rounded-2xl shadow-sm p-6">
-            <div class="flex items-center justify-between mb-5">
+          <!-- ════ 7-Day Generation Forecast ════ -->
+          <div class="md:col-span-2 bg-surface-container-lowest rounded-2xl shadow-sm p-6">
+            <div class="flex items-center justify-between mb-4">
               <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-secondary text-xl" style="font-variation-settings:'FILL' 1;">electric_meter</span>
+                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1;">electric_bolt</span>
                 <div>
-                  <h2 class="text-base font-bold font-headline text-on-surface">Smart Power Schedule</h2>
-                  <p class="text-[10px] text-on-surface-variant font-label mt-0.5">When to use Eskom vs Battery based on tariffs</p>
+                  <h2 class="text-base font-bold font-headline text-on-surface">7-Day Generation Forecast</h2>
+                  <p class="text-[10px] text-on-surface-variant font-label mt-0.5">Physics-based prediction using solar irradiance (GHI)</p>
                 </div>
               </div>
-              <span id="schedule-updated" class="text-[10px] text-on-surface-variant/50 font-label">—</span>
+              <span id="recs-forecast-status" class="text-[10px] text-on-surface-variant/50 font-label"></span>
             </div>
 
-            <!-- Current recommendation -->
-            <div id="schedule-current" class="bg-surface-container-low rounded-xl p-4 mb-5">
-              <p class="text-xs text-on-surface-variant/60 text-center py-2">Loading schedule...</p>
-            </div>
-
-            <!-- 24-hour timeline -->
-            <div>
-              <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">24-Hour Tariff Schedule</p>
-              <div id="schedule-timeline" class="flex gap-1">
-                <p class="text-xs text-on-surface-variant/40 text-center py-4 w-full">Loading...</p>
+            <!-- Summary stats -->
+            <div class="grid grid-cols-4 gap-3 mb-4">
+              <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                <p id="rfc-total-kwh" class="text-xl font-extrabold font-headline text-primary">—</p>
+                <p class="text-[10px] font-label text-on-surface-variant mt-1">7-Day kWh</p>
               </div>
-              <div id="schedule-legend" class="flex gap-4 mt-3 flex-wrap"></div>
+              <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                <p id="rfc-savings" class="text-xl font-extrabold font-headline text-tertiary">—</p>
+                <p class="text-[10px] font-label text-on-surface-variant mt-1">Est. Savings</p>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                <p id="rfc-co2" class="text-xl font-extrabold font-headline text-secondary">—</p>
+                <p class="text-[10px] font-label text-on-surface-variant mt-1">CO2 Offset</p>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-3 text-center">
+                <p id="rfc-best-day" class="text-base font-bold font-headline text-on-surface">—</p>
+                <p class="text-[10px] font-label text-on-surface-variant mt-1">Best Day</p>
+              </div>
             </div>
 
-            <!-- Estimated savings -->
-            <div class="mt-4 bg-primary/5 rounded-xl px-4 py-3 flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary text-sm" style="font-variation-settings:'FILL' 1;">savings</span>
-              <p id="schedule-savings" class="text-xs font-label text-primary font-bold">Calculating savings...</p>
+            <!-- 7-day bar chart -->
+            <canvas id="recs-forecast-chart"></canvas>
+
+            <!-- Confidence legend -->
+            <div class="flex gap-4 mt-3">
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-primary);"></span><span class="text-[9px] font-label text-on-surface-variant">High (0-1 days)</span></span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-secondary);"></span><span class="text-[9px] font-label text-on-surface-variant">Medium (2-4 days)</span></span>
+              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-outline);"></span><span class="text-[9px] font-label text-on-surface-variant">Low (5+ days)</span></span>
             </div>
           </div>
 

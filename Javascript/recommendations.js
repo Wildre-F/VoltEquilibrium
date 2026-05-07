@@ -174,123 +174,67 @@ document.getElementById("recs-help-close")?.addEventListener("click", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Smart Power Schedule — Eskom vs Battery by time of day
+// 7-Day Generation Forecast (on Recommendations page)
 // ═══════════════════════════════════════════════════════════════════════════
 
-function getTariffPeriod(hour) {
-  if (hour >= 22 || hour < 6)
-    return { name: "Off-Peak", rate: 1.50, source: "eskom", color: "var(--color-secondary)", label: "Use Eskom", icon: "electrical_services", tip: "Cheap tariff — charge battery from grid" };
-  if ((hour >= 7 && hour < 9) || (hour >= 17 && hour < 20))
-    return { name: "Peak", rate: 4.50, source: "battery", color: "var(--color-tertiary)", label: "Use Battery", icon: "battery_horiz_075", tip: "Expensive tariff — avoid grid, use stored energy" };
-  return { name: "Standard", rate: 2.50, source: "eskom", color: "var(--color-primary)", label: "Use Eskom", icon: "electrical_services", tip: "Standard tariff — grid is fine" };
-}
+let recsForecastChart = null;
 
-async function loadPowerSchedule() {
-  const scheduleEl = document.getElementById("schedule-widget");
-  if (!scheduleEl) return;
+async function loadRecsForecast() {
+  const statusEl = document.getElementById("recs-forecast-status");
+  if (statusEl) statusEl.textContent = "Loading...";
 
-  // Fetch loadshedding stage
-  let lsStage = 0;
-  try {
-    const lsJson = await apiFetch("/api/loadshedding");
-    if (lsJson?.success) lsStage = lsJson.stage || 0;
-  } catch (err) {
-    console.error("[recommendations] loadshedding fetch error:", err.message);
+  const json = await apiFetch("/api/forecast/generation?days=7");
+  if (!json || !json.success || !json.data || !json.data.summary) {
+    if (statusEl) statusEl.textContent = json?.data?.message || "No forecast available";
+    return;
   }
 
-  // Fetch battery SOC
-  let soc = 0;
-  try {
-    const readJson = await apiFetch("/api/readings/latest");
-    if (readJson?.success) {
-      const d = (readJson.data.all || [])[0] || {};
-      soc = parseFloat(d.state_of_charge) || 0;
-    }
-  } catch (err) {
-    console.error("[recommendations] battery SOC fetch error:", err.message);
+  const { daily, summary } = json.data;
+
+  document.getElementById("rfc-total-kwh").textContent = summary.totalPredictedKwh.toFixed(1);
+  document.getElementById("rfc-savings").textContent = `R${summary.estimatedSavingsRands.toFixed(0)}`;
+  document.getElementById("rfc-co2").textContent = summary.estimatedCo2OffsetKg.toFixed(1);
+  document.getElementById("rfc-best-day").innerHTML =
+    `<span>${new Date(summary.bestDay.date).toLocaleDateString([], { weekday: "short" })}</span>` +
+    `<br><span class="text-[10px] text-on-surface-variant">${summary.bestDay.kwh.toFixed(1)} kWh</span>`;
+
+  if (statusEl) statusEl.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+
+  // 7-day bar chart
+  const labels = daily.map(d => new Date(d.date).toLocaleDateString([], { weekday: "short", day: "numeric" }));
+  const data = daily.map(d => d.predictedKwh);
+  const colors = daily.map(d =>
+    d.confidence === "high" ? "#005147" : d.confidence === "medium" ? "#005db6" : "#6e7976"
+  );
+
+  const datasets = [{ label: "Predicted kWh", data, backgroundColor: colors, borderRadius: 6 }];
+
+  if (recsForecastChart) {
+    recsForecastChart.data.labels = labels;
+    recsForecastChart.data.datasets = datasets;
+    recsForecastChart.update();
+  } else {
+    const canvas = document.getElementById("recs-forecast-chart");
+    if (!canvas) return;
+    recsForecastChart = new Chart(canvas.getContext("2d"), {
+      type: "bar",
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx) => `${ctx.raw.toFixed(1)} kWh` } },
+        },
+        scales: {
+          x: { ticks: { font: { family: "Inter", size: 10 } } },
+          y: { beginAtZero: true, ticks: { font: { family: "Inter", size: 10 }, callback: (v) => v + " kWh" } },
+        },
+      },
+    });
   }
-
-  const now = new Date();
-  const currentHour = now.getHours();
-  const current = getTariffPeriod(currentHour);
-
-  // Override if load shedding active
-  const lsActive = lsStage > 0;
-  if (lsActive) {
-    current.source = "battery";
-    current.color = "var(--color-error)";
-    current.label = "Battery (Load Shedding)";
-    current.icon = "flash_off";
-    current.tip = `Stage ${lsStage} active — Eskom unavailable, using battery`;
-  }
-
-  // Current recommendation
-  const recEl = document.getElementById("schedule-current");
-  if (recEl) {
-    const socWarning = soc < 30 ? `<span class="text-error font-bold"> — LOW, request energy!</span>` : "";
-    recEl.innerHTML = `
-      <div class="flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 rounded-full flex items-center justify-center" style="background:${current.color}20;">
-          <span class="material-symbols-outlined" style="color:${current.color};font-variation-settings:'FILL' 1;">${current.icon}</span>
-        </div>
-        <div>
-          <p class="text-sm font-bold font-headline" style="color:${current.color};">${current.label}</p>
-          <p class="text-[10px] text-on-surface-variant font-body">${current.name} — R${current.rate.toFixed(2)}/kWh</p>
-        </div>
-      </div>
-      <p class="text-xs text-on-surface-variant font-body mb-1">${current.tip}</p>
-      <p class="text-xs font-label text-on-surface-variant">Battery: <span class="font-bold text-on-surface">${soc.toFixed(0)}%</span>${socWarning} · Load Shedding: <span class="font-bold ${lsActive ? "text-error" : "text-on-surface"}">${lsActive ? "Stage " + lsStage : "None"}</span></p>`;
-  }
-
-  // 24-hour timeline (12 x 2-hour blocks)
-  const timelineEl = document.getElementById("schedule-timeline");
-  if (timelineEl) {
-    let blocks = "";
-    for (let h = 0; h < 24; h += 2) {
-      const period = getTariffPeriod(h);
-      const isCurrent = currentHour >= h && currentHour < h + 2;
-      const isLs = lsActive && isCurrent;
-      const blockColor = isLs ? "var(--color-error)" : period.color;
-      const label = h === 0 ? "12a" : h < 12 ? `${h}a` : h === 12 ? "12p" : `${h - 12}p`;
-      const ring = isCurrent ? `outline:3px solid ${blockColor};outline-offset:2px;` : "";
-      blocks += `<div class="flex-1 flex flex-col items-center gap-1">
-        <div class="w-full h-10 rounded-lg flex items-center justify-center" style="background:${blockColor}${isCurrent ? "" : "20"};border:2px solid ${blockColor};${ring}">
-          ${isCurrent ? `<span class="material-symbols-outlined text-white text-sm" style="font-variation-settings:'FILL' 1;">${isLs ? "flash_off" : period.icon}</span>` : ""}
-        </div>
-        <span class="text-[9px] font-label ${isCurrent ? "font-bold text-on-surface" : "text-on-surface-variant/60"}">${label}</span>
-      </div>`;
-    }
-    timelineEl.innerHTML = blocks;
-  }
-
-  // Legend
-  const legendEl = document.getElementById("schedule-legend");
-  if (legendEl) {
-    legendEl.innerHTML = `
-      <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-secondary);"></span><span class="text-[9px] font-label text-on-surface-variant">Off-Peak R1.50</span></span>
-      <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-primary);"></span><span class="text-[9px] font-label text-on-surface-variant">Standard R2.50</span></span>
-      <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-tertiary);"></span><span class="text-[9px] font-label text-on-surface-variant">Peak R4.50</span></span>
-      ${lsActive ? `<span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-error);"></span><span class="text-[9px] font-label text-error font-bold">Load Shedding</span></span>` : ""}`;
-  }
-
-  // Estimated daily savings
-  const savingsEl = document.getElementById("schedule-savings");
-  if (savingsEl) {
-    // Peak hours: 7-9am + 5-8pm = 5 hours. Avg load ~500W = 2.5 kWh during peak
-    // Savings = peak_kwh × (peak_rate - offpeak_rate) = 2.5 × (4.50 - 1.50) = R7.50
-    const peakHours = 5;
-    const avgLoadKw = 0.5;
-    const peakKwh = peakHours * avgLoadKw;
-    const savings = peakKwh * (4.50 - 1.50);
-    savingsEl.textContent = `~R${savings.toFixed(2)}/day saved by using battery during peak hours`;
-  }
-
-  document.getElementById("schedule-updated").textContent =
-    `Updated ${now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 // ── Init + poll ──────────────────────────────────────────────────────────────
 loadApplianceShift();
-loadPowerSchedule();
+loadRecsForecast();
 setInterval(loadApplianceShift, 30000);
-setInterval(loadPowerSchedule, 60000); // refresh schedule every minute
