@@ -80,11 +80,7 @@ const lightColors = {
 
 // ── Load and render ──────────────────────────────────────────────────────────
 async function loadApplianceShift() {
-  const [readingsJson, forecastJson] = await Promise.all([
-    apiFetch("/api/readings/latest"),
-    apiFetch("/api/weather/forecast"),
-  ]);
-
+  const readingsJson = await apiFetch("/api/readings/latest");
   if (!readingsJson?.success) return;
 
   const all = readingsJson.data.all || [];
@@ -132,24 +128,6 @@ async function loadApplianceShift() {
   if (socBar) {
     socBar.style.width = `${Math.min(100, Math.max(0, soc))}%`;
     socBar.style.background = soc > 80 ? lightColors.green : soc > 30 ? lightColors.orange : lightColors.red;
-  }
-
-  // 6-hour forecast timeline
-  const timeline = document.getElementById("shift-timeline");
-  if (timeline && forecastJson?.success) {
-    const hours = forecastJson.data.hourly || [];
-    if (hours.length > 0) {
-      timeline.innerHTML = hours.map(h => {
-        const hLight = getHourLight(h.cloud, soc);
-        return `<div class="flex-1 flex flex-col items-center gap-1">
-          <div class="w-full h-8 rounded-lg transition-colors" style="background:${lightColors[hLight]}20;border:2px solid ${lightColors[hLight]}"></div>
-          <span class="text-[10px] font-label text-on-surface-variant">${h.time}</span>
-          <span class="text-[9px] font-label text-on-surface-variant/60">${h.cloud}%</span>
-        </div>`;
-      }).join("");
-    } else {
-      timeline.innerHTML = `<p class="text-xs text-on-surface-variant/60 text-center py-2 w-full">No forecast data — set your location in profile</p>`;
-    }
   }
 
   // Update time
