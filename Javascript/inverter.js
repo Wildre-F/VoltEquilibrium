@@ -6,16 +6,7 @@ else if (!sessionStorage.getItem("authToken")) sessionStorage.setItem("authToken
 const API = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
   ? "http://localhost:3000" : "";
 
-// ── Dark mode (persisted from login) ──────────────────────────────────────
-(function applyTheme() {
-  const saved = localStorage.getItem("voltequilibrium-theme");
-  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  if (saved === "dark" || (!saved && prefersDark)) {
-    document.documentElement.classList.add("dark");
-    document.documentElement.classList.remove("light");
-    const icon = document.getElementById("theme-icon");
-    if (icon) icon.textContent = "light_mode";
-  }
+// ── Dark mode handled by theme.js ─────────────────────────────────────────
 })();
 
 // ── Help modal definitions ─────────────────────────────────────────────────
@@ -275,19 +266,7 @@ document.getElementById("help-content").innerHTML = HELP_TILES.map((t, i) => `
     <p class="text-xs text-on-surface-variant/60 text-on-surface-variant/60 font-label italic ml-8">📐 ${t.calc}</p>
   </div>`).join("");
 
-// ── Theme toggle ───────────────────────────────────────────────────────────
-document.getElementById("theme-toggle").addEventListener("click", () => {
-  const isDark = document.documentElement.classList.contains("dark");
-  if (isDark) {
-    document.documentElement.classList.replace("dark", "light");
-    document.getElementById("theme-icon").textContent = "dark_mode";
-    localStorage.setItem("voltequilibrium-theme", "light");
-  } else {
-    document.documentElement.classList.replace("light", "dark");
-    document.getElementById("theme-icon").textContent = "light_mode";
-    localStorage.setItem("voltequilibrium-theme", "dark");
-  }
-});
+// ── Theme toggle handled by theme.js ──────────────────────────────────────
 
 // ── Sign out ───────────────────────────────────────────────────────────────
 document.getElementById("sign-out").addEventListener("click", (e) => {
