@@ -10,8 +10,8 @@
   const widget = document.createElement("div");
   widget.innerHTML = `
     <div id="chatbot-fab" style="position:fixed;bottom:24px;right:24px;z-index:50;cursor:pointer;">
-      <button id="chatbot-toggle" style="width:56px;height:56px;border-radius:50%;background:var(--color-primary);color:var(--color-on-primary);border:none;box-shadow:0 4px 16px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.2s;">
-        <span class="material-symbols-outlined" style="font-size:28px;font-variation-settings:'FILL' 1;">smart_toy</span>
+      <button id="chatbot-toggle" style="width:56px;height:56px;border-radius:50%;background:var(--color-primary);color:var(--color-on-primary);border:none;box-shadow:0 4px 16px rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:transform 0.5s cubic-bezier(0.4,0,0.2,1);">
+        <span id="chatbot-fab-icon" class="material-symbols-outlined" style="font-size:28px;font-variation-settings:'FILL' 1;">sentiment_satisfied</span>
       </button>
     </div>
     <div id="chatbot-panel" style="position:fixed;bottom:90px;right:24px;z-index:50;width:380px;max-height:520px;border-radius:20px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.18);background:var(--color-surface-container-lowest);border:1px solid var(--color-outline-variant);transform:scale(0.8) translateY(20px);opacity:0;pointer-events:none;transform-origin:bottom right;transition:transform 0.25s cubic-bezier(0.4,0,0.2,1),opacity 0.25s cubic-bezier(0.4,0,0.2,1);">
@@ -77,8 +77,15 @@
   checkBotStatus();
   setInterval(checkBotStatus, 30000);
 
-  document.getElementById("chatbot-toggle").addEventListener("click", () => {
+  const fabBtn  = document.getElementById("chatbot-toggle");
+  const fabIcon = document.getElementById("chatbot-fab-icon");
+
+  fabBtn.addEventListener("click", () => {
     isOpen = !isOpen;
+    // Spin 180 and swap icon
+    fabBtn.style.transform = isOpen ? "rotate(180deg)" : "rotate(0deg)";
+    fabIcon.textContent = isOpen ? "close" : "sentiment_satisfied";
+
     if (isOpen) {
       panel.style.transform = "scale(1) translateY(0)";
       panel.style.opacity = "1";
