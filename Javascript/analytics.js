@@ -682,7 +682,153 @@ const savedBill = localStorage.getItem("roi-bill");
 if (savedCost) document.getElementById("roi-cost").value = savedCost;
 if (savedBill) document.getElementById("roi-bill").value = savedBill;
 
+// ═══════════════════════════════════════════════════════════════════════════
+// 7-Day Generation Forecast
+// ═══════════════════════════════════════════════════════════════════════════
+
+let forecastDailyChart = null;
+let forecastHourlyChart = null;
+
+async function loadForecast() {
+  const statusEl = document.getElementById("forecast-status");
+  if (statusEl) statusEl.textContent = "Loading forecast...";
+
+  const json = await apiFetch("/api/forecast/generation?days=7");
+  if (!json || !json.success || !json.data || !json.data.summary) {
+    if (statusEl) statusEl.textContent = json?.data?.message || "Forecast unavailable";
+    return;
+  }
+
+  const { daily, hourly, summary } = json.data;
+
+  // Summary stats
+  document.getElementById("fc-total-kwh").textContent = summary.totalPredictedKwh.toFixed(1);
+  document.getElementById("fc-savings").textContent = `R${summary.estimatedSavingsRands.toFixed(0)}`;
+  document.getElementById("fc-co2").textContent = summary.estimatedCo2OffsetKg.toFixed(1);
+  document.getElementById("fc-best-day").innerHTML =
+    `<span class="text-lg">${new Date(summary.bestDay.date).toLocaleDateString([], { weekday: "short" })}</span>` +
+    `<br><span class="text-[10px] text-on-surface-variant">${summary.bestDay.kwh.toFixed(1)} kWh</span>`;
+
+  if (statusEl) statusEl.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+
+  renderForecastDailyChart(daily);
+  renderForecastHourlyChart(hourly);
+}
+
+function renderForecastDailyChart(daily) {
+  const labels = daily.map(d => {
+    const dt = new Date(d.date);
+    return dt.toLocaleDateString([], { weekday: "short", day: "numeric" });
+  });
+  const data = daily.map(d => d.predictedKwh);
+  const colors = daily.map(d =>
+    d.confidence === "high" ? "#005147" : d.confidence === "medium" ? "#005db6" : "#6e7976"
+  );
+
+  const datasets = [{
+    label: "Predicted kWh",
+    data,
+    backgroundColor: colors,
+    borderRadius: 6,
+  }];
+
+  if (forecastDailyChart) {
+    forecastDailyChart.data.labels = labels;
+    forecastDailyChart.data.datasets = datasets;
+    forecastDailyChart.update();
+  } else {
+    const ctx = document.getElementById("forecast-daily-chart").getContext("2d");
+    forecastDailyChart = new Chart(ctx, {
+      type: "bar",
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: (ctx) => `${ctx.raw.toFixed(1)} kWh`,
+            },
+          },
+        },
+        scales: {
+          x: { ticks: { font: { family: "Inter", size: 10 } } },
+          y: {
+            beginAtZero: true,
+            ticks: { font: { family: "Inter", size: 10 }, callback: (v) => v + " kWh" },
+          },
+        },
+      },
+    });
+  }
+}
+
+function renderForecastHourlyChart(hourly) {
+  // Filter to today only
+  const today = new Date().toISOString().slice(0, 10);
+  const todayHours = hourly.filter(h => h.time.startsWith(today));
+  if (todayHours.length === 0) return;
+
+  const labels = todayHours.map(h => h.time.split("T")[1].slice(0, 5));
+  const solarData = todayHours.map(h => h.solarKwh);
+  const windData = todayHours.map(h => h.windKwh);
+
+  const datasets = [
+    {
+      label: "Solar (predicted)",
+      data: solarData,
+      borderColor: "#005147",
+      backgroundColor: "#00514722",
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.3,
+      fill: true,
+    },
+  ];
+
+  // Only add wind if there's wind capacity
+  if (windData.some(v => v > 0)) {
+    datasets.push({
+      label: "Wind (predicted)",
+      data: windData,
+      borderColor: "#005db6",
+      backgroundColor: "#005db622",
+      borderWidth: 2,
+      pointRadius: 0,
+      tension: 0.3,
+      fill: true,
+    });
+  }
+
+  if (forecastHourlyChart) {
+    forecastHourlyChart.data.labels = labels;
+    forecastHourlyChart.data.datasets = datasets;
+    forecastHourlyChart.update();
+  } else {
+    const ctx = document.getElementById("forecast-hourly-chart").getContext("2d");
+    forecastHourlyChart = new Chart(ctx, {
+      type: "line",
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        interaction: { mode: "index", intersect: false },
+        plugins: {
+          legend: { display: true, labels: { font: { family: "Inter", size: 10 } } },
+        },
+        scales: {
+          x: { ticks: { maxTicksLimit: 12, font: { family: "Inter", size: 10 } } },
+          y: {
+            beginAtZero: true,
+            ticks: { font: { family: "Inter", size: 10 }, callback: (v) => v.toFixed(1) + " kWh" },
+          },
+        },
+      },
+    });
+  }
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────
 loadAnalytics();
 loadEfficiencyModel();
+loadForecast();
 if (savedCost) calculateROI();
