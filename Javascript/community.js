@@ -360,9 +360,12 @@
       const res  = await authFetch(`${API}/api/community/${fetchType}`);
       const json = await res.json();
       if (!json.success) {
-        listEl.innerHTML = `<div class="text-center py-8">
-          <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">inbox</span>
-          <p class="text-on-surface-variant text-sm">No ${type} available right now.</p>
+        listEl.innerHTML = `<div class="text-center py-12">
+          <svg width="80" height="80" viewBox="0 0 80 80" class="mx-auto mb-4 opacity-30">
+            <circle cx="40" cy="40" r="35" fill="none" stroke="var(--color-outline-variant)" stroke-width="2" stroke-dasharray="6 4"/>
+            <text x="40" y="46" text-anchor="middle" font-family="Material Symbols Outlined" font-size="28" fill="var(--color-outline-variant)">location_off</text>
+          </svg>
+          <p class="text-on-surface-variant text-sm font-semibold">No ${type} available right now</p>
           <p class="text-on-surface-variant/50 text-xs mt-1">Make sure your location is set in your profile.</p>
         </div>`;
         return;
@@ -370,18 +373,20 @@
 
       let rows = json.data;
 
-      // For requests tab, show all (own ones will render with delete, others with Details)
-
       if (!rows.length) {
+        const icons = { sales: "storefront", requests: "handshake", donations: "volunteer_activism" };
         const emptyMsg = type === "donations"
-          ? "No neighbours need energy right now."
-          : `No open ${type} in your area yet.`;
+          ? "No neighbours need energy right now"
+          : `No open ${type} in your area yet`;
         const emptyHint = type === "donations"
-          ? "Check back later — when someone posts a request you can donate to them here."
-          : "Be the first to post one above.";
-        listEl.innerHTML = `<div class="text-center py-8">
-          <span class="material-symbols-outlined text-3xl text-on-surface-variant/40 block mb-2">inbox</span>
-          <p class="text-on-surface-variant text-sm">${emptyMsg}</p>
+          ? "Check back later. When someone posts a request you can donate to them here."
+          : "Be the first to post one!";
+        listEl.innerHTML = `<div class="text-center py-12">
+          <svg width="80" height="80" viewBox="0 0 80 80" class="mx-auto mb-4 opacity-30">
+            <circle cx="40" cy="40" r="35" fill="none" stroke="var(--color-outline-variant)" stroke-width="2" stroke-dasharray="6 4"/>
+            <text x="40" y="46" text-anchor="middle" font-family="Material Symbols Outlined" font-size="28" fill="var(--color-outline-variant)">${icons[type] || "inbox"}</text>
+          </svg>
+          <p class="text-on-surface-variant text-sm font-semibold">${emptyMsg}</p>
           <p class="text-on-surface-variant/50 text-xs mt-1">${emptyHint}</p>
         </div>`;
         return;

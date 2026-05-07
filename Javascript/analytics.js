@@ -696,9 +696,9 @@ async function loadForecast() {
   const { daily, hourly, summary } = json.data;
 
   // Summary stats
-  document.getElementById("fc-total-kwh").textContent = summary.totalPredictedKwh.toFixed(1);
-  document.getElementById("fc-savings").textContent = `R${summary.estimatedSavingsRands.toFixed(0)}`;
-  document.getElementById("fc-co2").textContent = summary.estimatedCo2OffsetKg.toFixed(1);
+  VE.animateNumber("fc-total-kwh", summary.totalPredictedKwh, { decimals: 1 });
+  VE.animateNumber("fc-savings", summary.estimatedSavingsRands, { decimals: 0, prefix: "R" });
+  VE.animateNumber("fc-co2", summary.estimatedCo2OffsetKg, { decimals: 1 });
   document.getElementById("fc-best-day").innerHTML =
     `<span class="text-lg">${new Date(summary.bestDay.date).toLocaleDateString([], { weekday: "short" })}</span>` +
     `<br><span class="text-[10px] text-on-surface-variant">${summary.bestDay.kwh.toFixed(1)} kWh</span>`;

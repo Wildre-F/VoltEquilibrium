@@ -632,10 +632,10 @@ window.addEventListener("pageshow", async () => {
       if (!json.success) return;
 
       const d = json.data;
-      setText("co2-today-kg",       `${d.todayCo2Kg.toFixed(3)} kg`);
-      setText("co2-today-rands",    `R ${d.todayRands.toFixed(2)}`);
-      setText("co2-lifetime-kg",    `${d.lifetimeCo2Kg.toFixed(3)} kg`);
-      setText("co2-lifetime-rands", `R ${d.lifetimeRands.toFixed(2)}`);
+      VE.animateNumber("co2-today-kg", d.todayCo2Kg, { decimals: 3, suffix: " kg" });
+      VE.animateNumber("co2-today-rands", d.todayRands, { decimals: 2, prefix: "R " });
+      VE.animateNumber("co2-lifetime-kg", d.lifetimeCo2Kg, { decimals: 3, suffix: " kg" });
+      VE.animateNumber("co2-lifetime-rands", d.lifetimeRands, { decimals: 2, prefix: "R " });
 
       co2Data = d.history;
       renderCo2Chart("co2"); // default metric

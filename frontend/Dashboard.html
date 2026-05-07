@@ -885,12 +885,12 @@
       <!-- ── No-data fallback ─────────────────────────────────────────── -->
       <div id="panel-nodata" class="hidden">
         <div class="bg-surface-container-low rounded-2xl p-12 text-center">
-          <span
-            class="material-symbols-outlined text-5xl text-on-surface-variant/30 mb-4 block"
-            >sensors_off</span
-          >
+          <svg width="100" height="100" viewBox="0 0 100 100" class="mx-auto mb-4 opacity-30">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--color-outline-variant)" stroke-width="2" stroke-dasharray="8 4"/>
+            <text x="50" y="58" text-anchor="middle" font-family="Material Symbols Outlined" font-size="36" fill="var(--color-outline-variant)">sensors_off</text>
+          </svg>
           <p class="text-on-surface-variant font-semibold font-body">
-            No readings yet.
+            No readings yet
           </p>
           <p class="text-sm text-on-surface-variant/60 mt-1 font-body">
             Make sure your simulator is running and wait up to 30 seconds.

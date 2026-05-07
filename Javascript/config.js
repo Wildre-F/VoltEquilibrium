@@ -44,6 +44,27 @@ window.VE = {
     this.showSessionExpired();
   },
 
+  // Animated number counter — smoothly counts from current to target value
+  // Usage: VE.animateNumber("element-id", 42.5, { decimals: 1, prefix: "R", suffix: " kWh", duration: 800 })
+  animateNumber(elOrId, target, opts = {}) {
+    const el = typeof elOrId === "string" ? document.getElementById(elOrId) : elOrId;
+    if (!el) return;
+    const { decimals = 0, prefix = "", suffix = "", duration = 600 } = opts;
+    const current = parseFloat(el.textContent.replace(/[^0-9.\-]/g, "")) || 0;
+    if (current === target) return;
+    const start = performance.now();
+    const diff = target - current;
+    function tick(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3); // ease-out cubic
+      const value = current + diff * eased;
+      el.textContent = `${prefix}${value.toFixed(decimals)}${suffix}`;
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  },
+
   // Standard auth fetch wrapper
   async fetch(path, options = {}) {
     const token = this.getToken();
