@@ -174,61 +174,108 @@ document.getElementById("recs-help-close")?.addEventListener("click", () => {
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
-// 7-Day Generation Forecast (on Recommendations page)
+// Maintenance Health (reuses /api/inverter/efficiency endpoint)
 // ═══════════════════════════════════════════════════════════════════════════
 
-let recsForecastChart = null;
+const MH_CLOUD_MAX     = 0.8;
+const MH_TEMP_BASE     = 25;
+const MH_TEMP_COEFF    = 0.004;
+const MH_PEAK_SUN      = 5.5;
+const MH_RANDS_PER_KWH = 2.5;
 
-async function loadRecsForecast() {
-  const statusEl = document.getElementById("recs-forecast-status");
-  if (statusEl) statusEl.textContent = "Loading...";
+let mhSparkline = null;
 
-  const json = await apiFetch("/api/forecast/generation?days=7");
-  if (!json || !json.success || !json.data || !json.data.summary) {
-    if (statusEl) statusEl.textContent = json?.data?.message || "No forecast available";
+async function loadMaintenanceHealth() {
+  const json = await apiFetch("/api/inverter/efficiency?source=solar&days=30");
+  if (!json || !json.success || !json.data) return;
+
+  const { totalCapacity, daily } = json.data;
+  const capacity = (totalCapacity || 0) * 1000; // kW stored in DB, convert to W
+  if (!capacity || daily.length < 3) {
+    document.getElementById("mh-efficiency").textContent = "N/A";
+    document.getElementById("mh-status-text").textContent = "Not enough data (need 3+ days)";
     return;
   }
 
-  const { daily, summary } = json.data;
+  // Calculate daily efficiencies
+  const efficiencies = daily.map(d => {
+    const cF = 1 - (d.avgCloudCover / 100) * MH_CLOUD_MAX;
+    const tF = 1 - Math.max(0, (d.avgTemp - MH_TEMP_BASE) * MH_TEMP_COEFF);
+    const theorKwh = (capacity / 1000) * MH_PEAK_SUN * cF * tF;
+    return theorKwh > 0.01 ? Math.min(150, (d.dailyKwh / theorKwh) * 100) : null;
+  }).filter(e => e !== null);
 
-  document.getElementById("rfc-total-kwh").textContent = summary.totalPredictedKwh.toFixed(1);
-  document.getElementById("rfc-savings").textContent = `R${summary.estimatedSavingsRands.toFixed(0)}`;
-  document.getElementById("rfc-co2").textContent = summary.estimatedCo2OffsetKg.toFixed(1);
-  document.getElementById("rfc-best-day").innerHTML =
-    `<span>${new Date(summary.bestDay.date).toLocaleDateString([], { weekday: "short" })}</span>` +
-    `<br><span class="text-[10px] text-on-surface-variant">${summary.bestDay.kwh.toFixed(1)} kWh</span>`;
+  if (efficiencies.length === 0) return;
 
-  if (statusEl) statusEl.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+  const avgEff = efficiencies.reduce((a, b) => a + b, 0) / efficiencies.length;
 
-  // 7-day bar chart
-  const labels = daily.map(d => new Date(d.date).toLocaleDateString([], { weekday: "short", day: "numeric" }));
-  const data = daily.map(d => d.predictedKwh);
-  const colors = daily.map(d =>
-    d.confidence === "high" ? "#005147" : d.confidence === "medium" ? "#005db6" : "#6e7976"
-  );
+  // Efficiency display
+  document.getElementById("mh-efficiency").textContent = `${avgEff.toFixed(0)}%`;
 
-  const datasets = [{ label: "Predicted kWh", data, backgroundColor: colors, borderRadius: 6 }];
+  // Health status
+  const badge = document.getElementById("mh-status-badge");
+  const icon = document.getElementById("mh-status-icon");
+  const text = document.getElementById("mh-status-text");
 
-  if (recsForecastChart) {
-    recsForecastChart.data.labels = labels;
-    recsForecastChart.data.datasets = datasets;
-    recsForecastChart.update();
+  if (avgEff >= 85) {
+    badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-tertiary/10 text-tertiary";
+    icon.textContent = "check_circle";
+    text.textContent = "Panels are healthy — no action needed";
+  } else if (avgEff >= 70) {
+    badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-secondary/10 text-secondary";
+    icon.textContent = "warning";
+    text.textContent = "May need cleaning — dust or shading detected";
+  } else if (avgEff >= 50) {
+    badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-error/10 text-error";
+    icon.textContent = "error";
+    text.textContent = "Underperforming — check soiling or wiring";
   } else {
-    const canvas = document.getElementById("recs-forecast-chart");
+    badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-error/20 text-error";
+    icon.textContent = "dangerous";
+    text.textContent = "Possible fault — inspect panels immediately";
+  }
+
+  // Savings lost
+  const avgTheoreticalDaily = daily.reduce((sum, d) => {
+    const cF = 1 - (d.avgCloudCover / 100) * MH_CLOUD_MAX;
+    const tF = 1 - Math.max(0, (d.avgTemp - MH_TEMP_BASE) * MH_TEMP_COEFF);
+    return sum + (capacity / 1000) * MH_PEAK_SUN * cF * tF;
+  }, 0) / daily.length;
+  const avgActualDaily = daily.reduce((sum, d) => sum + d.dailyKwh, 0) / daily.length;
+  const missedKwhPerDay = Math.max(0, avgTheoreticalDaily - avgActualDaily);
+  const monthlySavingsLost = missedKwhPerDay * 30 * MH_RANDS_PER_KWH;
+  document.getElementById("mh-savings-lost").textContent = `R${monthlySavingsLost.toFixed(0)}/mo`;
+
+  // Mini sparkline
+  const labels = daily.map((d, i) => i);
+  const sparkData = daily.map(d => {
+    const cF = 1 - (d.avgCloudCover / 100) * MH_CLOUD_MAX;
+    const tF = 1 - Math.max(0, (d.avgTemp - MH_TEMP_BASE) * MH_TEMP_COEFF);
+    const theorKwh = (capacity / 1000) * MH_PEAK_SUN * cF * tF;
+    return theorKwh > 0.01 ? Math.min(150, (d.dailyKwh / theorKwh) * 100) : null;
+  });
+
+  const datasets = [{
+    data: sparkData,
+    borderColor: avgEff >= 85 ? "#005147" : avgEff >= 70 ? "#005db6" : "#ba1a1a",
+    backgroundColor: (avgEff >= 85 ? "#005147" : avgEff >= 70 ? "#005db6" : "#ba1a1a") + "22",
+    borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true,
+  }];
+
+  if (mhSparkline) {
+    mhSparkline.data.labels = labels;
+    mhSparkline.data.datasets = datasets;
+    mhSparkline.update();
+  } else {
+    const canvas = document.getElementById("mh-sparkline");
     if (!canvas) return;
-    recsForecastChart = new Chart(canvas.getContext("2d"), {
-      type: "bar",
+    mhSparkline = new Chart(canvas.getContext("2d"), {
+      type: "line",
       data: { labels, datasets },
       options: {
         responsive: true,
-        plugins: {
-          legend: { display: false },
-          tooltip: { callbacks: { label: (ctx) => `${ctx.raw.toFixed(1)} kWh` } },
-        },
-        scales: {
-          x: { ticks: { font: { family: "Inter", size: 10 } } },
-          y: { beginAtZero: true, ticks: { font: { family: "Inter", size: 10 }, callback: (v) => v + " kWh" } },
-        },
+        plugins: { legend: { display: false }, tooltip: { enabled: false } },
+        scales: { x: { display: false }, y: { display: false, suggestedMin: 40, suggestedMax: 120 } },
       },
     });
   }
@@ -236,5 +283,5 @@ async function loadRecsForecast() {
 
 // ── Init + poll ──────────────────────────────────────────────────────────────
 loadApplianceShift();
-loadRecsForecast();
+loadMaintenanceHealth();
 setInterval(loadApplianceShift, 30000);

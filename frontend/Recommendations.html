@@ -145,9 +145,10 @@
           <div class="mt-4 bg-surface-container-low rounded-xl p-4">
             <p class="text-xs font-bold font-label text-on-surface mb-2">Other features on this page:</p>
             <ul class="text-xs text-on-surface-variant font-body space-y-1.5">
-              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-primary mt-0.5">health_and_safety</span><b>Maintenance Health</b> — (coming soon) Compares your actual panel output to expected output and calculates lost savings when panels need cleaning or repair.</li>
-              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-tertiary mt-0.5">eco</span><b>Carbon to Action</b> — (coming soon) Converts your CO2 savings into real-world equivalents like LED bulb replacements and trees planted.</li>
-              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-secondary mt-0.5">cloud</span><b>6-Hour Forecast</b> — Shows predicted conditions for the next 6 hours. Green blocks = good generation windows, red = poor conditions.</li>
+              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-primary mt-0.5">health_and_safety</span><b>Maintenance Health</b> — Monitors your panel efficiency over 30 days. Alerts when panels need cleaning or repair, and calculates how much money you're losing.</li>
+              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-secondary mt-0.5">cloud</span><b>6-Hour Forecast</b> — Shows predicted cloud cover for the next 6 hours. Green = good generation, red = poor conditions.</li>
+              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-tertiary mt-0.5">eco</span><b>Carbon to Action</b> — (coming soon) Converts your CO2 savings into real-world equivalents.</li>
+              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-primary mt-0.5">electric_bolt</span><b>7-Day Forecast</b> — For detailed daily and hourly generation predictions, visit the <b>Analytics</b> page.</li>
             </ul>
           </div>
         </div>
@@ -217,74 +218,37 @@
             </div>
           </div>
 
-          <!-- ════ Feature 1: Maintenance Health — PLACEHOLDER ════ -->
-          <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6 opacity-60">
+          <!-- ════ Maintenance Health (LIVE) ════ -->
+          <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6">
             <div class="flex items-center gap-2 mb-4">
               <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">health_and_safety</span>
               <h2 class="text-sm font-bold font-headline text-on-surface">Maintenance Health</h2>
             </div>
-            <span class="inline-block px-2.5 py-0.5 bg-surface-container rounded-full text-[10px] font-bold font-label text-on-surface-variant mb-3">Coming Soon — Data Science</span>
-            <p class="text-xs text-on-surface-variant/60 font-body mb-4">
-              Compares actual panel output vs expected output based on weather conditions. Alerts when efficiency drops below 70% and calculates potential savings lost due to maintenance issues.
-            </p>
-            <div class="bg-surface-container-low rounded-xl p-4">
+
+            <!-- Health status badge -->
+            <div id="mh-status-badge" class="flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-surface-container text-on-surface-variant">
+              <span id="mh-status-icon" class="material-symbols-outlined text-sm">hourglass_empty</span>
+              <span id="mh-status-text">Checking panels...</span>
+            </div>
+
+            <!-- Efficiency % -->
+            <div class="bg-surface-container-low rounded-xl p-4 mb-3 text-center">
+              <p id="mh-efficiency" class="text-3xl font-extrabold font-headline text-primary">—</p>
+              <p class="text-[10px] font-label text-on-surface-variant mt-1">Panel Efficiency (30-day avg)</p>
+            </div>
+
+            <!-- Savings lost -->
+            <div class="bg-surface-container-low rounded-xl p-4 mb-3">
               <div class="flex justify-between items-center">
-                <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Potential Savings Lost</span>
-                <span class="text-lg font-extrabold font-headline text-on-surface-variant/30">R—/mo</span>
-              </div>
-              <div class="w-full h-2 bg-surface-container rounded-full mt-2">
-                <div class="h-full w-0 rounded-full bg-outline-variant"></div>
-              </div>
-            </div>
-            <div class="bg-surface-container-low rounded-xl p-4 mt-3">
-              <div class="flex justify-between items-center">
-                <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Panel Health Score</span>
-                <span class="text-lg font-extrabold font-headline text-on-surface-variant/30">—%</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- ════ 7-Day Generation Forecast ════ -->
-          <div class="md:col-span-2 bg-surface-container-lowest rounded-2xl shadow-sm p-6">
-            <div class="flex items-center justify-between mb-4">
-              <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-primary text-xl" style="font-variation-settings:'FILL' 1;">electric_bolt</span>
-                <div>
-                  <h2 class="text-base font-bold font-headline text-on-surface">7-Day Generation Forecast</h2>
-                  <p class="text-[10px] text-on-surface-variant font-label mt-0.5">Physics-based prediction using solar irradiance (GHI)</p>
-                </div>
-              </div>
-              <span id="recs-forecast-status" class="text-[10px] text-on-surface-variant/50 font-label"></span>
-            </div>
-
-            <!-- Summary stats -->
-            <div class="grid grid-cols-4 gap-3 mb-4">
-              <div class="bg-surface-container-low rounded-xl p-3 text-center">
-                <p id="rfc-total-kwh" class="text-xl font-extrabold font-headline text-primary">—</p>
-                <p class="text-[10px] font-label text-on-surface-variant mt-1">7-Day kWh</p>
-              </div>
-              <div class="bg-surface-container-low rounded-xl p-3 text-center">
-                <p id="rfc-savings" class="text-xl font-extrabold font-headline text-tertiary">—</p>
-                <p class="text-[10px] font-label text-on-surface-variant mt-1">Est. Savings</p>
-              </div>
-              <div class="bg-surface-container-low rounded-xl p-3 text-center">
-                <p id="rfc-co2" class="text-xl font-extrabold font-headline text-secondary">—</p>
-                <p class="text-[10px] font-label text-on-surface-variant mt-1">CO2 Offset</p>
-              </div>
-              <div class="bg-surface-container-low rounded-xl p-3 text-center">
-                <p id="rfc-best-day" class="text-base font-bold font-headline text-on-surface">—</p>
-                <p class="text-[10px] font-label text-on-surface-variant mt-1">Best Day</p>
+                <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Savings Lost</span>
+                <span id="mh-savings-lost" class="text-sm font-extrabold font-headline text-error">R—/mo</span>
               </div>
             </div>
 
-            <!-- 7-day bar chart -->
-            <canvas id="recs-forecast-chart"></canvas>
-
-            <!-- Confidence legend -->
-            <div class="flex gap-4 mt-3">
-              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-primary);"></span><span class="text-[9px] font-label text-on-surface-variant">High (0-1 days)</span></span>
-              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-secondary);"></span><span class="text-[9px] font-label text-on-surface-variant">Medium (2-4 days)</span></span>
-              <span class="flex items-center gap-1"><span class="w-3 h-3 rounded" style="background:var(--color-outline);"></span><span class="text-[9px] font-label text-on-surface-variant">Low (5+ days)</span></span>
+            <!-- Mini sparkline -->
+            <div>
+              <p class="text-[9px] font-label text-on-surface-variant uppercase tracking-widest mb-1">30-Day Trend</p>
+              <canvas id="mh-sparkline" height="50"></canvas>
             </div>
           </div>
 
