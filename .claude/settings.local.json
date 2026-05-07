@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker exec green-energy-postgres:*)",
+      "Bash(node generate-seed.js)",
+      "Bash(node insert-seed.js 1 1)"
+    ]
+  }
+}
