@@ -773,7 +773,7 @@ window.addEventListener("pageshow", async () => {
     setInterval(fetchAndRender, POLL_MS);
     setInterval(loadCo2, 5 * 60 * 1000); // refresh CO2 every 5 min
     setInterval(loadForecast, 15 * 60 * 1000); // refresh forecast every 15 min
-    setTimeout(() => toast.show("Welcome to VoltEquilibrium", "success"), 600);
+    // Welcome greeting now handled by welcome card
     loadWelcomeCard();
   }
 
