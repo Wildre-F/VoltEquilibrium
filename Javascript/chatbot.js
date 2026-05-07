@@ -23,6 +23,10 @@
             <span id="chatbot-status-dot" style="width:6px;height:6px;border-radius:50%;background:#888;"></span>
             <span id="chatbot-status-text">Checking...</span>
           </span>
+          <span id="chatbot-response-time" style="font-size:9px;font-family:Inter;opacity:0.6;display:none;">
+            <span class="material-symbols-outlined" style="font-size:10px;vertical-align:middle;">speed</span>
+            <span id="chatbot-rt-value">—</span>
+          </span>
         </div>
         <button id="chatbot-clear" title="Clear chat" style="background:none;border:none;color:var(--color-on-primary);cursor:pointer;opacity:0.7;">
           <span class="material-symbols-outlined" style="font-size:18px;">delete_sweep</span>
@@ -196,6 +200,20 @@
     if (t) t.remove();
   }
 
+  const responseTimes = [];
+
+  function updateResponseTimeTag(ms) {
+    responseTimes.push(ms);
+    if (responseTimes.length > 10) responseTimes.shift();
+    const avg = responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length;
+    const rtEl = document.getElementById("chatbot-response-time");
+    const rtVal = document.getElementById("chatbot-rt-value");
+    if (rtEl && rtVal) {
+      rtEl.style.display = "inline-flex";
+      rtVal.textContent = avg < 1000 ? `~${Math.round(avg)}ms` : `~${(avg / 1000).toFixed(1)}s`;
+    }
+  }
+
   async function sendMessage() {
     const msg = input.value.trim();
     if (!msg) return;
@@ -204,6 +222,7 @@
     addMessage("user", msg);
     addTyping();
     sendBtn.disabled = true;
+    const startTime = Date.now();
 
     try {
       const res = await fetch(`${API}/api/chat`, {
@@ -212,9 +231,11 @@
         body: JSON.stringify({ message: msg }),
       });
       const data = await res.json();
+      const elapsed = Date.now() - startTime;
       removeTyping();
       if (data.success) {
         addMessage("assistant", data.data.content, true);
+        updateResponseTimeTag(elapsed);
       } else {
         addMessage("assistant", data.message || "Sorry, something went wrong.", true);
       }
