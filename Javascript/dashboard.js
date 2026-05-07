@@ -262,7 +262,7 @@ window.addEventListener("pageshow", async () => {
     const gridW = parseFloat(d.grid_watts) || 0;
 
     // Hide solar node and line
-    if (el("flow-solar-node")) el("flow-solar-node").style.display = "none";
+    if (el("flow-source-node")) el("flow-source-node").style.display = "none";
     if (el("flow-line-solar")) el("flow-line-solar").style.display = "none";
     if (el("flow-solar-w")) el("flow-solar-w").textContent = "";
 
@@ -433,10 +433,24 @@ window.addEventListener("pageshow", async () => {
     const gridW  = parseFloat(d.grid_watts) || 0;
     const battW  = parseFloat(d.battery_power) || 0;
     const battSOC = parseFloat(d.state_of_charge) || 0;
+    const isSolar = src === "solar";
 
     const fmt = (w) => w >= 1000 ? `${(w/1000).toFixed(1)} kW` : `${Math.round(w)} W`;
 
     const el = (id) => document.getElementById(id);
+
+    // Swap source node icon/label/color based on active pill
+    const sourceIcon  = el("flow-source-icon");
+    const sourceLabel = el("flow-source-label");
+    const sourceRect  = el("flow-source-rect");
+    if (sourceIcon)  sourceIcon.textContent = isSolar ? "solar_power" : "air";
+    if (sourceLabel) sourceLabel.textContent = isSolar ? "Solar" : "Wind";
+    if (sourceRect) {
+      sourceRect.setAttribute("fill", isSolar ? "var(--color-primary-container)" : "var(--color-secondary-container)");
+      sourceRect.setAttribute("stroke", isSolar ? "var(--color-primary)" : "var(--color-secondary)");
+    }
+    if (sourceIcon) sourceIcon.setAttribute("fill", isSolar ? "var(--color-primary)" : "var(--color-secondary)");
+
     if (el("flow-solar-w"))   el("flow-solar-w").textContent   = fmt(pvW);
     if (el("flow-inv-w"))     el("flow-inv-w").textContent     = fmt(pvW);
     if (el("flow-load-w"))    el("flow-load-w").textContent    = fmt(loadW);
@@ -447,7 +461,9 @@ window.addEventListener("pageshow", async () => {
     // Animate flow lines
     const setFlow = (id, cls) => { const l = el(id); if (l) l.setAttribute("class", cls); };
 
-    // Solar → Inverter (always solar-to-inverter direction)
+    // Source → Inverter (swap line color based on active source)
+    const srcLine = el("flow-line-solar");
+    if (srcLine) srcLine.setAttribute("stroke", isSolar ? "var(--color-primary)" : "var(--color-secondary)");
     setFlow("flow-line-solar", pvW > 10 ? "flow-right" : "flow-none");
 
     // Inverter → House (always inverter-to-house direction)
