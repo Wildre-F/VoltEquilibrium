@@ -110,46 +110,78 @@
         </div>
 
         <!-- Help panel (hidden by default) -->
-        <div id="recs-help-panel" class="hidden mb-8 bg-surface-container-lowest rounded-2xl shadow-sm p-6 border border-outline-variant/20">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-sm font-bold font-headline text-on-surface flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary text-base">menu_book</span> Understanding Your Recommendations
-            </h3>
-            <button id="recs-help-close" class="p-1 hover:bg-surface-container rounded-full transition-colors">
-              <span class="material-symbols-outlined text-on-surface-variant text-lg">close</span>
-            </button>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="bg-surface-container-low rounded-xl p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
-                <span class="text-xs font-bold font-label text-tertiary uppercase">Green — Great Time</span>
-              </div>
-              <p class="text-xs text-on-surface-variant font-body">Battery is above 80% and your system is generating well. Run heavy appliances like washing machines, geysers, and ovens now to use free solar/wind power.</p>
+        <!-- Help overlay -->
+        <div id="recs-help-panel" class="hidden fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="bg-surface-container-lowest rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6" style="animation: fadeIn 0.25s ease-out;">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="text-base font-bold font-headline text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">menu_book</span> How It Works
+              </h3>
+              <button id="recs-help-close" class="p-2 hover:bg-surface-container rounded-full transition-colors">
+                <span class="material-symbols-outlined text-on-surface-variant">close</span>
+              </button>
             </div>
-            <div class="bg-surface-container-low rounded-xl p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
-                <span class="text-xs font-bold font-label text-secondary uppercase">Orange — Moderate</span>
+
+            <p class="text-xs text-on-surface-variant font-body mb-5">This page gives you actionable energy recommendations based on your live system data.</p>
+
+            <!-- Traffic light section -->
+            <h4 class="text-xs font-bold font-label text-on-surface uppercase tracking-widest mb-3">Appliance Shift — Traffic Light</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-5">
+              <div class="bg-surface-container-low rounded-xl p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="material-symbols-outlined text-tertiary text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
+                  <span class="text-xs font-bold font-label text-tertiary uppercase">Green — Great Time</span>
+                </div>
+                <p class="text-xs text-on-surface-variant font-body">Battery above 80% and generating well. Run heavy appliances (washing machine, geyser, oven) now.</p>
               </div>
-              <p class="text-xs text-on-surface-variant font-body">Battery is between 40–80%. Use appliances cautiously. Consider waiting for better generation or charge levels before running high-draw devices.</p>
-            </div>
-            <div class="bg-surface-container-low rounded-xl p-4">
-              <div class="flex items-center gap-2 mb-2">
-                <span class="material-symbols-outlined text-error text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
-                <span class="text-xs font-bold font-label text-error uppercase">Red — Avoid Now</span>
+              <div class="bg-surface-container-low rounded-xl p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
+                  <span class="text-xs font-bold font-label text-secondary uppercase">Orange — Moderate</span>
+                </div>
+                <p class="text-xs text-on-surface-variant font-body">Battery between 40–80%. Use appliances cautiously. Wait for better conditions if possible.</p>
               </div>
-              <p class="text-xs text-on-surface-variant font-body">Battery is below 30% or no generation happening. Delay heavy appliances to avoid draining your battery or drawing expensive power from the grid.</p>
+              <div class="bg-surface-container-low rounded-xl p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <span class="material-symbols-outlined text-error text-sm" style="font-variation-settings:'FILL' 1;">circle</span>
+                  <span class="text-xs font-bold font-label text-error uppercase">Red — Avoid Now</span>
+                </div>
+                <p class="text-xs text-on-surface-variant font-body">Battery below 30% or no generation. Delay heavy appliances to avoid grid draw.</p>
+              </div>
             </div>
-          </div>
-          <div class="mt-4 bg-surface-container-low rounded-xl p-4">
-            <p class="text-xs font-bold font-label text-on-surface mb-2">Other features on this page:</p>
-            <ul class="text-xs text-on-surface-variant font-body space-y-1.5">
-              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-primary mt-0.5">health_and_safety</span><b>Maintenance Health</b> — Monitors your panel efficiency over 30 days. Alerts when panels need cleaning or repair, and calculates how much money you're losing.</li>
-              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-secondary mt-0.5">cloud</span><b>6-Hour Forecast</b> — Shows predicted cloud cover for the next 6 hours. Green = good generation, red = poor conditions.</li>
-              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-tertiary mt-0.5">eco</span><b>Carbon to Action</b> — (coming soon) Converts your CO2 savings into real-world equivalents.</li>
-              <li class="flex items-start gap-2"><span class="material-symbols-outlined text-sm text-primary mt-0.5">electric_bolt</span><b>7-Day Forecast</b> — For detailed daily and hourly generation predictions, visit the <b>Analytics</b> page.</li>
-            </ul>
+
+            <!-- Other features -->
+            <h4 class="text-xs font-bold font-label text-on-surface uppercase tracking-widest mb-3">Features on This Page</h4>
+            <div class="space-y-3">
+              <div class="bg-surface-container-low rounded-xl p-4 flex items-start gap-3">
+                <span class="material-symbols-outlined text-primary mt-0.5" style="font-variation-settings:'FILL' 1;">cloud</span>
+                <div>
+                  <p class="text-xs font-bold font-label text-on-surface">6-Hour Cloud Forecast</p>
+                  <p class="text-xs text-on-surface-variant font-body">Predicts cloud cover for the next 6 hours. Green blocks = good solar generation, red = poor conditions.</p>
+                </div>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-4 flex items-start gap-3">
+                <span class="material-symbols-outlined text-primary mt-0.5" style="font-variation-settings:'FILL' 1;">health_and_safety</span>
+                <div>
+                  <p class="text-xs font-bold font-label text-on-surface">Maintenance Health</p>
+                  <p class="text-xs text-on-surface-variant font-body">Monitors panel efficiency over 30 days. Alerts when panels need cleaning or repair, and shows how much money you're losing from underperformance.</p>
+                </div>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-4 flex items-start gap-3">
+                <span class="material-symbols-outlined text-tertiary mt-0.5" style="font-variation-settings:'FILL' 1;">eco</span>
+                <div>
+                  <p class="text-xs font-bold font-label text-on-surface">Carbon to Action <span class="text-on-surface-variant/60 normal-case">(coming soon)</span></p>
+                  <p class="text-xs text-on-surface-variant font-body">Converts your CO2 savings into real-world equivalents like LED replacements and trees planted.</p>
+                </div>
+              </div>
+              <div class="bg-surface-container-low rounded-xl p-4 flex items-start gap-3">
+                <span class="material-symbols-outlined text-secondary mt-0.5" style="font-variation-settings:'FILL' 1;">electric_bolt</span>
+                <div>
+                  <p class="text-xs font-bold font-label text-on-surface">7-Day Generation Forecast</p>
+                  <p class="text-xs text-on-surface-variant font-body">For detailed daily and hourly generation predictions using solar irradiance data, visit the <a href="Analytics.html" class="text-primary font-bold hover:underline">Analytics page</a>.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
