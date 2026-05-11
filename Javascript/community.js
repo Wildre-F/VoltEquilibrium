@@ -421,11 +421,16 @@
   document.getElementById("details-cancel").addEventListener("click", () => detailsBackdrop.classList.add("hidden"));
   // Details modal only closes via Cancel/Close button, not clicking outside
 
-  document.getElementById("details-buy").addEventListener("click", async () => {
-    if (!detailsItemId) return;
+  const buyBtn = document.getElementById("details-buy");
+  buyBtn.addEventListener("click", async () => {
+    if (!detailsItemId || buyBtn.disabled) return;
+    buyBtn.disabled = true;
+    buyBtn.textContent = "Processing...";
     const donorComment = document.getElementById("det-donor-comment").value.trim();
     detailsBackdrop.classList.add("hidden");
     await handleAction("fill", detailsItemType, detailsItemId, donorComment || null);
+    buyBtn.disabled = false;
+    buyBtn.textContent = detailsItemType === "sales" ? "Buy Now" : "Donate";
   });
 
   function openDetails(btn) {
@@ -505,7 +510,16 @@
       loadMyListings();
       loadStatus();
     } catch (err) {
-      toast(err.message, "error");
+      const msg = err.message || "";
+      if (msg.includes("Insufficient balance") || msg.includes("R0.00")) {
+        toast("Not enough funds in your wallet. Top up first!", "error");
+        setTimeout(() => { if (confirm("Go to Wallet to add funds?")) window.location.href = "Wallet.html"; }, 500);
+      } else if (msg.includes("already filled") || msg.includes("already completed")) {
+        toast("This listing has already been completed.", "error");
+        loadTab(activeTab);
+      } else {
+        toast(msg, "error");
+      }
     }
   }
 

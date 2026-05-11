@@ -250,15 +250,19 @@ router.post("/sales/:id/fill", authenticateToken, async (req, res) => {
       return res.status(400).json({ success: false, message: `Not enough battery space to receive ${sale.amount_kwh} kWh — you only have ${buyerSpace.toFixed(2)} kWh of free capacity.` });
     }
 
+    // Wallet transfer FIRST (before marking as filled, so it can fail without orphaning the sale)
+    const total = (parseFloat(sale.amount_kwh) * parseFloat(sale.price_per_kwh)).toFixed(2);
+    try {
+      await transferWallet(req.user.id, sale.user_id, parseFloat(total),
+        `Energy purchase: ${sale.amount_kwh} kWh @ R${parseFloat(sale.price_per_kwh).toFixed(2)}/kWh`);
+    } catch (walletErr) {
+      return res.status(400).json({ success: false, message: walletErr.message });
+    }
+
     const result = await pool.query(
       `UPDATE energy_sales SET is_filled = TRUE, filled_by_user_id = $1 WHERE id = $2 RETURNING *`,
       [req.user.id, req.params.id]
     );
-
-    // Wallet transfer: buyer pays seller
-    const total = (parseFloat(sale.amount_kwh) * parseFloat(sale.price_per_kwh)).toFixed(2);
-    await transferWallet(req.user.id, sale.user_id, parseFloat(total),
-      `Energy purchase: ${sale.amount_kwh} kWh @ R${parseFloat(sale.price_per_kwh).toFixed(2)}/kWh`);
 
     // Adjust battery SOC for both parties and record grid export for seller
     await applyEnergyTransfer(sale.user_id, req.user.id, parseFloat(sale.amount_kwh));
