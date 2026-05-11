@@ -175,7 +175,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
       ? "http://localhost:3000" : "";
-    var lastNotifId = parseInt(sessionStorage.getItem("ve-last-notif-id") || "0");
+    var lastNotifId = parseInt(localStorage.getItem("ve-last-notif-id") || "0");
 
     function checkForNew() {
       fetch(API + "/api/notifications", { headers: { Authorization: "Bearer " + token } })
@@ -187,8 +187,8 @@ document.addEventListener("DOMContentLoaded", function() {
           if (newestId > lastNotifId && lastNotifId > 0) {
             // New notification since last check
             if (Notification.permission === "granted") {
-              var n = new Notification("VoltEquilibrium", {
-                body: newest.title || newest.message || "New community activity",
+              var n = new Notification(newest.title || "VoltEquilibrium", {
+                body: newest.message || "New community activity in your area.",
                 icon: "../favicon.svg",
                 tag: "ve-notif-" + newestId,
               });
@@ -196,7 +196,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
           }
           lastNotifId = newestId;
-          sessionStorage.setItem("ve-last-notif-id", String(newestId));
+          localStorage.setItem("ve-last-notif-id", String(newestId));
         })
         .catch(function() {});
     }
