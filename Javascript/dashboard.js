@@ -250,8 +250,8 @@ window.addEventListener("pageshow", async () => {
     setText("batt-status", power > 10 ? "Charging" : power < -10 ? "Discharging" : "Idle");
     setText("batt-stored", `${(soc / 100 * 10).toFixed(1)} kWh`); // assumes 10kWh default
 
-    // Check power source toggle state
-    const useBattery = localStorage.getItem("ve-power-source") === "battery";
+    // Check power source toggle state (prefer backend value, fallback to localStorage)
+    const useBattery = (d.power_source === "battery") || localStorage.getItem("ve-power-source") === "battery";
 
     // Update energy flow for battery-only (no solar node)
     const el = (id) => document.getElementById(id);
@@ -802,9 +802,18 @@ window.addEventListener("pageshow", async () => {
     const powerToggle = document.getElementById("power-source-toggle");
     if (powerToggle) {
       powerToggle.checked = localStorage.getItem("ve-power-source") === "battery";
-      powerToggle.addEventListener("change", function() {
-        localStorage.setItem("ve-power-source", powerToggle.checked ? "battery" : "grid");
-        // Immediately re-render with current data
+      powerToggle.addEventListener("change", async function() {
+        const source = powerToggle.checked ? "battery" : "grid";
+        localStorage.setItem("ve-power-source", source);
+        // Save to backend so it affects battery drain
+        try {
+          await fetch(`${API_BASE}/api/profile/power-source`, {
+            method: "PUT",
+            headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            body: JSON.stringify({ source }),
+          });
+        } catch (err) { console.error("[dashboard] power source save:", err.message); }
+        // Immediately re-render
         if (lastData) {
           const all = lastData.all || [];
           const hasBatteryOnly = !lastData.solar?.length && !lastData.wind?.length && all.length > 0;

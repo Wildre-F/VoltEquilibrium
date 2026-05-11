@@ -187,4 +187,19 @@ router.delete("/account", authenticateToken, async (req, res) => {
   }
 });
 
+// PUT /profile/power-source — toggle between grid and battery
+router.put("/profile/power-source", authenticateToken, async (req, res) => {
+  try {
+    const { source } = req.body;
+    if (!["grid", "battery"].includes(source)) {
+      return res.status(400).json({ success: false, message: "Source must be 'grid' or 'battery'" });
+    }
+    await pool.query("UPDATE users SET power_source = $1 WHERE id = $2", [source, req.user.id]);
+    return res.json({ success: true, data: { power_source: source } });
+  } catch (err) {
+    console.error("Power source update error:", err.message);
+    return res.status(500).json({ success: false, message: "Error updating power source" });
+  }
+});
+
 module.exports = router;

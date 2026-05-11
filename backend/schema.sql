@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS users (
     reset_token VARCHAR(255),
     reset_token_expiry TIMESTAMP,
     avatar_color VARCHAR(20) DEFAULT '#9ff2e1',
+    power_source VARCHAR(10) DEFAULT 'grid',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

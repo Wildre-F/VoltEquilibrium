@@ -87,25 +87,20 @@ router.get("/readings/latest", authenticateToken, async (req, res) => {
     // Battery-only user: no inverters, so query battery directly
     if (rows.length === 0) {
       // Simulate realistic household base load by time of day (W)
-      // Night: ~200W, Morning: ~500W, Day: ~350W, Evening peak: ~800W
       const hour = new Date().getHours();
       let baseLoad = 300;
       if (hour >= 6 && hour < 9) baseLoad = 500;
       else if (hour >= 9 && hour < 17) baseLoad = 350;
       else if (hour >= 17 && hour < 22) baseLoad = 800;
       else baseLoad = 200;
-      // Add slight randomness
       baseLoad = Math.round(baseLoad + (Math.random() - 0.5) * 60);
 
+      // Check power source preference
+      const userPref = await pool.query("SELECT power_source FROM users WHERE id = $1", [req.user.id]);
+      const powerSource = userPref.rows[0]?.power_source || "grid";
+
       const battOnly = await pool.query(
-        `SELECT
-           NULL AS inverter_id, 'battery' AS type, NULL AS profile,
-           0 AS power_w, 0 AS dc_voltage, 0 AS dc_current, 230 AS ac_voltage,
-           0 AS ac_current, 50 AS frequency, 0 AS inverter_temp, 0 AS energy_kwh,
-           0 AS wind_speed, 0 AS rotor_rpm, 0 AS pitch_angle,
-           ${baseLoad} AS load_watts,
-           CASE WHEN COALESCE(br.power_w, 0) > 0 THEN COALESCE(br.power_w, 0) ELSE ${baseLoad} END AS grid_watts,
-           0 AS cloud_cover,
+        `SELECT b.id AS batt_id, b.capacity_kwh,
            br.state_of_charge, br.voltage AS battery_voltage,
            br.current AS battery_current, br.temperature AS battery_temp,
            br.power_w AS battery_power, br.recorded_at
@@ -116,7 +111,57 @@ router.get("/readings/latest", authenticateToken, async (req, res) => {
          WHERE b.user_id = $1`,
         [req.user.id],
       );
-      rows = battOnly.rows;
+
+      if (battOnly.rows.length > 0) {
+        const br = battOnly.rows[0];
+        const soc = parseFloat(br.state_of_charge) || 0;
+        const capKwh = parseFloat(br.capacity_kwh) || 10;
+        const battVolt = 48 + (soc / 100) * 6;
+
+        let gridW = baseLoad;
+        let battPower = 0;
+        let newSoc = soc;
+
+        if (powerSource === "battery" && soc > 0) {
+          // Battery mode: battery powers the house, drain SOC
+          gridW = 0;
+          battPower = -baseLoad; // negative = discharging
+          // Drain: baseLoad watts for 30 seconds (poll interval)
+          const drainKwh = (baseLoad / 1000) * (30 / 3600); // W to kWh for 30s
+          newSoc = Math.max(0, soc - (drainKwh / capKwh) * 100);
+
+          // Write new battery reading with decreased SOC
+          await pool.query(
+            `INSERT INTO battery_readings (battery_id, state_of_charge, voltage, current, temperature, power_w, recorded_at)
+             VALUES ($1, $2, $3, $4, $5, $6, NOW())`,
+            [br.batt_id, newSoc.toFixed(2), battVolt.toFixed(2), (baseLoad / battVolt).toFixed(2), br.battery_temp || 25, battPower]
+          );
+
+          // Auto-switch back to grid if battery is empty
+          if (newSoc <= 0) {
+            await pool.query("UPDATE users SET power_source = 'grid' WHERE id = $1", [req.user.id]);
+          }
+        }
+
+        rows = [{
+          inverter_id: null, type: "battery", profile: null,
+          power_w: 0, dc_voltage: battVolt.toFixed(1), dc_current: 0, ac_voltage: 230,
+          ac_current: 0, frequency: 50, inverter_temp: 0, energy_kwh: 0,
+          wind_speed: 0, rotor_rpm: 0, pitch_angle: 0,
+          load_watts: baseLoad,
+          grid_watts: gridW,
+          cloud_cover: 0,
+          state_of_charge: newSoc,
+          battery_voltage: battVolt.toFixed(2),
+          battery_current: battPower !== 0 ? (baseLoad / battVolt).toFixed(2) : 0,
+          battery_temp: br.battery_temp || 25,
+          battery_power: battPower,
+          recorded_at: new Date().toISOString(),
+          power_source: powerSource,
+        }];
+      } else {
+        rows = [];
+      }
     }
 
     const solar      = rows.filter((r) => r.type === "solar");
