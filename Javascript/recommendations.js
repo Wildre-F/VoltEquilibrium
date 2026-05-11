@@ -161,11 +161,20 @@ async function loadMaintenanceHealth() {
   const json = await apiFetch("/api/inverter/maintenance/health");
 
   if (!json || !json.success || !json.data) {
-    document.getElementById("mh-efficiency").textContent = "N/A";
-    document.getElementById("mh-status-text").textContent = json?.message || "No inverters found";
-    document.getElementById("mh-savings-lost").textContent = "R0.00";
-    const badge = document.getElementById("mh-status-badge");
-    if (badge) badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-surface-container text-on-surface-variant";
+    const widget = document.getElementById("mh-widget");
+    if (widget) {
+      widget.innerHTML = `
+        <div class="flex items-center gap-2 mb-4">
+          <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">battery_charging_full</span>
+          <h2 class="text-sm font-bold font-headline text-on-surface">System Health</h2>
+        </div>
+        <div class="text-center py-6">
+          <span class="material-symbols-outlined text-3xl text-primary/30 block mb-3" style="font-variation-settings:'FILL' 1;">electric_bolt</span>
+          <p class="text-sm font-semibold text-on-surface font-headline">Battery-only system</p>
+          <p class="text-xs text-on-surface-variant font-body mt-1">Panel health monitoring is available for solar and wind users. Your battery health is tracked on the Dashboard.</p>
+          <a href="Dashboard.html" class="inline-block mt-3 text-xs text-primary font-bold font-label hover:underline">Go to Dashboard</a>
+        </div>`;
+    }
     return;
   }
 
