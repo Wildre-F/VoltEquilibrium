@@ -153,114 +153,63 @@ document.getElementById("recs-help-btn")?.addEventListener("click", openHelp);
 document.getElementById("recs-help-close")?.addEventListener("click", closeHelp);
 
 // ═══════════════════════════════════════════════════════════════════════════
-// Maintenance Health (reuses /api/inverter/efficiency endpoint)
+// Maintenance Health (real-time via /api/inverter/maintenance/health)
+// Compares live actual output vs expected output using current weather
 // ═══════════════════════════════════════════════════════════════════════════
 
-const MH_CLOUD_MAX     = 0.8;
-const MH_TEMP_BASE     = 25;
-const MH_TEMP_COEFF    = 0.004;
-const MH_PEAK_SUN      = 5.5;
-const MH_RANDS_PER_KWH = 2.5;
-
-let mhSparkline = null;
-
 async function loadMaintenanceHealth() {
-  const json = await apiFetch("/api/inverter/efficiency?source=solar&days=30");
-  if (!json || !json.success || !json.data) return;
+  const json = await apiFetch("/api/inverter/maintenance/health");
+  if (!json || !json.success) return;
 
-  const { totalCapacity, daily } = json.data;
-  const capacity = (totalCapacity || 0) * 1000; // kW stored in DB, convert to W
-  if (!capacity || daily.length < 3) {
+  if (!json.data) {
     document.getElementById("mh-efficiency").textContent = "N/A";
-    document.getElementById("mh-status-text").textContent = "Not enough data (need 3+ days)";
+    document.getElementById("mh-status-text").textContent = "No inverters found";
     return;
   }
 
-  // Calculate daily efficiencies
-  const efficiencies = daily.map(d => {
-    const cF = 1 - (d.avgCloudCover / 100) * MH_CLOUD_MAX;
-    const tF = 1 - Math.max(0, (d.avgTemp - MH_TEMP_BASE) * MH_TEMP_COEFF);
-    const theorKwh = (capacity / 1000) * MH_PEAK_SUN * cF * tF;
-    return theorKwh > 0.01 ? Math.min(150, (d.dailyKwh / theorKwh) * 100) : null;
-  }).filter(e => e !== null);
-
-  if (efficiencies.length === 0) return;
-
-  const avgEff = efficiencies.reduce((a, b) => a + b, 0) / efficiencies.length;
+  const d = json.data;
+  const eff = d.overall_efficiency_pct;
 
   // Efficiency display
-  document.getElementById("mh-efficiency").textContent = `${avgEff.toFixed(0)}%`;
+  if (eff !== null) {
+    VE.animateNumber("mh-efficiency", eff, { decimals: 0, suffix: "%" });
+  } else {
+    document.getElementById("mh-efficiency").textContent = "N/A";
+  }
 
-  // Health status
+  // Health status badge
   const badge = document.getElementById("mh-status-badge");
   const icon = document.getElementById("mh-status-icon");
   const text = document.getElementById("mh-status-text");
 
-  if (avgEff >= 85) {
+  if (eff === null) {
+    badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-surface-container text-on-surface-variant";
+    icon.textContent = "info";
+    text.textContent = "No generation right now (nighttime or no sun/wind)";
+  } else if (d.alarm) {
+    badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-error/10 text-error";
+    icon.textContent = "warning";
+    text.textContent = "Panels underperforming. Check for soiling, shading, or faults.";
+  } else if (eff >= 85) {
     badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-tertiary/10 text-tertiary";
     icon.textContent = "check_circle";
-    text.textContent = "Panels are healthy — no action needed";
-  } else if (avgEff >= 70) {
+    text.textContent = "Panels are healthy. No action needed.";
+  } else if (eff >= 70) {
     badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-secondary/10 text-secondary";
-    icon.textContent = "warning";
-    text.textContent = "May need cleaning — dust or shading detected";
-  } else if (avgEff >= 50) {
+    icon.textContent = "info";
+    text.textContent = "Slightly below expected. Monitor for changes.";
+  } else {
     badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-error/10 text-error";
     icon.textContent = "error";
-    text.textContent = "Underperforming — check soiling or wiring";
-  } else {
-    badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-error/20 text-error";
-    icon.textContent = "dangerous";
-    text.textContent = "Possible fault — inspect panels immediately";
+    text.textContent = "Significant underperformance detected.";
   }
 
   // Savings lost
-  const avgTheoreticalDaily = daily.reduce((sum, d) => {
-    const cF = 1 - (d.avgCloudCover / 100) * MH_CLOUD_MAX;
-    const tF = 1 - Math.max(0, (d.avgTemp - MH_TEMP_BASE) * MH_TEMP_COEFF);
-    return sum + (capacity / 1000) * MH_PEAK_SUN * cF * tF;
-  }, 0) / daily.length;
-  const avgActualDaily = daily.reduce((sum, d) => sum + d.dailyKwh, 0) / daily.length;
-  const missedKwhPerDay = Math.max(0, avgTheoreticalDaily - avgActualDaily);
-  const monthlySavingsLost = missedKwhPerDay * 30 * MH_RANDS_PER_KWH;
-  document.getElementById("mh-savings-lost").textContent = `R${monthlySavingsLost.toFixed(0)}/mo`;
-
-  // Mini sparkline
-  const labels = daily.map((d, i) => i);
-  const sparkData = daily.map(d => {
-    const cF = 1 - (d.avgCloudCover / 100) * MH_CLOUD_MAX;
-    const tF = 1 - Math.max(0, (d.avgTemp - MH_TEMP_BASE) * MH_TEMP_COEFF);
-    const theorKwh = (capacity / 1000) * MH_PEAK_SUN * cF * tF;
-    return theorKwh > 0.01 ? Math.min(150, (d.dailyKwh / theorKwh) * 100) : null;
-  });
-
-  const datasets = [{
-    data: sparkData,
-    borderColor: avgEff >= 85 ? "#005147" : avgEff >= 70 ? "#005db6" : "#ba1a1a",
-    backgroundColor: (avgEff >= 85 ? "#005147" : avgEff >= 70 ? "#005db6" : "#ba1a1a") + "22",
-    borderWidth: 1.5, pointRadius: 0, tension: 0.3, fill: true,
-  }];
-
-  if (mhSparkline) {
-    mhSparkline.data.labels = labels;
-    mhSparkline.data.datasets = datasets;
-    mhSparkline.update();
-  } else {
-    const canvas = document.getElementById("mh-sparkline");
-    if (!canvas) return;
-    mhSparkline = new Chart(canvas.getContext("2d"), {
-      type: "line",
-      data: { labels, datasets },
-      options: {
-        responsive: true,
-        plugins: { legend: { display: false }, tooltip: { enabled: false } },
-        scales: { x: { display: false }, y: { display: false, suggestedMin: 40, suggestedMax: 120 } },
-      },
-    });
-  }
+  VE.animateNumber("mh-savings-lost", d.total_financial_loss_rand, { decimals: 2, prefix: "R", suffix: " today" });
 }
 
 // ── Init + poll ──────────────────────────────────────────────────────────────
 loadApplianceShift();
 loadMaintenanceHealth();
 setInterval(loadApplianceShift, 30000);
+setInterval(loadMaintenanceHealth, 30000);

@@ -435,4 +435,156 @@ router.get("/analytics/export", authenticateToken, async (req, res) => {
   }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// Maintenance Health Scorecard (integrated from feature/predictions branch)
+// Real-time actual vs expected output with financial loss calculation
+// ═══════════════════════════════════════════════════════════════════════════════
+
+const fetch = require("node-fetch");
+const maintenanceWeatherCache = {};
+
+async function fetchWeatherForLatLng(lat, lng) {
+  const key = `${lat},${lng}`;
+  const now = Date.now();
+  if (maintenanceWeatherCache[key] && now - maintenanceWeatherCache[key].fetchedAt < 15 * 60 * 1000) {
+    return maintenanceWeatherCache[key].data;
+  }
+  const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current=cloud_cover,wind_speed_10m,temperature_2m&timezone=auto`;
+  const response = await fetch(url);
+  const data = await response.json();
+  maintenanceWeatherCache[key] = {
+    fetchedAt: now,
+    data: {
+      cloudCover: data.current.cloud_cover,
+      windSpeed: data.current.wind_speed_10m,
+      temperature: data.current.temperature_2m,
+      timezone: data.timezone,
+    },
+  };
+  return maintenanceWeatherCache[key].data;
+}
+
+function calcSolarExpected(capacityKw, localHour, cloudCover, temperature) {
+  if (localHour < 6 || localHour > 19) return 0;
+  const timeMultiplier = Math.sin(((localHour - 6) * Math.PI) / 13);
+  const cloudMultiplier = 1 - (cloudCover / 100) * 0.8;
+  const tempMultiplier = 1 - Math.max(0, (temperature - 25) * 0.004);
+  return capacityKw * 1000 * timeMultiplier * cloudMultiplier * tempMultiplier;
+}
+
+function calcWindExpected(capacityKw, windSpeed) {
+  const CUT_IN = 3, RATED = 12, CUT_OUT = 20;
+  if (windSpeed < CUT_IN || windSpeed >= CUT_OUT) return 0;
+  if (windSpeed >= RATED) return capacityKw * 1000;
+  return capacityKw * 1000 * Math.pow(windSpeed / RATED, 3);
+}
+
+// GET /api/inverter/maintenance/health
+router.get("/maintenance/health", authenticateToken, async (req, res) => {
+  try {
+    const userResult = await pool.query(
+      "SELECT lat, lng FROM users WHERE id = $1",
+      [req.user.id]
+    );
+    const user = userResult.rows[0];
+
+    if (!user?.lat || !user?.lng) {
+      return res.status(400).json({ success: false, message: "Location not set. Please configure your location in profile." });
+    }
+
+    const invertersResult = await pool.query(
+      "SELECT id, type, capacity FROM inverters WHERE user_id = $1",
+      [req.user.id]
+    );
+
+    if (invertersResult.rows.length === 0) {
+      return res.status(200).json({ success: true, data: null });
+    }
+
+    const weather = await fetchWeatherForLatLng(parseFloat(user.lat), parseFloat(user.lng));
+
+    const localHour = parseInt(
+      new Intl.DateTimeFormat("en-US", {
+        hour: "numeric",
+        hour12: false,
+        timeZone: weather.timezone || "UTC",
+      }).format(new Date())
+    );
+
+    let totalActualW = 0;
+    let totalExpectedW = 0;
+    const inverters = [];
+
+    for (const inverter of invertersResult.rows) {
+      const readingResult = await pool.query(
+        `SELECT power_w, energy_kwh FROM raw_readings
+         WHERE inverter_id = $1
+         ORDER BY recorded_at DESC
+         LIMIT 1`,
+        [inverter.id]
+      );
+
+      const actual_w = parseFloat(readingResult.rows[0]?.power_w ?? 0);
+      const actual_kwh_today = parseFloat(readingResult.rows[0]?.energy_kwh ?? 0);
+
+      let expected_w = 0;
+      if (inverter.type === "solar") {
+        expected_w = calcSolarExpected(inverter.capacity, localHour, weather.cloudCover, weather.temperature);
+      } else if (inverter.type === "wind") {
+        expected_w = calcWindExpected(inverter.capacity, weather.windSpeed);
+      }
+
+      const efficiency_pct = expected_w > 0
+        ? Math.min(100, (actual_w / expected_w) * 100)
+        : null;
+
+      const lost_kwh_today = (efficiency_pct !== null && efficiency_pct > 0 && actual_kwh_today > 0)
+        ? actual_kwh_today * (100 - efficiency_pct) / efficiency_pct
+        : 0;
+
+      totalActualW += actual_w;
+      totalExpectedW += expected_w;
+
+      inverters.push({
+        id: inverter.id,
+        type: inverter.type,
+        capacity_kw: inverter.capacity,
+        actual_w: parseFloat(actual_w.toFixed(2)),
+        expected_w: parseFloat(expected_w.toFixed(2)),
+        efficiency_pct: efficiency_pct !== null ? parseFloat(efficiency_pct.toFixed(1)) : null,
+        alarm: efficiency_pct !== null && efficiency_pct < 70,
+        lost_kwh_today: parseFloat(lost_kwh_today.toFixed(3)),
+        financial_loss_rand: parseFloat((lost_kwh_today * RANDS_PER_KWH).toFixed(2)),
+      });
+    }
+
+    const overall_efficiency = totalExpectedW > 0
+      ? parseFloat(Math.min(100, (totalActualW / totalExpectedW) * 100).toFixed(1))
+      : null;
+
+    const total_lost_kwh = parseFloat(inverters.reduce((s, i) => s + i.lost_kwh_today, 0).toFixed(3));
+    const total_financial_loss = parseFloat((total_lost_kwh * RANDS_PER_KWH).toFixed(2));
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        overall_efficiency_pct: overall_efficiency,
+        alarm: overall_efficiency !== null && overall_efficiency < 70,
+        total_lost_kwh_today: total_lost_kwh,
+        total_financial_loss_rand: total_financial_loss,
+        electricity_rate_rand: RANDS_PER_KWH,
+        weather: {
+          cloudCover: weather.cloudCover,
+          windSpeed: weather.windSpeed,
+          temperature: weather.temperature,
+        },
+        inverters,
+      },
+    });
+  } catch (error) {
+    console.error("Maintenance health error:", error.message);
+    return res.status(500).json({ success: false, message: "Error calculating maintenance health" });
+  }
+});
+
 module.exports = router;

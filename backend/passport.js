@@ -26,19 +26,23 @@ async function findOrCreateUser(email, username) {
     return result.rows[0];
 }
 
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: '/auth/google/callback'
-}, async (accessToken, refreshToken, profile, done) => {
-    try {
-        const email = profile.emails[0].value;
-        const username = profile.displayName;
-        const user = await findOrCreateUser(email, username);
-        done(null, user);
-    } catch (error) {
-        done(error, null);
-    }
-}));
+// Google OAuth is optional — only registered when credentials are present in .env.
+// Without them the server still starts and email/password login works normally.
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: '/auth/google/callback'
+    }, async (accessToken, refreshToken, profile, done) => {
+        try {
+            const email = profile.emails[0].value;
+            const username = profile.displayName;
+            const user = await findOrCreateUser(email, username);
+            done(null, user);
+        } catch (error) {
+            done(error, null);
+        }
+    }));
+}
 
 module.exports = passport;

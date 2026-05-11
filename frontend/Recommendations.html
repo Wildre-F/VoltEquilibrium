@@ -247,11 +247,12 @@
             <!-- 6-hour forecast removed — available on Dashboard weather widget -->
           </div>
 
-          <!-- ════ Maintenance Health (LIVE) ════ -->
+          <!-- ════ Maintenance Health (LIVE — real-time actual vs expected) ════ -->
           <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-6">
             <div class="flex items-center gap-2 mb-4">
               <span class="material-symbols-outlined text-primary" style="font-variation-settings:'FILL' 1;">health_and_safety</span>
               <h2 class="text-sm font-bold font-headline text-on-surface">Maintenance Health</h2>
+              <span class="text-[9px] font-label text-on-surface-variant/50 ml-auto">Live</span>
             </div>
 
             <!-- Health status badge -->
@@ -263,21 +264,15 @@
             <!-- Efficiency % -->
             <div class="bg-surface-container-low rounded-xl p-4 mb-3 text-center">
               <p id="mh-efficiency" class="text-3xl font-extrabold font-headline text-primary">—</p>
-              <p class="text-[10px] font-label text-on-surface-variant mt-1">Panel Efficiency (30-day avg)</p>
+              <p class="text-[10px] font-label text-on-surface-variant mt-1">Real-time Panel Efficiency</p>
             </div>
 
             <!-- Savings lost -->
-            <div class="bg-surface-container-low rounded-xl p-4 mb-3">
+            <div class="bg-surface-container-low rounded-xl p-4">
               <div class="flex justify-between items-center">
                 <span class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Savings Lost</span>
-                <span id="mh-savings-lost" class="text-sm font-extrabold font-headline text-error">R—/mo</span>
+                <span id="mh-savings-lost" class="text-sm font-extrabold font-headline text-error">R—</span>
               </div>
-            </div>
-
-            <!-- Mini sparkline -->
-            <div>
-              <p class="text-[9px] font-label text-on-surface-variant uppercase tracking-widest mb-1">30-Day Trend</p>
-              <canvas id="mh-sparkline" height="50"></canvas>
             </div>
           </div>
 
