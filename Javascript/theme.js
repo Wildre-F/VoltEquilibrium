@@ -166,8 +166,6 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // 6. Browser notification polling for community activity
   (function initBrowserNotifications() {
-    var enabled = localStorage.getItem("ve-browser-notifs") === "true";
-    if (!enabled) return;
     if (!("Notification" in window)) return;
 
     var token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
@@ -175,9 +173,14 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
       ? "http://localhost:3000" : "";
-    var lastNotifId = parseInt(localStorage.getItem("ve-last-notif-id") || "0");
 
     function checkForNew() {
+      // Re-check enabled state every poll (user might toggle it on another tab/page)
+      if (localStorage.getItem("ve-browser-notifs") !== "true") return;
+      if (Notification.permission !== "granted") return;
+
+      var lastNotifId = parseInt(localStorage.getItem("ve-last-notif-id") || "0");
+
       fetch(API + "/api/notifications", { headers: { Authorization: "Bearer " + token } })
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -185,24 +188,19 @@ document.addEventListener("DOMContentLoaded", function() {
           var newest = data.data[0];
           var newestId = newest.id;
           if (newestId > lastNotifId && lastNotifId > 0) {
-            // New notification since last check
-            if (Notification.permission === "granted") {
-              var n = new Notification(newest.title || "VoltEquilibrium", {
-                body: newest.message || "New community activity in your area.",
-                icon: "../favicon.svg",
-                tag: "ve-notif-" + newestId,
-              });
-              n.onclick = function() { window.focus(); window.location.href = "Notifications.html"; };
-            }
+            new Notification(newest.title || "VoltEquilibrium", {
+              body: newest.message || "New community activity in your area.",
+              icon: "../favicon.svg",
+              tag: "ve-notif-" + newestId,
+            }).onclick = function() { window.focus(); window.location.href = "Notifications.html"; };
           }
-          lastNotifId = newestId;
           localStorage.setItem("ve-last-notif-id", String(newestId));
         })
         .catch(function() {});
     }
 
-    // Poll every 30 seconds
+    // Poll every 15 seconds for faster notification delivery
     checkForNew();
-    setInterval(checkForNew, 30000);
+    setInterval(checkForNew, 15000);
   })();
 });
