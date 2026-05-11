@@ -385,6 +385,14 @@
               <p class="text-[10px] font-label text-on-surface-variant mt-1">10-Year Net Savings</p>
             </div>
           </div>
+          <!-- Actual progress toward payback -->
+          <div id="roi-progress" class="hidden mb-4 bg-primary/5 rounded-xl p-4">
+            <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-2">Your Actual Progress</p>
+            <div class="w-full h-3 bg-surface-container rounded-full overflow-hidden mb-2">
+              <div id="roi-progress-bar" class="h-full bg-primary rounded-full transition-all duration-700" style="width:0%"></div>
+            </div>
+            <p id="roi-progress-text" class="text-xs text-on-surface font-body"></p>
+          </div>
           <canvas id="roi-chart"></canvas>
         </div>
       </div>

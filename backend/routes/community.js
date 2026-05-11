@@ -323,9 +323,9 @@ router.get("/requests", authenticateToken, async (req, res) => {
 
 router.post("/requests", authenticateToken, async (req, res) => {
   try {
-    const { amount_kwh } = req.body;
-    if (!amount_kwh || amount_kwh <= 0) {
-      return res.status(400).json({ success: false, message: "amount_kwh must be greater than 0" });
+    const amount_kwh = parseFloat(req.body.amount_kwh);
+    if (!amount_kwh || amount_kwh <= 0 || isNaN(amount_kwh)) {
+      return res.status(400).json({ success: false, message: "Please enter an amount greater than 0 kWh. Your battery may already be full." });
     }
 
     const requestable = await getUserRequestableKwh(req.user.id);

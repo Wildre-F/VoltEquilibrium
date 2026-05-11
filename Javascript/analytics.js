@@ -525,8 +525,11 @@ async function calculateROI() {
     return;
   }
 
-  // Fetch real generation data
-  const co2Json = await apiFetch("/api/co2");
+  // Fetch real generation data + wallet transactions for actual revenue
+  const [co2Json, walletJson] = await Promise.all([
+    apiFetch("/api/co2"),
+    apiFetch("/api/wallet/transactions"),
+  ]);
   if (!co2Json || !co2Json.success) return;
 
   // Use 30-day history for a reliable daily average
@@ -536,6 +539,16 @@ async function calculateROI() {
   const avgDailyKwh = daysWithData.length > 0
     ? totalHistoryKwh / daysWithData.length
     : (co2Json.data.todayKwh || 0);
+
+  // Calculate actual revenue from energy sales
+  let actualRevenue = 0;
+  let actualSavings = co2Json.data.lifetimeRands || 0;
+  if (walletJson?.success && walletJson.data) {
+    actualRevenue = walletJson.data
+      .filter(tx => tx.type === "transfer" && tx.direction === "credit")
+      .reduce((sum, tx) => sum + parseFloat(tx.amount), 0);
+  }
+  const totalActualEarned = actualSavings + actualRevenue;
 
   if (avgDailyKwh <= 0) {
     document.getElementById("roi-payback").textContent  = "N/A";
@@ -585,10 +598,22 @@ async function calculateROI() {
 
   const tenYearNet = cumulative - cost;
 
+  VE.animateNumber("roi-payback-val", 0, { decimals: 0 }); // placeholder
   document.getElementById("roi-payback").textContent  = paybackText;
   document.getElementById("roi-monthly").textContent   = `R${monthlySavings.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   document.getElementById("roi-ten-year").textContent  = `R${tenYearNet.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",")}`;
   document.getElementById("roi-results").classList.remove("hidden");
+
+  // Show actual progress toward payback
+  const progressEl = document.getElementById("roi-progress");
+  if (progressEl) {
+    const pct = Math.min(100, (totalActualEarned / cost) * 100);
+    progressEl.classList.remove("hidden");
+    document.getElementById("roi-progress-bar").style.width = `${pct}%`;
+    document.getElementById("roi-progress-text").textContent =
+      `R${totalActualEarned.toFixed(0)} earned so far (${pct.toFixed(1)}% of R${cost.toFixed(0)})` +
+      (actualRevenue > 0 ? ` including R${actualRevenue.toFixed(0)} from energy sales` : "");
+  }
 
   renderROIChart(projection, cost);
 }
