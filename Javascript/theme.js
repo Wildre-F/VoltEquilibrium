@@ -11,7 +11,7 @@
 
 // 1. Apply saved theme immediately (no flash of wrong theme)
 (function(){
-  var s = localStorage.getItem("voltequilibrium-theme");
+  var s = sessionStorage.getItem("voltequilibrium-theme") || localStorage.getItem("voltequilibrium-theme");
   var p = window.matchMedia("(prefers-color-scheme:dark)").matches;
   if (s === "dark" || (!s && p)) {
     document.documentElement.classList.add("dark");
@@ -109,11 +109,11 @@ document.addEventListener("DOMContentLoaded", function() {
     if (d) {
       document.documentElement.classList.replace("dark", "light");
       document.getElementById("theme-icon").textContent = "dark_mode";
-      localStorage.setItem("voltequilibrium-theme", "light");
+      sessionStorage.setItem("voltequilibrium-theme", "light"); localStorage.setItem("voltequilibrium-theme", "light");
     } else {
       document.documentElement.classList.replace("light", "dark");
       document.getElementById("theme-icon").textContent = "light_mode";
-      localStorage.setItem("voltequilibrium-theme", "dark");
+      sessionStorage.setItem("voltequilibrium-theme", "dark"); localStorage.setItem("voltequilibrium-theme", "dark");
     }
   });
 
