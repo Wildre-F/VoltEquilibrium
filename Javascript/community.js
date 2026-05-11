@@ -578,7 +578,7 @@
   // ── Boot ───────────────────────────────────────────────────────────────────
   loadBatteryMeta();
   loadStatus();
-  loadTab("donations");
+  loadTab(activeTab);
   loadMyListings();
   setInterval(loadStatus, 60000); // refresh status every minute
 })();
