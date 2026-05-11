@@ -60,7 +60,36 @@ router.get("/co2", authenticateToken, async (req, res) => {
       [userId],
     );
 
-    const lifetimeKwh = parseFloat(lifetimeResult.rows[0].lifetime_kwh) || 0;
+    let lifetimeKwh = parseFloat(lifetimeResult.rows[0].lifetime_kwh) || 0;
+
+    // For battery-only users (no inverters), count clean energy received from community
+    // This only counts energy from solar/wind users (donations + purchases), NOT Eskom charging
+    const communityCleanResult = await pool.query(
+      `SELECT COALESCE(SUM(amount_kwh), 0) AS clean_kwh FROM (
+        SELECT amount_kwh FROM energy_requests WHERE user_id = $1 AND is_filled = TRUE
+        UNION ALL
+        SELECT amount_kwh FROM energy_sales WHERE filled_by_user_id = $1 AND is_filled = TRUE
+       ) t`,
+      [userId],
+    );
+    const communityCleanKwh = parseFloat(communityCleanResult.rows[0].clean_kwh) || 0;
+
+    // If user has no inverter generation, use community clean energy as their CO2 source
+    if (lifetimeKwh === 0 && communityCleanKwh > 0) {
+      lifetimeKwh = communityCleanKwh;
+    }
+
+    // Today's community clean energy (received today)
+    const todayCommunityResult = await pool.query(
+      `SELECT COALESCE(SUM(amount_kwh), 0) AS clean_kwh FROM (
+        SELECT amount_kwh FROM energy_requests WHERE user_id = $1 AND is_filled = TRUE AND created_at >= DATE_TRUNC('day', NOW())
+        UNION ALL
+        SELECT amount_kwh FROM energy_sales WHERE filled_by_user_id = $1 AND is_filled = TRUE AND created_at >= DATE_TRUNC('day', NOW())
+       ) t`,
+      [userId],
+    );
+    const todayCommunityKwh = parseFloat(todayCommunityResult.rows[0].clean_kwh) || 0;
+    const finalTodayKwh = todayKwh > 0 ? todayKwh : todayCommunityKwh;
 
     // 30-day history — one row per day (gaps filled with 0 via generate_series)
     const historyResult = await pool.query(
@@ -96,9 +125,10 @@ router.get("/co2", authenticateToken, async (req, res) => {
         lifetimeKwh:   parseFloat(lifetimeKwh.toFixed(3)),
         lifetimeCo2Kg: parseFloat((lifetimeKwh * CO2_KG_PER_KWH).toFixed(3)),
         lifetimeRands: parseFloat((lifetimeKwh * RANDS_PER_KWH).toFixed(2)),
-        todayKwh:      parseFloat(todayKwh.toFixed(3)),
-        todayCo2Kg:    parseFloat((todayKwh * CO2_KG_PER_KWH).toFixed(3)),
-        todayRands:    parseFloat((todayKwh * RANDS_PER_KWH).toFixed(2)),
+        todayKwh:      parseFloat(finalTodayKwh.toFixed(3)),
+        todayCo2Kg:    parseFloat((finalTodayKwh * CO2_KG_PER_KWH).toFixed(3)),
+        todayRands:    parseFloat((finalTodayKwh * RANDS_PER_KWH).toFixed(2)),
+        communityCleanKwh: parseFloat(communityCleanKwh.toFixed(3)),
         history: historyResult.rows.map((row) => ({
           date:       row.date,
           kwh:        parseFloat(parseFloat(row.kwh).toFixed(3)),

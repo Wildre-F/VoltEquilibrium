@@ -92,6 +92,7 @@ async function loadApplianceShift() {
   const gridW = parseFloat(d.grid_watts) || 0;
   const cloud = parseFloat(d.cloud_cover) || 0;
   const isBatteryOnly = d.type === "battery";
+  const usingBattery = d.power_source === "battery" || localStorage.getItem("ve-power-source") === "battery";
 
   const light = getTrafficLight(soc, genW, cloud, isBatteryOnly);
   const fmt = (w) => w >= 1000 ? `${(w / 1000).toFixed(1)} kW` : `${Math.round(w)} W`;
@@ -115,13 +116,19 @@ async function loadApplianceShift() {
     iconEl.style.color = light.bg;
   }
   const msgEl = document.getElementById("shift-message");
-  if (msgEl) msgEl.textContent = light.message;
+  if (msgEl) {
+    if (usingBattery && isBatteryOnly) {
+      msgEl.textContent = `Running on battery power (${soc.toFixed(0)}% remaining). ${soc < 20 ? "Battery low, consider switching to Eskom." : "Your stored clean energy is powering your home."}`;
+    } else {
+      msgEl.textContent = light.message;
+    }
+  }
 
   // Update stats
   document.getElementById("shift-soc").textContent = `${soc.toFixed(0)}%`;
   document.getElementById("shift-gen").textContent = fmt(genW);
   document.getElementById("shift-load").textContent = fmt(loadW);
-  document.getElementById("shift-grid").textContent = gridW > 0 ? fmt(gridW) : "0 W";
+  document.getElementById("shift-grid").textContent = usingBattery ? "Off" : (gridW > 0 ? fmt(gridW) : "0 W");
 
   // Update SOC bar
   const socBar = document.getElementById("shift-soc-bar");
