@@ -7,7 +7,6 @@ const API = (window.location.hostname === "localhost" || window.location.hostnam
   ? "http://localhost:3000" : "";
 
 // ── Dark mode handled by theme.js ─────────────────────────────────────────
-})();
 
 // ── Help modal definitions ─────────────────────────────────────────────────
 const HELP_TILES = [

@@ -9,68 +9,62 @@ router.get("/summary", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
 
-    // Per-inverter: name, type, profile, serial, firmware, today's totals, live reading
-    const inverterResult = await pool.query(
-      `SELECT
-         i.id, i.name, i.type, i.profile, i.capacity,
-         i.serial_number, i.firmware_version,
-         COALESCE(SUM(rr.power_w) FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)           AS today_sum_power,
-         COUNT(rr.id)            FILTER (WHERE rr.recorded_at >= CURRENT_DATE)                AS today_count,
-         COALESCE(MAX(rr.energy_kwh) FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)        AS today_kwh,
-         COALESCE(MAX(rr.load_kwh)   FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)        AS today_load_kwh,
-         COALESCE(MAX(rr.grid_kwh)   FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)        AS today_grid_kwh,
-         COALESCE(MAX(rr.power_w)    FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)        AS today_peak_w,
-         (SELECT rr2.power_w    FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_power_w,
-         (SELECT rr2.temperature FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_temp,
-         (SELECT rr2.wind_speed  FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_wind_speed,
-         (SELECT rr2.rotor_rpm   FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_rotor_rpm,
-         (SELECT rr2.pitch_angle FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_pitch_angle,
-         (SELECT rr2.recorded_at FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS last_seen
-       FROM inverters i
-       LEFT JOIN raw_readings rr ON rr.inverter_id = i.id
-       WHERE i.user_id = $1
-       GROUP BY i.id`,
-      [userId],
-    );
-
-    // Battery
-    const batteryResult = await pool.query(
-      `SELECT br.state_of_charge, br.voltage, br.current, br.temperature, br.power_w, br.recorded_at, b.capacity_kwh, b.name AS battery_name
-       FROM battery_readings br
-       JOIN batteries b ON b.id = br.battery_id
-       WHERE b.user_id = $1
-       ORDER BY br.recorded_at DESC LIMIT 1`,
-      [userId],
-    );
-
-    // Live solar readings
-    const liveSolarResult = await pool.query(
-      `SELECT rr.power_w, rr.dc_voltage, rr.dc_current, rr.ac_voltage, rr.frequency, rr.load_watts, rr.grid_kwh
-       FROM raw_readings rr
-       JOIN inverters i ON i.id = rr.inverter_id
-       WHERE i.user_id = $1 AND i.type = 'solar'
-       ORDER BY rr.recorded_at DESC LIMIT 1`,
-      [userId],
-    );
-
-    // Today averages for solar PV fields
-    const todaySolarAvgResult = await pool.query(
-      `SELECT AVG(rr.dc_voltage) AS avg_pv_volts, AVG(rr.dc_current) AS avg_pv_amps
-       FROM raw_readings rr
-       JOIN inverters i ON i.id = rr.inverter_id
-       WHERE i.user_id = $1 AND i.type = 'solar' AND rr.recorded_at >= CURRENT_DATE`,
-      [userId],
-    );
-
-    // Live wind readings
-    const liveWindResult = await pool.query(
-      `SELECT rr.power_w, rr.wind_speed, rr.rotor_rpm, rr.pitch_angle, rr.ac_voltage, rr.frequency, rr.load_watts, rr.grid_kwh
-       FROM raw_readings rr
-       JOIN inverters i ON i.id = rr.inverter_id
-       WHERE i.user_id = $1 AND i.type = 'wind'
-       ORDER BY rr.recorded_at DESC LIMIT 1`,
-      [userId],
-    );
+    // Run all independent queries in parallel for speed
+    const [inverterResult, batteryResult, liveSolarResult, todaySolarAvgResult, liveWindResult] = await Promise.all([
+      pool.query(
+        `SELECT
+           i.id, i.name, i.type, i.profile, i.capacity,
+           i.serial_number, i.firmware_version,
+           COALESCE(SUM(rr.power_w) FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)           AS today_sum_power,
+           COUNT(rr.id)            FILTER (WHERE rr.recorded_at >= CURRENT_DATE)                AS today_count,
+           COALESCE(MAX(rr.energy_kwh) FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)        AS today_kwh,
+           COALESCE(MAX(rr.load_kwh)   FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)        AS today_load_kwh,
+           COALESCE(MAX(rr.grid_kwh)   FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)        AS today_grid_kwh,
+           COALESCE(MAX(rr.power_w)    FILTER (WHERE rr.recorded_at >= CURRENT_DATE), 0)        AS today_peak_w,
+           (SELECT rr2.power_w    FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_power_w,
+           (SELECT rr2.temperature FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_temp,
+           (SELECT rr2.wind_speed  FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_wind_speed,
+           (SELECT rr2.rotor_rpm   FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_rotor_rpm,
+           (SELECT rr2.pitch_angle FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS live_pitch_angle,
+           (SELECT rr2.recorded_at FROM raw_readings rr2 WHERE rr2.inverter_id = i.id ORDER BY rr2.recorded_at DESC LIMIT 1) AS last_seen
+         FROM inverters i
+         LEFT JOIN raw_readings rr ON rr.inverter_id = i.id
+         WHERE i.user_id = $1
+         GROUP BY i.id`,
+        [userId]
+      ),
+      pool.query(
+        `SELECT br.state_of_charge, br.voltage, br.current, br.temperature, br.power_w, br.recorded_at, b.capacity_kwh, b.name AS battery_name
+         FROM battery_readings br
+         JOIN batteries b ON b.id = br.battery_id
+         WHERE b.user_id = $1
+         ORDER BY br.recorded_at DESC LIMIT 1`,
+        [userId]
+      ),
+      pool.query(
+        `SELECT rr.power_w, rr.dc_voltage, rr.dc_current, rr.ac_voltage, rr.frequency, rr.load_watts, rr.grid_kwh
+         FROM raw_readings rr
+         JOIN inverters i ON i.id = rr.inverter_id
+         WHERE i.user_id = $1 AND i.type = 'solar'
+         ORDER BY rr.recorded_at DESC LIMIT 1`,
+        [userId]
+      ),
+      pool.query(
+        `SELECT AVG(rr.dc_voltage) AS avg_pv_volts, AVG(rr.dc_current) AS avg_pv_amps
+         FROM raw_readings rr
+         JOIN inverters i ON i.id = rr.inverter_id
+         WHERE i.user_id = $1 AND i.type = 'solar' AND rr.recorded_at >= CURRENT_DATE`,
+        [userId]
+      ),
+      pool.query(
+        `SELECT rr.power_w, rr.wind_speed, rr.rotor_rpm, rr.pitch_angle, rr.ac_voltage, rr.frequency, rr.load_watts, rr.grid_kwh
+         FROM raw_readings rr
+         JOIN inverters i ON i.id = rr.inverter_id
+         WHERE i.user_id = $1 AND i.type = 'wind'
+         ORDER BY rr.recorded_at DESC LIMIT 1`,
+        [userId]
+      ),
+    ]);
 
     // Keep a combined live reading for shared grid/inverter fields (prefer solar, fall back to wind, then battery-only defaults)
     let liveElecResult = liveSolarResult.rows.length > 0 ? liveSolarResult : liveWindResult;
