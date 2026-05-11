@@ -156,6 +156,15 @@ ALTER TABLE energy_sales    ADD COLUMN IF NOT EXISTS comment        VARCHAR(500)
 ALTER TABLE energy_requests ADD COLUMN IF NOT EXISTS comment        VARCHAR(500);
 ALTER TABLE energy_requests ADD COLUMN IF NOT EXISTS donor_comment  VARCHAR(500);
 
+-- ── Performance Indexes ──────────────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_raw_readings_inverter_recorded ON raw_readings(inverter_id, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_battery_readings_battery_recorded ON battery_readings(battery_id, recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_raw_readings_recorded ON raw_readings(recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_energy_sales_filled ON energy_sales(is_filled, user_id);
+CREATE INDEX IF NOT EXISTS idx_energy_requests_filled ON energy_requests(is_filled, user_id);
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user ON wallet_transactions(user_id, created_at DESC);
+
 -- ── Wallets ────────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS wallets (
     id         SERIAL PRIMARY KEY,
