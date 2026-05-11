@@ -163,4 +163,46 @@ document.addEventListener("DOMContentLoaded", function() {
       window.location.replace("../frontend/login.html");
     });
   });
+
+  // 6. Browser notification polling for community activity
+  (function initBrowserNotifications() {
+    var enabled = localStorage.getItem("ve-browser-notifs") === "true";
+    if (!enabled) return;
+    if (!("Notification" in window)) return;
+
+    var token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
+    if (!token) return;
+
+    var API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
+      ? "http://localhost:3000" : "";
+    var lastNotifId = parseInt(sessionStorage.getItem("ve-last-notif-id") || "0");
+
+    function checkForNew() {
+      fetch(API + "/api/notifications", { headers: { Authorization: "Bearer " + token } })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.success || !data.data || !data.data.length) return;
+          var newest = data.data[0];
+          var newestId = newest.id;
+          if (newestId > lastNotifId && lastNotifId > 0) {
+            // New notification since last check
+            if (Notification.permission === "granted") {
+              var n = new Notification("VoltEquilibrium", {
+                body: newest.title || newest.message || "New community activity",
+                icon: "../favicon.svg",
+                tag: "ve-notif-" + newestId,
+              });
+              n.onclick = function() { window.focus(); window.location.href = "Notifications.html"; };
+            }
+          }
+          lastNotifId = newestId;
+          sessionStorage.setItem("ve-last-notif-id", String(newestId));
+        })
+        .catch(function() {});
+    }
+
+    // Poll every 30 seconds
+    checkForNew();
+    setInterval(checkForNew, 30000);
+  })();
 });
