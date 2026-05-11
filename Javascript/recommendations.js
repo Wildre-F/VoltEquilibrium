@@ -159,11 +159,13 @@ document.getElementById("recs-help-close")?.addEventListener("click", closeHelp)
 
 async function loadMaintenanceHealth() {
   const json = await apiFetch("/api/inverter/maintenance/health");
-  if (!json || !json.success) return;
 
-  if (!json.data) {
+  if (!json || !json.success || !json.data) {
     document.getElementById("mh-efficiency").textContent = "N/A";
-    document.getElementById("mh-status-text").textContent = "No inverters found";
+    document.getElementById("mh-status-text").textContent = json?.message || "No inverters found";
+    document.getElementById("mh-savings-lost").textContent = "R0.00";
+    const badge = document.getElementById("mh-status-badge");
+    if (badge) badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-surface-container text-on-surface-variant";
     return;
   }
 
@@ -186,6 +188,7 @@ async function loadMaintenanceHealth() {
     badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-surface-container text-on-surface-variant";
     icon.textContent = "info";
     text.textContent = "No generation right now (nighttime or no sun/wind)";
+    document.getElementById("mh-savings-lost").textContent = "R0.00 today";
   } else if (d.alarm) {
     badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-error/10 text-error";
     icon.textContent = "warning";
