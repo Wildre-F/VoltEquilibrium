@@ -95,7 +95,11 @@
 <body>
   <div class="splash-logo">VoltEquilibrium</div>
   <div class="splash-tagline">Powering a greener future</div>
-  <div class="splash-spinner"></div>
+  <div id="splash-lottie" style="width:80px;height:80px;"></div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+  <script>
+    lottie.loadAnimation({ container: document.getElementById("splash-lottie"), renderer: "svg", loop: true, autoplay: true, path: "../lottie/spinner.json" });
+  </script>
   <div class="splash-status" id="status">Connecting...</div>
   <div class="splash-bar"><div class="splash-bar-fill" id="bar"></div></div>
 
