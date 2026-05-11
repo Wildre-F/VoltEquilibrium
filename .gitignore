@@ -7,3 +7,16 @@ mosquitto/data/
 
 # Claude
 .claude/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Seed data (large JSON, generated locally)
+backend/seed-solar-large.json
