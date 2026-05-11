@@ -277,32 +277,42 @@
             </div>
           </div>
 
-          <!-- ════ Feature 3: Carbon to Action — PLACEHOLDER ════ -->
-          <div class="md:col-span-3 bg-surface-container-lowest rounded-2xl shadow-sm p-6 opacity-60">
+          <!-- ════ Carbon to Action Converter (LIVE) ════ -->
+          <div class="md:col-span-3 bg-surface-container-lowest rounded-2xl shadow-sm p-6">
             <div class="flex items-center gap-2 mb-4">
               <span class="material-symbols-outlined text-tertiary" style="font-variation-settings:'FILL' 1;">eco</span>
               <h2 class="text-sm font-bold font-headline text-on-surface">Carbon to Action Converter</h2>
-              <span class="ml-auto px-2.5 py-0.5 bg-surface-container rounded-full text-[10px] font-bold font-label text-on-surface-variant">Coming Soon - Data Science</span>
+              <span id="c2a-status" class="ml-auto text-[9px] font-label text-on-surface-variant/50"></span>
             </div>
-            <p class="text-xs text-on-surface-variant/60 font-body mb-4">
-              Converts your CO2 savings into real-world equivalents. Shows actionable tips like replacing 60W bulbs with 10W LEDs (saves ~0.05 kWh/hour = 0.046 kg CO2/hour) and tracks your progress toward sustainability milestones.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+            <!-- Main stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
               <div class="bg-surface-container-low rounded-xl p-4 text-center">
-                <span class="material-symbols-outlined text-2xl text-on-surface-variant/30 block mb-1">lightbulb</span>
-                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">LED Replacement Savings</p>
-                <p class="text-lg font-extrabold font-headline text-on-surface-variant/30 mt-1">— kg CO2</p>
+                <span class="material-symbols-outlined text-2xl text-tertiary block mb-1" style="font-variation-settings:'FILL' 1;">cloud_off</span>
+                <p id="c2a-co2" class="text-xl font-extrabold font-headline text-tertiary">-</p>
+                <p class="text-[10px] font-label text-on-surface-variant mt-1">kg CO2 Offset (Lifetime)</p>
               </div>
               <div class="bg-surface-container-low rounded-xl p-4 text-center">
-                <span class="material-symbols-outlined text-2xl text-on-surface-variant/30 block mb-1">park</span>
-                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Trees Equivalent</p>
-                <p class="text-lg font-extrabold font-headline text-on-surface-variant/30 mt-1">— trees</p>
+                <span class="material-symbols-outlined text-2xl text-primary block mb-1" style="font-variation-settings:'FILL' 1;">park</span>
+                <p id="c2a-trees" class="text-xl font-extrabold font-headline text-primary">-</p>
+                <p class="text-[10px] font-label text-on-surface-variant mt-1">Trees Equivalent</p>
               </div>
               <div class="bg-surface-container-low rounded-xl p-4 text-center">
-                <span class="material-symbols-outlined text-2xl text-on-surface-variant/30 block mb-1">tips_and_updates</span>
-                <p class="text-[10px] font-label text-on-surface-variant uppercase tracking-widest">Did You Know?</p>
-                <p class="text-sm text-on-surface-variant/30 font-body mt-1">Tips will appear here based on your savings milestones</p>
+                <span class="material-symbols-outlined text-2xl text-secondary block mb-1" style="font-variation-settings:'FILL' 1;">directions_car</span>
+                <p id="c2a-km" class="text-xl font-extrabold font-headline text-secondary">-</p>
+                <p class="text-[10px] font-label text-on-surface-variant mt-1">Car km Avoided</p>
               </div>
+              <div class="bg-surface-container-low rounded-xl p-4 text-center">
+                <span class="material-symbols-outlined text-2xl text-tertiary block mb-1" style="font-variation-settings:'FILL' 1;">lightbulb</span>
+                <p id="c2a-bulbs" class="text-xl font-extrabold font-headline text-tertiary">-</p>
+                <p class="text-[10px] font-label text-on-surface-variant mt-1">LED Bulbs (1 year)</p>
+              </div>
+            </div>
+
+            <!-- Did you know tip -->
+            <div id="c2a-tip" class="bg-tertiary/5 rounded-xl px-4 py-3 flex items-start gap-3">
+              <span class="material-symbols-outlined text-tertiary text-sm mt-0.5" style="font-variation-settings:'FILL' 1;">tips_and_updates</span>
+              <p class="text-xs text-on-surface font-body"><strong>Did you know?</strong> <span id="c2a-tip-text">Loading your carbon impact...</span></p>
             </div>
           </div>
 

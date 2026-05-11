@@ -215,8 +215,63 @@ async function loadMaintenanceHealth() {
   VE.animateNumber("mh-savings-lost", d.total_financial_loss_rand, { decimals: 2, prefix: "R", suffix: " today" });
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Carbon to Action Converter
+// Converts CO2 savings into real-world equivalents
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Conversion factors (sourced from EPA, IPCC)
+const C2A_KG_CO2_PER_TREE_PER_YEAR = 22;    // avg tree absorbs ~22 kg CO2/year
+const C2A_KG_CO2_PER_KM_CAR        = 0.21;  // avg car emits ~210g CO2/km
+const C2A_KWH_PER_LED_BULB_YEAR    = 10 * 8 * 365 / 1000; // 10W bulb, 8hrs/day, 1 year = 29.2 kWh
+const C2A_KG_CO2_PER_KWH           = 0.928; // SA grid factor
+
+const C2A_TIPS = [
+  { min: 0, tip: "Replacing a single 60W incandescent bulb with a 10W LED saves about 0.046 kg of CO2 per hour of use." },
+  { min: 10, tip: "You've offset the equivalent of driving a car for {km} km. Every kWh of solar replaces dirty coal power." },
+  { min: 50, tip: "Your {trees} tree equivalent is growing! A mature tree absorbs about 22 kg of CO2 per year." },
+  { min: 100, tip: "You've saved over 100 kg of CO2. That's like taking a car off the road for {km} km!" },
+  { min: 500, tip: "Half a tonne of CO2 offset! You're making a real difference to South Africa's carbon footprint." },
+  { min: 1000, tip: "Over 1 tonne of CO2 offset. That's equivalent to planting {trees} trees and letting them grow for a year." },
+  { min: 5000, tip: "5 tonnes of CO2! You're a climate champion. Your panels have avoided {km} km of car emissions." },
+];
+
+async function loadCarbonToAction() {
+  const json = await apiFetch("/api/co2");
+  if (!json || !json.success || !json.data) return;
+
+  const d = json.data;
+  const co2Kg = d.lifetimeCo2Kg || 0;
+  const lifetimeKwh = d.lifetimeKwh || 0;
+
+  // Calculate equivalents
+  const trees = co2Kg / C2A_KG_CO2_PER_TREE_PER_YEAR;
+  const carKm = co2Kg / C2A_KG_CO2_PER_KM_CAR;
+  const ledBulbs = lifetimeKwh / C2A_KWH_PER_LED_BULB_YEAR;
+
+  // Animate numbers
+  VE.animateNumber("c2a-co2", co2Kg, { decimals: 1 });
+  VE.animateNumber("c2a-trees", trees, { decimals: 1 });
+  VE.animateNumber("c2a-km", carKm, { decimals: 0 });
+  VE.animateNumber("c2a-bulbs", ledBulbs, { decimals: 0 });
+
+  // Pick the best tip based on CO2 amount
+  let tip = C2A_TIPS[0].tip;
+  for (const t of C2A_TIPS) {
+    if (co2Kg >= t.min) tip = t.tip;
+  }
+  tip = tip.replace("{km}", Math.round(carKm).toLocaleString()).replace("{trees}", trees.toFixed(1));
+
+  const tipEl = document.getElementById("c2a-tip-text");
+  if (tipEl) tipEl.textContent = tip;
+
+  const statusEl = document.getElementById("c2a-status");
+  if (statusEl) statusEl.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+}
+
 // ── Init + poll ──────────────────────────────────────────────────────────────
 loadApplianceShift();
+loadCarbonToAction();
 loadMaintenanceHealth();
 setInterval(loadApplianceShift, 30000);
 setInterval(loadMaintenanceHealth, 30000);
