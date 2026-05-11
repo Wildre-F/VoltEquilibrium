@@ -128,7 +128,7 @@ router.post("/api/forgot-password", authLimiter, async (req, res) => {
     }
 
     const result = await pool.query(
-      "SELECT id, username FROM users WHERE email = $1",
+      "SELECT id, username, password FROM users WHERE email = $1",
       [cleanEmail],
     );
 
@@ -136,7 +136,12 @@ router.post("/api/forgot-password", authLimiter, async (req, res) => {
       return res.status(404).json({ success: false, message: "No account found with that email" });
     }
 
-    const user       = result.rows[0];
+    const user = result.rows[0];
+
+    // OAuth users don't have a real password — they should use Google login
+    if (user.password === "!") {
+      return res.status(400).json({ success: false, message: "This account uses Google Sign-In. Please log in with Google instead of resetting your password." });
+    }
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetExpiry = new Date(Date.now() + 3_600_000); // 1 hour
 
