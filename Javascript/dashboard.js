@@ -250,6 +250,9 @@ window.addEventListener("pageshow", async () => {
     setText("batt-status", power > 10 ? "Charging" : power < -10 ? "Discharging" : "Idle");
     setText("batt-stored", `${(soc / 100 * 10).toFixed(1)} kWh`); // assumes 10kWh default
 
+    // Check power source toggle state
+    const useBattery = localStorage.getItem("ve-power-source") === "battery";
+
     // Update energy flow for battery-only (no solar node)
     const el = (id) => document.getElementById(id);
     const setFlow = (id, cls) => { const l = el(id); if (l) l.setAttribute("class", cls); };
@@ -264,17 +267,36 @@ window.addEventListener("pageshow", async () => {
     // Update labels
     if (el("flow-inv-w")) el("flow-inv-w").textContent = fmt(loadW);
     if (el("flow-load-w")) el("flow-load-w").textContent = fmt(loadW);
-    if (el("flow-grid-w")) el("flow-grid-w").textContent = gridW > 0 ? fmt(gridW) : "0 W";
     if (el("flow-batt-soc")) el("flow-batt-soc").textContent = `${soc.toFixed(0)}%`;
     if (el("flow-batt-w")) el("flow-batt-w").textContent = power !== 0 ? fmt(Math.abs(power)) : "0 W";
 
-    // Animate flow lines
-    // Grid → Inverter (power coming in from Eskom)
-    setFlow("flow-line-grid", gridW > 10 ? "flow-left" : "flow-none");
-    // Inverter → House (load consumption)
-    setFlow("flow-line-load", loadW > 10 ? "flow-right" : "flow-none");
-    // Battery: charging (inverter → battery) or discharging (battery → inverter)
-    setFlow("flow-line-batt", Math.abs(power) > 10 ? (power > 0 ? "flow-right" : "flow-left") : "flow-none");
+    if (useBattery) {
+      // Battery mode: battery powers the house, no grid
+      if (el("flow-grid-w")) el("flow-grid-w").textContent = "Off";
+      setFlow("flow-line-grid", "flow-none");
+      setFlow("flow-line-load", loadW > 10 ? "flow-right" : "flow-none");
+      setFlow("flow-line-batt", loadW > 10 ? "flow-left" : "flow-none"); // battery → inverter → house
+    } else {
+      // Grid mode: Eskom powers the house
+      if (el("flow-grid-w")) el("flow-grid-w").textContent = gridW > 0 ? fmt(gridW) : "0 W";
+      setFlow("flow-line-grid", gridW > 10 ? "flow-left" : "flow-none");
+      setFlow("flow-line-load", loadW > 10 ? "flow-right" : "flow-none");
+      setFlow("flow-line-batt", Math.abs(power) > 10 ? (power > 0 ? "flow-right" : "flow-left") : "flow-none");
+    }
+
+    // Update toggle UI
+    const toggle = document.getElementById("power-source-toggle");
+    if (toggle) toggle.checked = useBattery;
+    const desc = document.getElementById("power-source-desc");
+    if (desc) desc.textContent = useBattery
+      ? `Using battery power (${soc.toFixed(0)}% remaining)`
+      : "Currently using Eskom grid power";
+    const lblGrid = document.getElementById("power-source-label-grid");
+    const lblBatt = document.getElementById("power-source-label-batt");
+    if (lblGrid) lblGrid.style.opacity = useBattery ? "0.4" : "1";
+    if (lblBatt) lblBatt.style.opacity = useBattery ? "1" : "0.4";
+    if (lblBatt) lblBatt.style.color = useBattery ? "var(--color-primary)" : "";
+    if (lblGrid) lblGrid.style.color = useBattery ? "" : "var(--color-error)";
   }
 
   // ── Render ─────────────────────────────────────────────────────────────────
@@ -775,6 +797,21 @@ window.addEventListener("pageshow", async () => {
     setInterval(loadForecast, 15 * 60 * 1000); // refresh forecast every 15 min
     // Welcome greeting now handled by welcome card
     loadWelcomeCard();
+
+    // Power source toggle (battery-only users)
+    const powerToggle = document.getElementById("power-source-toggle");
+    if (powerToggle) {
+      powerToggle.checked = localStorage.getItem("ve-power-source") === "battery";
+      powerToggle.addEventListener("change", function() {
+        localStorage.setItem("ve-power-source", powerToggle.checked ? "battery" : "grid");
+        // Immediately re-render with current data
+        if (lastData) {
+          const all = lastData.all || [];
+          const hasBatteryOnly = !lastData.solar?.length && !lastData.wind?.length && all.length > 0;
+          if (hasBatteryOnly) updateBatteryPanel(all[0]);
+        }
+      });
+    }
   }
 
   if (document.readyState === "loading") {

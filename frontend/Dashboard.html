@@ -853,6 +853,24 @@
           </div>
         </div>
 
+        <!-- Power Source Toggle -->
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 mb-6">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-bold font-headline text-on-surface">Power Source</p>
+              <p id="power-source-desc" class="text-xs text-on-surface-variant font-body mt-0.5">Currently using Eskom grid power</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <span id="power-source-label-grid" class="text-xs font-bold font-label text-error">Eskom</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="power-source-toggle" class="sr-only peer" />
+                <div class="w-14 h-7 bg-error/20 rounded-full peer peer-checked:bg-primary/20 transition-colors after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-error after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:after:translate-x-7 peer-checked:after:bg-primary"></div>
+              </label>
+              <span id="power-source-label-batt" class="text-xs font-bold font-label text-on-surface-variant/40">Battery</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Battery info tiles -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div class="bg-surface-container-low rounded-xl p-4">
