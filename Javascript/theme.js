@@ -1,6 +1,14 @@
 // VoltEquilibrium — Shared theme + page load screen
 // Loads in <head> — applies theme instantly and hides content until ready
 
+// 0. Load Lottie player library
+  if (!document.querySelector('script[src*="lottie"]')) {
+    var lottieScript = document.createElement("script");
+    lottieScript.src = "https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js";
+    lottieScript.async = true;
+    document.head.appendChild(lottieScript);
+  }
+
 // 1. Apply saved theme immediately (no flash of wrong theme)
 (function(){
   var s = localStorage.getItem("voltequilibrium-theme");
@@ -57,7 +65,17 @@
 
   var loader = document.createElement("div");
   loader.id = "ve-loader";
-  loader.innerHTML = '<div class="ve-spinner"></div><div class="ve-brand">VoltEquilibrium</div>';
+  loader.innerHTML = '<div id="ve-loader-lottie" style="width:64px;height:64px;"></div><div class="ve-brand">VoltEquilibrium</div>';
+  // Try to use Lottie spinner, fall back to CSS spinner
+  function initLoaderLottie() {
+    if (typeof lottie !== "undefined" && document.getElementById("ve-loader-lottie")) {
+      lottie.loadAnimation({ container: document.getElementById("ve-loader-lottie"), renderer: "svg", loop: true, autoplay: true, path: "../lottie/spinner.json" });
+    } else {
+      var el = document.getElementById("ve-loader-lottie");
+      if (el) el.innerHTML = '<div class="ve-spinner"></div>';
+    }
+  }
+  setTimeout(initLoaderLottie, 100);
 
   // Insert as soon as body exists (or wait for it)
   if (document.body) {

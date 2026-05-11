@@ -190,6 +190,13 @@ async function loadMaintenanceHealth() {
     badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-error/10 text-error";
     icon.textContent = "warning";
     text.textContent = "Panels underperforming. Check for soiling, shading, or faults.";
+    // Show Lottie warning animation
+    const warnEl = document.getElementById("mh-lottie-warning");
+    if (warnEl && typeof lottie !== "undefined" && !warnEl._loaded) {
+      warnEl.style.display = "block";
+      lottie.loadAnimation({ container: warnEl, renderer: "svg", loop: true, autoplay: true, path: "../lottie/warning.json" });
+      warnEl._loaded = true;
+    }
   } else if (eff >= 85) {
     badge.className = "flex items-center gap-2 rounded-lg px-3 py-2 mb-4 text-xs font-label bg-tertiary/10 text-tertiary";
     icon.textContent = "check_circle";

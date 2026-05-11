@@ -281,15 +281,23 @@
 
         <!-- Loading state -->
         <div id="fc-loading" class="text-center py-10">
-          <svg width="64" height="64" viewBox="0 0 64 64" class="mx-auto mb-3">
-            <circle cx="32" cy="32" r="28" fill="none" stroke="var(--color-outline-variant)" stroke-width="2" opacity="0.3"/>
-            <circle cx="32" cy="32" r="28" fill="none" stroke="var(--color-primary)" stroke-width="2.5" stroke-linecap="round"
-              stroke-dasharray="176" stroke-dashoffset="176" style="animation: fc-draw 1.5s ease-in-out infinite;">
-            </circle>
-            <text x="32" y="40" text-anchor="middle" font-family="Material Symbols Outlined" font-size="24" fill="var(--color-primary)" style="font-variation-settings:'FILL' 1;">electric_bolt</text>
-          </svg>
+          <div id="fc-lottie-bolt" style="width:64px;height:64px;margin:0 auto 12px;"></div>
           <p class="text-xs text-on-surface-variant font-body">Fetching 7-day weather forecast...</p>
-          <style>@keyframes fc-draw { 0% { stroke-dashoffset: 176; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -176; } }</style>
+          <script>
+            document.addEventListener("DOMContentLoaded", function() {
+              if (typeof lottie !== "undefined") {
+                lottie.loadAnimation({ container: document.getElementById("fc-lottie-bolt"), renderer: "svg", loop: true, autoplay: true, path: "../lottie/bolt.json" });
+              } else {
+                // Retry after lottie loads
+                var i = setInterval(function() {
+                  if (typeof lottie !== "undefined") {
+                    clearInterval(i);
+                    lottie.loadAnimation({ container: document.getElementById("fc-lottie-bolt"), renderer: "svg", loop: true, autoplay: true, path: "../lottie/bolt.json" });
+                  }
+                }, 200);
+              }
+            });
+          </script>
         </div>
 
         <!-- Summary stats (hidden until loaded) -->

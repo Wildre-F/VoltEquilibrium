@@ -65,6 +65,19 @@ window.VE = {
     requestAnimationFrame(tick);
   },
 
+  // Lottie success animation overlay — brief checkmark animation
+  showSuccess(message) {
+    const overlay = document.createElement("div");
+    overlay.style.cssText = "position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.3);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;";
+    overlay.innerHTML = `<div id="ve-success-lottie" style="width:100px;height:100px;"></div><p style="color:#fff;font-family:Manrope,sans-serif;font-weight:800;font-size:16px;margin-top:8px;">${message || "Success!"}</p>`;
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => overlay.style.opacity = "1");
+    if (typeof lottie !== "undefined") {
+      lottie.loadAnimation({ container: document.getElementById("ve-success-lottie"), renderer: "svg", loop: false, autoplay: true, path: "../lottie/accept.json" });
+    }
+    setTimeout(() => { overlay.style.opacity = "0"; setTimeout(() => overlay.remove(), 300); }, 1800);
+  },
+
   // Standard auth fetch wrapper
   async fetch(path, options = {}) {
     const token = this.getToken();

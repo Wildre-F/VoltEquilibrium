@@ -500,6 +500,7 @@
         ? (type === "requests" ? "Donation sent! Thank you." : "Purchase complete!")
         : "Listing removed.";
       toast(successMsg, "success");
+      if (action === "fill" && typeof VE !== "undefined") VE.showSuccess(successMsg);
       loadTab(activeTab);
       loadMyListings();
       loadStatus();

@@ -97,10 +97,22 @@
       <div class="max-w-5xl mx-auto">
         <!-- Header -->
         <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-6">
-          <div>
-            <h1 class="text-4xl font-extrabold font-headline tracking-tight text-on-surface">Notifications</h1>
-            <p class="text-on-surface-variant mt-2 max-w-lg font-body">Community activity and energy sharing updates.</p>
+          <div class="flex items-center gap-4">
+            <div id="lottie-bell" style="width:48px;height:48px;flex-shrink:0;"></div>
+            <div>
+              <h1 class="text-4xl font-extrabold font-headline tracking-tight text-on-surface">Notifications</h1>
+              <p class="text-on-surface-variant mt-2 max-w-lg font-body">Community activity and energy sharing updates.</p>
+            </div>
           </div>
+          <script>
+            document.addEventListener("DOMContentLoaded", function() {
+              var i = setInterval(function() {
+                if (typeof lottie !== "undefined") { clearInterval(i);
+                  lottie.loadAnimation({ container: document.getElementById("lottie-bell"), renderer: "svg", loop: true, autoplay: true, path: "../lottie/bell.json" });
+                }
+              }, 200);
+            });
+          </script>
           <button id="mark-all-read" class="px-6 py-2 bg-surface-container-low hover:bg-surface-container-highest text-on-surface-variant text-sm font-bold rounded-full transition-colors">
             Mark all as read
           </button>
