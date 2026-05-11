@@ -113,9 +113,14 @@
               }, 200);
             });
           </script>
-          <button id="mark-all-read" class="px-6 py-2 bg-surface-container-low hover:bg-surface-container-highest text-on-surface-variant text-sm font-bold rounded-full transition-colors">
-            Mark all as read
-          </button>
+          <div class="flex gap-2">
+            <button id="mark-all-read" class="px-5 py-2 bg-surface-container-low hover:bg-surface-container-highest text-on-surface-variant text-sm font-bold rounded-full transition-colors">
+              Mark all as read
+            </button>
+            <button id="delete-all-notifs" class="px-5 py-2 bg-error/10 hover:bg-error/20 text-error text-sm font-bold rounded-full transition-colors flex items-center gap-1">
+              <span class="material-symbols-outlined text-sm">delete_sweep</span>Clear all
+            </button>
+          </div>
         </div>
 
         <div id="notifications-list" class="space-y-4">
@@ -177,9 +182,14 @@
                   <span class="text-xs text-outline font-label">${relTime(n.created_at)}</span>
                   ${!n.is_read ? '<span class="w-2 h-2 rounded-full bg-secondary inline-block"></span>' : ""}
                 </div>
-                <button class="mark-read-btn text-outline hover:text-on-surface transition-colors" data-id="${n.id}" title="Mark as read">
-                  <span class="material-symbols-outlined text-base">done</span>
-                </button>
+                <div class="flex items-center gap-1">
+                  <button class="mark-read-btn text-outline hover:text-on-surface transition-colors" data-id="${n.id}" title="Mark as read">
+                    <span class="material-symbols-outlined text-base">done</span>
+                  </button>
+                  <button class="delete-notif-btn text-outline hover:text-error transition-colors" data-id="${n.id}" title="Delete">
+                    <span class="material-symbols-outlined text-base">close</span>
+                  </button>
+                </div>
               </div>
               <h3 class="text-base font-bold font-headline text-on-surface">${n.title}</h3>
               <p class="text-on-surface-variant text-sm mt-1 font-body">${n.message}</p>
@@ -204,8 +214,13 @@
           list.innerHTML = json.data.map(renderCard).join("");
           list.querySelectorAll(".mark-read-btn").forEach(btn => {
             btn.addEventListener("click", async () => {
-              const id = btn.dataset.id;
-              await fetch(`${API}/api/notifications/${id}/read`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+              await fetch(`${API}/api/notifications/${btn.dataset.id}/read`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+              loadNotifications();
+            });
+          });
+          list.querySelectorAll(".delete-notif-btn").forEach(btn => {
+            btn.addEventListener("click", async () => {
+              await fetch(`${API}/api/notifications/${btn.dataset.id}`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
               loadNotifications();
             });
           });
@@ -216,6 +231,12 @@
 
       document.getElementById("mark-all-read").addEventListener("click", async () => {
         await fetch(`${API}/api/notifications/read-all`, { method: "POST", headers: { Authorization: `Bearer ${token}` } });
+        loadNotifications();
+      });
+
+      document.getElementById("delete-all-notifs").addEventListener("click", async () => {
+        if (!confirm("Delete all notifications? This cannot be undone.")) return;
+        await fetch(`${API}/api/notifications/all`, { method: "DELETE", headers: { Authorization: `Bearer ${token}` } });
         loadNotifications();
       });
 

@@ -180,38 +180,38 @@ document.addEventListener("DOMContentLoaded", function() {
       ? "http://localhost:3000" : "";
 
     function checkForNew() {
-      if (localStorage.getItem("ve-browser-notifs") !== "true") return;
-      if (Notification.permission !== "granted") return;
-
-      var lastNotifId = parseInt(localStorage.getItem(notifKey) || "0");
-
       fetch(API + "/api/notifications", { headers: { Authorization: "Bearer " + token } })
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (!data.success || !data.data || !data.data.length) return;
-          var newest = data.data[0];
-          var newestId = newest.id;
-          if (newestId > lastNotifId && lastNotifId > 0) {
-            new Notification(newest.title || "VoltEquilibrium", {
-              body: newest.message || "New community activity in your area.",
-              icon: "../favicon.svg",
-              tag: "ve-notif-" + newestId,
-            }).onclick = function() { window.focus(); window.location.href = "Notifications.html"; };
-          }
-          localStorage.setItem(notifKey, String(newestId));
 
-          // Update bell badge with unread count
+          // Update bell badge with unread count (always, regardless of notification toggle)
           var unread = data.data.filter(function(n) { return !n.is_read; }).length;
           var badge = document.getElementById("notif-badge");
           if (badge) {
             if (unread > 0) { badge.textContent = unread > 9 ? "9+" : unread; badge.style.display = "flex"; }
             else { badge.style.display = "none"; }
           }
+
+          // Browser push notification (only if enabled + permitted)
+          if (localStorage.getItem("ve-browser-notifs") === "true" && Notification.permission === "granted") {
+            var lastNotifId = parseInt(localStorage.getItem(notifKey) || "0");
+            var newest = data.data[0];
+            var newestId = newest.id;
+            if (newestId > lastNotifId && lastNotifId > 0) {
+              new Notification(newest.title || "VoltEquilibrium", {
+                body: newest.message || "New community activity in your area.",
+                icon: "../favicon.svg",
+                tag: "ve-notif-" + newestId,
+              }).onclick = function() { window.focus(); window.location.href = "Notifications.html"; };
+            }
+            localStorage.setItem(notifKey, String(newestId));
+          }
         })
-        .catch(function() {});
+        .catch(function(err) { console.error("[notifications] poll error:", err.message); });
     }
 
-    // Poll every 15 seconds for faster notification delivery
+    // Poll every 15 seconds
     checkForNew();
     setInterval(checkForNew, 15000);
   })();

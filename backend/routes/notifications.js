@@ -58,4 +58,27 @@ router.post("/notifications/read-all", authenticateToken, async (req, res) => {
   }
 });
 
+router.delete("/notifications/:id", authenticateToken, async (req, res) => {
+  try {
+    await pool.query(
+      `DELETE FROM notifications WHERE id = $1 AND user_id = $2`,
+      [req.params.id, req.user.id]
+    );
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("[notifications] delete error:", err.message);
+    return res.status(500).json({ success: false, message: "Error deleting notification" });
+  }
+});
+
+router.delete("/notifications/all", authenticateToken, async (req, res) => {
+  try {
+    await pool.query(`DELETE FROM notifications WHERE user_id = $1`, [req.user.id]);
+    return res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("[notifications] delete all error:", err.message);
+    return res.status(500).json({ success: false, message: "Error deleting notifications" });
+  }
+});
+
 module.exports = { router, createNotification };
