@@ -214,7 +214,7 @@
             </h2>
             <div class="space-y-3">
               <select id="location-preset" onchange="applyLocationPreset()" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-on-surface text-sm font-body focus:outline-none focus:border-primary transition-colors">
-                <option value="">— Pick a demo location —</option>
+                <option value="">- Pick a demo location -</option>
                 <option value="-33.9249|18.4241|Cape Town, South Africa">Cape Town, South Africa</option>
                 <option value="51.5074|-0.1278|London, United Kingdom">London, United Kingdom</option>
                 <option value="35.6762|139.6503|Tokyo, Japan">Tokyo, Japan</option>
@@ -256,7 +256,7 @@
               <div class="mb-3">
                 <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Simulation Profile</label>
                 <select id="solar-profile" onchange="updateProfileInfo('solar')" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors">
-                  <option value="">— Select a profile —</option>
+                  <option value="">- Select a profile -</option>
                   <option value="solar-small">Small household (1–3 kW)</option>
                   <option value="solar-large">Large array (5–10 kW)</option>
                 </select>
@@ -296,7 +296,7 @@
               <div class="mb-3">
                 <label class="block text-xs font-bold text-on-surface-variant/60 uppercase tracking-widest font-label mb-1.5">Simulation Profile</label>
                 <select id="wind-profile" onchange="updateProfileInfo('wind')" class="w-full px-4 py-2.5 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:border-primary transition-colors">
-                  <option value="">— Select a profile —</option>
+                  <option value="">- Select a profile -</option>
                   <option value="wind-small">Small turbine (1–2 kW)</option>
                   <option value="wind-large">Large turbine (5–15 kW)</option>
                 </select>
@@ -633,7 +633,7 @@
           body: JSON.stringify({ location, lat, lng }),
         });
         const result = await res.json();
-        if (result.success) showMessage("Location updated — simulators restarting", "success");
+        if (result.success) showMessage("Location updated. Simulators restarting.", "success");
         else showMessage(result.message, "error");
       } catch { showMessage("Error saving location", "error"); }
     }

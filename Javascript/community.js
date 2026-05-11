@@ -324,7 +324,7 @@
     const displayUser = item.username || "Unknown";
     const sub = isSale
       ? `<span class="text-xs text-on-surface-variant font-label">${item.amount_kwh} kWh &nbsp;·&nbsp; R${parseFloat(item.price_per_kwh).toFixed(2)}/kWh</span>`
-      : `<span class="text-xs text-on-surface-variant font-label">${item.amount_kwh} kWh needed${mine ? "" : " — donate for free"}</span>`;
+      : `<span class="text-xs text-on-surface-variant font-label">${item.amount_kwh} kWh needed${mine ? "" : " - donate for free"}</span>`;
 
     const rowLabel = isSale ? "Energy Sale" : "Energy Request";
 

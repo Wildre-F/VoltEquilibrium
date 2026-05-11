@@ -72,7 +72,7 @@
             <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Quick Select</label>
             <select id="location-preset" onchange="applyPreset()"
               class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40">
-              <option value="">— Pick a demo location —</option>
+              <option value="">- Pick a demo location -</option>
               <option value="-25.7479|28.2293|Pretoria, South Africa">🇿🇦 Pretoria, South Africa</option>
               <option value="-33.9249|18.4241|Cape Town, South Africa">🇿🇦 Cape Town, South Africa</option>
               <option value="-26.2041|28.0473|Johannesburg, South Africa">🇿🇦 Johannesburg, South Africa</option>
@@ -150,7 +150,7 @@
             </div>
             <div>
               <p class="font-bold font-headline text-on-surface text-sm">Battery Only</p>
-              <p class="text-xs text-on-surface-variant font-body">No generation — store energy from the community</p>
+              <p class="text-xs text-on-surface-variant font-body">No generation. Store energy from the community.</p>
             </div>
             <span class="material-symbols-outlined text-outline ml-auto">chevron_right</span>
           </div>
@@ -190,7 +190,7 @@
               <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Profile</label>
               <select id="solar-profile" onchange="updateProfileInfo('solar')"
                 class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40">
-                <option value="">— Select —</option>
+                <option value="">- Select -</option>
                 <option value="solar-small">Small (1–3 kW)</option>
                 <option value="solar-large">Large (5–10 kW)</option>
               </select>
@@ -227,7 +227,7 @@
               <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Profile</label>
               <select id="wind-profile" onchange="updateProfileInfo('wind')"
                 class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40">
-                <option value="">— Select —</option>
+                <option value="">- Select -</option>
                 <option value="wind-small">Small (1–2 kW)</option>
                 <option value="wind-large">Large (5–15 kW)</option>
               </select>
@@ -258,9 +258,9 @@
             <label class="block text-[10px] font-label text-on-surface-variant uppercase tracking-widest mb-1.5">Battery Capacity</label>
             <select id="battery-capacity"
               class="w-full px-4 py-3 bg-surface-container rounded-xl border border-outline-variant/30 text-sm font-body focus:outline-none focus:ring-2 focus:ring-primary/40">
-              <option value="5">5 kWh — Small home</option>
-              <option value="10" selected>10 kWh — Standard home</option>
-              <option value="20">20 kWh — Large home</option>
+              <option value="5">5 kWh - Small home</option>
+              <option value="10" selected>10 kWh - Standard home</option>
+              <option value="20">20 kWh - Large home</option>
             </select>
           </div>
           <div id="battery-added" class="hidden bg-primary-fixed rounded-xl px-4 py-3">

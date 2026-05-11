@@ -505,7 +505,7 @@ window.addEventListener("pageshow", async () => {
     } catch (err) {
       console.error("[dashboard]", err.message);
       if (!errShown) {
-        toast.show("Could not reach server — retrying...", "warning");
+        toast.show("Could not reach server. Retrying...", "warning");
         errShown = true;
       }
     }
