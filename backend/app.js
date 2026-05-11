@@ -369,6 +369,7 @@ app.use("/api/setup", require("./routes/setup"));
 // ── Weather endpoints (routes/weather.js) ────────────────────────────────────
 app.use("/api/weather", require("./routes/weather"));
 app.use("/api/forecast", require("./routes/forecast"));
+app.use("/api/blog", require("./routes/blog"));
 
 // ── Readings & Battery endpoints (routes/readings.js) ────────────────────────
 app.use("/api", require("./routes/readings"));

@@ -288,9 +288,55 @@ async function loadCarbonToAction() {
   if (statusEl) statusEl.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
 }
 
+// ═══════════════════════════════════════════════════════════════════════════
+// Green Energy Blog
+// Fetches articles from RSS feeds via backend proxy
+// ═══════════════════════════════════════════════════════════════════════════
+
+async function loadBlogArticles() {
+  const container = document.getElementById("blog-articles");
+  if (!container) return;
+
+  try {
+    const res = await fetch(`${API}/api/blog/articles`);
+    const json = await res.json();
+    if (!json.success || !json.data?.length) {
+      container.innerHTML = `<div class="col-span-2 text-center py-8 text-on-surface-variant text-sm">No articles available right now.</div>`;
+      return;
+    }
+
+    container.innerHTML = json.data.map(article => {
+      const date = new Date(article.pubDate);
+      const timeAgo = Math.floor((Date.now() - date.getTime()) / (1000 * 60 * 60));
+      const dateStr = timeAgo < 24 ? `${timeAgo}h ago` : date.toLocaleDateString([], { month: "short", day: "numeric" });
+
+      return `<a href="${article.link}" target="_blank" rel="noopener" class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 hover:shadow-md hover:-translate-y-0.5 transition-all group block">
+        <div class="flex items-start gap-3">
+          ${article.thumbnail ? `<img src="${article.thumbnail}" alt="" class="w-16 h-16 rounded-xl object-cover flex-shrink-0" onerror="this.style.display='none'"/>` : ""}
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-bold font-headline text-on-surface group-hover:text-primary transition-colors line-clamp-2">${article.title}</p>
+            <p class="text-xs text-on-surface-variant font-body mt-1 line-clamp-2">${article.description}</p>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="text-[9px] font-label text-primary font-bold">${article.source}</span>
+              <span class="text-[9px] text-on-surface-variant/50">${dateStr}</span>
+            </div>
+          </div>
+        </div>
+      </a>`;
+    }).join("");
+
+    const statusEl = document.getElementById("blog-status");
+    if (statusEl) statusEl.textContent = json.cached ? "Cached" : "Live";
+  } catch (err) {
+    console.error("[blog] Error loading articles:", err.message);
+    container.innerHTML = `<div class="col-span-2 text-center py-8 text-on-surface-variant text-sm">Could not load articles.</div>`;
+  }
+}
+
 // ── Init + poll ──────────────────────────────────────────────────────────────
 loadApplianceShift();
 loadCarbonToAction();
 loadMaintenanceHealth();
+loadBlogArticles();
 setInterval(loadApplianceShift, 30000);
 setInterval(loadMaintenanceHealth, 30000);
