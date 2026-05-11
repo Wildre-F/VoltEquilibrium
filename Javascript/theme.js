@@ -171,15 +171,19 @@ document.addEventListener("DOMContentLoaded", function() {
     var token = sessionStorage.getItem("authToken") || localStorage.getItem("authToken");
     if (!token) return;
 
+    // Extract user ID from JWT to make notification key per-user
+    var userId = "0";
+    try { userId = JSON.parse(atob(token.split(".")[1])).id || "0"; } catch(e) {}
+    var notifKey = "ve-last-notif-id-" + userId;
+
     var API = (location.hostname === "localhost" || location.hostname === "127.0.0.1")
       ? "http://localhost:3000" : "";
 
     function checkForNew() {
-      // Re-check enabled state every poll (user might toggle it on another tab/page)
       if (localStorage.getItem("ve-browser-notifs") !== "true") return;
       if (Notification.permission !== "granted") return;
 
-      var lastNotifId = parseInt(localStorage.getItem("ve-last-notif-id") || "0");
+      var lastNotifId = parseInt(localStorage.getItem(notifKey) || "0");
 
       fetch(API + "/api/notifications", { headers: { Authorization: "Bearer " + token } })
         .then(function(r) { return r.json(); })
@@ -194,7 +198,15 @@ document.addEventListener("DOMContentLoaded", function() {
               tag: "ve-notif-" + newestId,
             }).onclick = function() { window.focus(); window.location.href = "Notifications.html"; };
           }
-          localStorage.setItem("ve-last-notif-id", String(newestId));
+          localStorage.setItem(notifKey, String(newestId));
+
+          // Update bell badge with unread count
+          var unread = data.data.filter(function(n) { return !n.is_read; }).length;
+          var badge = document.getElementById("notif-badge");
+          if (badge) {
+            if (unread > 0) { badge.textContent = unread > 9 ? "9+" : unread; badge.style.display = "flex"; }
+            else { badge.style.display = "none"; }
+          }
         })
         .catch(function() {});
     }

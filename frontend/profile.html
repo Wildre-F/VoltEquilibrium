@@ -37,10 +37,11 @@
       <button id="theme-toggle" class="p-2 hover:bg-surface-container rounded-full transition-all duration-300" aria-label="Toggle theme">
         <span id="theme-icon" class="material-symbols-outlined text-primary">dark_mode</span>
       </button>
-      <a href="Notifications.html">
+      <a href="Notifications.html" class="relative">
         <button class="p-2 hover:bg-surface-container-low rounded-full transition-all duration-300">
           <span class="material-symbols-outlined text-primary">notifications</span>
         </button>
+        <span id="notif-badge" style="display:none;position:absolute;top:0;right:0;min-width:18px;height:18px;background:var(--color-error);color:#fff;font-size:10px;font-weight:800;font-family:Inter,sans-serif;border-radius:9px;align-items:center;justify-content:center;padding:0 4px;"></span>
       </a>
       <a href="Wallet.html">
         <button class="flex items-center gap-1.5 px-3 py-1.5 bg-primary-fixed hover:bg-primary-fixed/70 rounded-full transition-colors">
